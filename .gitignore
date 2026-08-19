@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
+.Python
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables & secrets
+.env
+*.env.local
+*.env.*.local
+
+# Database
+*.sqlite3
+*.db
+
+# Docker
+.dockerignore
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+*.out
+
+# Test / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+
+# Alembic (keep structure, ignore pycache)
+alembic/__pycache__/
+
+# Static assets (compiled/generated)
+backend/app/static/dist/
+
+# Uploads / temp files
+uploads/
+tmp/
+*.tmp
+
+# OS
+.DS_Store
+ehthumbs.db
+Desktop.ini
+
+.task/

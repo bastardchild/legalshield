@@ -1,0 +1,2322 @@
+[
+  {
+    "id": 1,
+    "category": "non_compete",
+    "severity": "critical",
+    "industry": "teknologi",
+    "party": "freelancer_developer",
+    "contract_snippet": "Pihak Kedua dilarang bekerja di bidang TI selama 5 tahun di seluruh Indonesia setelah kontrak berakhir.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "critical",
+        "explanation": "Non-compete 5 tahun lingkup nasional sangat tidak proporsional.",
+        "recommendation": "Batasi 1 tahun, hanya untuk klien langsung.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Dilarang melayani klien langsung Pihak Pertama selama 12 bulan.",
+    "source_reference": "Kontrak developer Indonesia 2023",
+    "applicable_law": "UU 13/2003",
+    "locale": "id-ID"
+  },
+  {
+    "id": 2,
+    "category": "ip_assignment",
+    "severity": "critical",
+    "industry": "desain_grafis",
+    "party": "freelancer_designer",
+    "contract_snippet": "Semua karya desainer baik dalam maupun luar jam kerja menjadi milik klien tanpa kompensasi tambahan.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "critical",
+        "explanation": "IP assignment di luar lingkup proyek merugikan desainer.",
+        "recommendation": "Batasi hanya karya dalam proyek yang sudah dibayar.",
+        "confidence": 0.98
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Hak cipta beralih setelah lunas, hanya karya dalam proyek ini.",
+    "source_reference": "Kontrak desainer freelance 2022",
+    "applicable_law": "UU 28/2014 Hak Cipta",
+    "locale": "id-ID"
+  },
+  {
+    "id": 3,
+    "category": "payment_terms",
+    "severity": "high",
+    "industry": "konten_kreator",
+    "party": "content_creator",
+    "contract_snippet": "Pembayaran 90 hari setelah invoice. Klien berhak menahan pembayaran berdasarkan penilaian subjektif.",
+    "risk_findings": [
+      {
+        "clause_type": "payment_terms",
+        "severity": "high",
+        "explanation": "Net-90 terlalu lama dan penahanan subjektif merugikan freelancer.",
+        "recommendation": "Ubah ke Net-14 dengan kriteria kualitas terukur.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Klien wajib potong PPh 23 2% atas jasa konten.",
+        "recommendation": "Tambahkan klausul kewajiban pemotongan PPh 23.",
+        "applicable_regulation": "UU PPh Pasal 23"
+      }
+    ],
+    "counter_suggestion": "Pembayaran maksimal 14 hari setelah invoice diterima.",
+    "source_reference": "Kontrak brand deal creator 2023",
+    "applicable_law": "UU 2/2022",
+    "locale": "id-ID"
+  },
+  {
+    "id": 4,
+    "category": "indemnity",
+    "severity": "high",
+    "industry": "konsultan_hukum",
+    "party": "konsultan_independen",
+    "contract_snippet": "Konsultan bertanggung jawab penuh dan wajib mengganti seluruh kerugian Klien termasuk akibat kelalaian Klien sendiri.",
+    "risk_findings": [
+      {
+        "clause_type": "indemnity",
+        "severity": "high",
+        "explanation": "Indemnifikasi sepihak termasuk untuk kelalaian klien sendiri tidak adil.",
+        "recommendation": "Batasi tanggung jawab hanya untuk kelalaian konsultan yang terbukti.",
+        "confidence": 0.96
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Konsultan bertanggung jawab atas kerugian akibat kelalaiannya sendiri yang terbukti, maksimal senilai fee yang diterima.",
+    "source_reference": "Kontrak konsultan independen Indonesia 2023",
+    "applicable_law": "KUHPerdata Pasal 1365",
+    "locale": "id-ID"
+  },
+  {
+    "id": 5,
+    "category": "auto_renewal",
+    "severity": "medium",
+    "industry": "saas",
+    "party": "startup_pelanggan",
+    "contract_snippet": "Kontrak diperpanjang otomatis setiap tahun kecuali pemberitahuan tertulis 90 hari sebelum berakhir. Biaya pembatalan 6 bulan langganan penuh berlaku.",
+    "risk_findings": [
+      {
+        "clause_type": "auto_renewal",
+        "severity": "medium",
+        "explanation": "Notifikasi 90 hari dan denda 6 bulan untuk pembatalan tidak proporsional untuk SaaS.",
+        "recommendation": "Perpanjangan otomatis dengan notifikasi 30 hari dan denda maksimal 1 bulan.",
+        "confidence": 0.93
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Kontrak diperpanjang otomatis dengan notifikasi 30 hari sebelumnya. Pembatalan tanpa denda jika diberitahukan sesuai ketentuan.",
+    "source_reference": "Kontrak SaaS startup Indonesia 2024",
+    "applicable_law": "UU 8/1999 Perlindungan Konsumen",
+    "locale": "id-ID"
+  },
+  {
+    "id": 6,
+    "category": "governing_law",
+    "severity": "high",
+    "industry": "e_commerce",
+    "party": "mitra_seller",
+    "contract_snippet": "Perjanjian ini tunduk pada hukum negara bagian Delaware, Amerika Serikat. Sengketa diselesaikan melalui arbitrase di Singapura dengan biaya ditanggung penjual.",
+    "risk_findings": [
+      {
+        "clause_type": "governing_law",
+        "severity": "high",
+        "explanation": "Yurisdiksi Delaware dan arbitrase Singapura sangat memberatkan pihak Indonesia karena biaya dan jarak.",
+        "recommendation": "Gunakan hukum Indonesia dan BANI atau Pengadilan Negeri setempat.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "governing_law",
+        "severity": "high",
+        "explanation": "Klausul yurisdiksi asing menyulitkan penyelesaian sengketa pajak dan kepatuhan lokal.",
+        "recommendation": "Tetapkan hukum Indonesia dan yurisdiksi pengadilan Jakarta.",
+        "applicable_regulation": "UU 30/1999 Arbitrase"
+      }
+    ],
+    "counter_suggestion": "Perjanjian ini tunduk pada hukum Republik Indonesia. Sengketa diselesaikan melalui BANI di Jakarta.",
+    "source_reference": "Kontrak marketplace e-commerce Indonesia 2023",
+    "applicable_law": "UU 30/1999 Arbitrase dan APS",
+    "locale": "id-ID"
+  },
+  {
+    "id": 7,
+    "category": "limitation_of_liability",
+    "severity": "high",
+    "industry": "pengembangan_web",
+    "party": "klien_korporat",
+    "contract_snippet": "Tanggung jawab total vendor tidak melebihi Rp100.000 dalam kondisi apapun termasuk kehilangan data dan kerugian bisnis.",
+    "risk_findings": [
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "high",
+        "explanation": "Cap Rp100.000 sangat tidak proporsional untuk proyek bernilai jutaan rupiah.",
+        "recommendation": "Batasi maksimal nilai kontrak atau 3x nilai kontrak untuk kasus force majeure.",
+        "confidence": 0.96
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Tanggung jawab maksimal sebesar nilai kontrak yang telah dibayarkan. Pengecualian untuk pelanggaran data disengaja.",
+    "source_reference": "Kontrak web development Indonesia 2023",
+    "applicable_law": "KUHPerdata 1239",
+    "locale": "id-ID"
+  },
+  {
+    "id": 8,
+    "category": "pph23",
+    "severity": "high",
+    "industry": "jasa_konsultasi",
+    "party": "konsultan_it",
+    "contract_snippet": "Semua pembayaran bersifat gross. Freelancer bertanggung jawab atas seluruh kewajiban pajak. Klien tidak akan menerbitkan bukti potong PPh 23.",
+    "risk_findings": [],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "high",
+        "explanation": "Klien wajib memotong PPh 23 2% atas jasa konsultasi IT. Penolakan menerbitkan bukti potong melanggar kewajiban pajak.",
+        "recommendation": "Klien wajib memotong PPh 23, menerbitkan bukti potong, dan menyetorkan ke kas negara.",
+        "applicable_regulation": "UU PPh Pasal 23 ayat 1 huruf c angka 2"
+      }
+    ],
+    "counter_suggestion": "Klien wajib memotong PPh 23 sebesar 2% dari nilai bruto jasa dan menerbitkan bukti potong dalam 5 hari kerja.",
+    "source_reference": "Kontrak jasa IT Indonesia 2023",
+    "applicable_law": "UU 36/2008 PPh Pasal 23",
+    "locale": "id-ID"
+  },
+  {
+    "id": 9,
+    "category": "confidentiality",
+    "severity": "medium",
+    "industry": "startup_teknologi",
+    "party": "karyawan_kontrak",
+    "contract_snippet": "Karyawan wajib menjaga kerahasiaan informasi perusahaan selamanya tanpa pengecualian termasuk setelah kontrak berakhir. Pelanggaran dikenai denda Rp500 juta per kejadian.",
+    "risk_findings": [
+      {
+        "clause_type": "confidentiality",
+        "severity": "medium",
+        "explanation": "Kerahasiaan seumur hidup tanpa pengecualian dan denda Rp500 juta tidak proporsional.",
+        "recommendation": "Batasi 3-5 tahun setelah kontrak, dengan pengecualian informasi publik, dan denda wajar.",
+        "confidence": 0.92
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Kewajiban kerahasiaan berlaku 3 tahun setelah berakhirnya kontrak untuk informasi yang masih bersifat rahasia.",
+    "source_reference": "Kontrak karyawan kontrak startup Indonesia 2024",
+    "applicable_law": "UU 13/2003 Ketenagakerjaan",
+    "locale": "id-ID"
+  },
+  {
+    "id": 10,
+    "category": "termination",
+    "severity": "high",
+    "industry": "agensi_kreatif",
+    "party": "freelancer_copywriter",
+    "contract_snippet": "Klien dapat mengakhiri kontrak kapan saja tanpa alasan dan tanpa kewajiban membayar pekerjaan yang sudah selesai. Freelancer tidak dapat mengakhiri kontrak sebelum selesai.",
+    "risk_findings": [
+      {
+        "clause_type": "termination",
+        "severity": "high",
+        "explanation": "Terminasi sepihak tanpa kompensasi untuk pekerjaan selesai sangat merugikan freelancer.",
+        "recommendation": "Klien wajib membayar pekerjaan yang telah diselesaikan sebelum terminasi. Freelancer juga berhak terminasi dengan notice 14 hari.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Penghentian oleh Klien wajib disertai pembayaran pekerjaan yang telah diselesaikan. Kedua pihak dapat mengakhiri kontrak dengan pemberitahuan 14 hari.",
+    "source_reference": "Kontrak copywriter agensi Indonesia 2023",
+    "applicable_law": "KUHPerdata 1338",
+    "locale": "id-ID"
+  },
+  {
+    "id": 11,
+    "category": "non_compete",
+    "severity": "high",
+    "industry": "marketing_digital",
+    "party": "freelancer_marketer",
+    "contract_snippet": "Marketing consultant dilarang bekerja untuk kompetitor langsung selama 2 tahun setelah kontrak di seluruh Asia Tenggara.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "high",
+        "explanation": "Wilayah Asia Tenggara terlalu luas untuk non-compete, tidak proporsional dengan nilai kontrak.",
+        "recommendation": "Batasi ke kota operasional klien saja dan durasi maksimal 6 bulan.",
+        "confidence": 0.91
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Dilarang melayani 3 kompetitor langsung yang disebutkan dalam Lampiran A selama 6 bulan.",
+    "source_reference": "Kontrak digital marketer Indonesia 2023",
+    "applicable_law": "UU 5/1999 Persaingan Usaha",
+    "locale": "id-ID"
+  },
+  {
+    "id": 12,
+    "category": "ip_assignment",
+    "severity": "high",
+    "industry": "musik_entertainment",
+    "party": "musisi_independen",
+    "contract_snippet": "Label berhak menggunakan, memodifikasi, mendistribusikan karya musisi di seluruh dunia selamanya tanpa royalti tambahan di luar pembayaran awal.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "high",
+        "explanation": "Penggunaan worldwide selamanya tanpa royalti sangat merugikan musisi independen.",
+        "recommendation": "Tetapkan royalti minimal 15% dari pendapatan kotor dan batasi lisensi 5 tahun dengan opsi perpanjangan.",
+        "confidence": 0.96
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Royalti musik dikenakan PPh 23 sebesar 15% dari jumlah bruto.",
+        "recommendation": "Pastikan klausul royalti mencantumkan kewajiban pemotongan PPh 23.",
+        "applicable_regulation": "UU PPh Pasal 23 ayat 1 huruf a"
+      }
+    ],
+    "counter_suggestion": "Lisensi eksklusif 3 tahun untuk wilayah Indonesia dengan royalti 20% dari pendapatan bersih. Dapat diperpanjang atas kesepakatan.",
+    "source_reference": "Kontrak rekaman musisi Indonesia 2023",
+    "applicable_law": "UU 28/2014 Hak Cipta",
+    "locale": "id-ID"
+  },
+  {
+    "id": 13,
+    "category": "payment_terms",
+    "severity": "high",
+    "industry": "konstruksi_interior",
+    "party": "kontraktor_interior",
+    "contract_snippet": "Pembayaran termin ketiga sebesar 40% ditahan hingga klien menyatakan puas secara subjektif tanpa batasan waktu evaluasi.",
+    "risk_findings": [
+      {
+        "clause_type": "payment_terms",
+        "severity": "high",
+        "explanation": "Penahanan 40% berdasarkan kepuasan subjektif tanpa batas waktu evaluasi menciptakan risiko tidak dibayar.",
+        "recommendation": "Tetapkan kriteria serah terima objektif dan batas waktu evaluasi 7 hari kerja.",
+        "confidence": 0.94
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Jasa konstruksi interior dikenakan PPh Pasal 4 ayat 2 final sebesar 2-4%.",
+        "recommendation": "Cantumkan kewajiban pemotongan PPh final dalam klausul pembayaran.",
+        "applicable_regulation": "PP 51/2008 jo PP 40/2009"
+      }
+    ],
+    "counter_suggestion": "Pembayaran termin ketiga dilakukan dalam 7 hari kerja setelah berita acara serah terima ditandatangani kedua pihak.",
+    "source_reference": "Kontrak interior design Jakarta 2023",
+    "applicable_law": "UU 2/2017 Jasa Konstruksi",
+    "locale": "id-ID"
+  },
+  {
+    "id": 14,
+    "category": "indemnity",
+    "severity": "critical",
+    "industry": "fintech",
+    "party": "vendor_teknologi",
+    "contract_snippet": "Vendor wajib menanggung seluruh kerugian platform termasuk denda regulator, kehilangan pendapatan proyeksi, dan biaya reputasi akibat downtime sistem apapun.",
+    "risk_findings": [
+      {
+        "clause_type": "indemnity",
+        "severity": "critical",
+        "explanation": "Indemnifikasi mencakup denda regulator dan pendapatan proyeksi yang sangat tidak terukur.",
+        "recommendation": "Batasi indemnifikasi pada kerugian langsung yang terbukti, ekskluding pendapatan proyeksi dan denda regulator.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Vendor bertanggung jawab atas kerugian langsung akibat kelalaiannya, maksimal 3x nilai kontrak tahunan.",
+    "source_reference": "Kontrak vendor fintech Indonesia 2024",
+    "applicable_law": "KUHPerdata 1244-1246",
+    "locale": "id-ID"
+  },
+  {
+    "id": 15,
+    "category": "auto_renewal",
+    "severity": "high",
+    "industry": "media_sosial_tools",
+    "party": "startup_pengguna",
+    "contract_snippet": "Langganan diperbarui otomatis setiap bulan. Pengguna tidak dapat meminta refund untuk periode yang sudah berjalan meskipun layanan tidak dapat diakses.",
+    "risk_findings": [
+      {
+        "clause_type": "auto_renewal",
+        "severity": "high",
+        "explanation": "Tidak ada refund meskipun layanan tidak dapat diakses melanggar perlindungan konsumen.",
+        "recommendation": "Sertakan SLA minimal 99.5% uptime dengan kompensasi prorata jika tidak tercapai.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Jika uptime di bawah 99%, pengguna berhak mendapat kredit prorata sebesar 10x durasi downtime.",
+    "source_reference": "Kontrak SaaS tools media sosial 2024",
+    "applicable_law": "UU 8/1999 Perlindungan Konsumen Pasal 4",
+    "locale": "id-ID"
+  },
+  {
+    "id": 16,
+    "category": "governing_law",
+    "severity": "medium",
+    "industry": "fashion",
+    "party": "brand_lokal",
+    "contract_snippet": "Semua sengketa dengan distributor asing diselesaikan di pengadilan Hong Kong dengan biaya ditanggung bersama.",
+    "risk_findings": [
+      {
+        "clause_type": "governing_law",
+        "severity": "medium",
+        "explanation": "Yurisdiksi Hong Kong menambah biaya dan kompleksitas bagi brand lokal Indonesia.",
+        "recommendation": "Negosiasikan yurisdiksi netral atau SIAC dengan governing law Indonesia.",
+        "confidence": 0.88
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "foreign_currency",
+        "severity": "medium",
+        "explanation": "Pembayaran dalam USD menimbulkan kewajiban pelaporan transaksi valas ke BI jika melebihi USD 10.000.",
+        "recommendation": "Tambahkan klausul kepatuhan aturan devisa Bank Indonesia.",
+        "applicable_regulation": "PBI No.16/22/PBI/2014"
+      }
+    ],
+    "counter_suggestion": "Sengketa diselesaikan melalui mediasi terlebih dahulu, jika gagal melalui arbitrase SIAC dengan hukum Indonesia.",
+    "source_reference": "Kontrak distribusi fashion Indonesia-HK 2023",
+    "applicable_law": "UU 30/1999 Arbitrase",
+    "locale": "id-ID"
+  },
+  {
+    "id": 17,
+    "category": "limitation_of_liability",
+    "severity": "critical",
+    "industry": "cloud_storage",
+    "party": "pelanggan_enterprise",
+    "contract_snippet": "Penyedia layanan tidak bertanggung jawab atas kehilangan data apapun termasuk akibat kelalaian atau kesalahan sistem penyedia.",
+    "risk_findings": [
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "critical",
+        "explanation": "Pembebasan tanggung jawab total atas kehilangan data termasuk akibat kesalahan sendiri tidak dapat diterima.",
+        "recommendation": "Tetapkan SLA backup, RTO/RPO yang jelas, dan kompensasi minimal 12 bulan langganan untuk kehilangan data.",
+        "confidence": 0.98
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Penyedia bertanggung jawab atas kehilangan data akibat kelalaiannya sendiri dengan kompensasi minimal 12 bulan biaya langganan.",
+    "source_reference": "Kontrak cloud storage enterprise Indonesia 2024",
+    "applicable_law": "UU 11/2008 ITE Pasal 15",
+    "locale": "id-ID"
+  },
+  {
+    "id": 18,
+    "category": "pph21",
+    "severity": "high",
+    "industry": "media",
+    "party": "presenter_freelance",
+    "contract_snippet": "Honor presenter dibayar sebagai biaya produksi tanpa pemotongan pajak. Presenter bertanggung jawab penuh atas pajak penghasilan pribadi.",
+    "risk_findings": [],
+    "tax_findings": [
+      {
+        "issue_type": "pph21",
+        "severity": "high",
+        "explanation": "Honor presenter freelance dikenakan PPh 21 bukan PPh 23. Pemberi kerja wajib memotong dan menyetorkan.",
+        "recommendation": "Pemotongan PPh 21 sesuai tarif progresif dengan NPWP presenter. Tanpa NPWP tarif ditambah 20%.",
+        "applicable_regulation": "UU PPh Pasal 21, PER-16/PJ/2016"
+      }
+    ],
+    "counter_suggestion": "Pemberi kerja memotong PPh 21 sesuai ketentuan perpajakan yang berlaku dan menerbitkan bukti potong 1721-A2.",
+    "source_reference": "Kontrak presenter freelance televisi Indonesia 2023",
+    "applicable_law": "UU 36/2008 PPh Pasal 21",
+    "locale": "id-ID"
+  },
+  {
+    "id": 19,
+    "category": "confidentiality",
+    "severity": "high",
+    "industry": "konsultan_manajemen",
+    "party": "konsultan_senior",
+    "contract_snippet": "Konsultan wajib menyerahkan semua catatan, analisis, dan dokumen yang dibuat selama proyek dan tidak boleh menyimpan salinan apapun termasuk untuk portofolio profesional.",
+    "risk_findings": [
+      {
+        "clause_type": "confidentiality",
+        "severity": "high",
+        "explanation": "Larangan menyimpan salinan termasuk untuk portofolio profesional sangat membatasi pengembangan karir konsultan.",
+        "recommendation": "Izinkan konsultan menyimpan deskripsi umum (tanpa data sensitif) untuk portofolio dengan persetujuan klien.",
+        "confidence": 0.93
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Konsultan menyerahkan semua dokumen proyek kepada Klien. Konsultan diperkenankan mencantumkan nama proyek dalam portofolio tanpa mengungkap data rahasia.",
+    "source_reference": "Kontrak konsultan manajemen Indonesia 2023",
+    "applicable_law": "UU 28/2014 Hak Cipta",
+    "locale": "id-ID"
+  },
+  {
+    "id": 20,
+    "category": "termination",
+    "severity": "high",
+    "industry": "retail_online",
+    "party": "seller_marketplace",
+    "contract_snippet": "Platform dapat menonaktifkan akun seller secara permanen tanpa pemberitahuan dan tanpa kewajiban mengembalikan saldo atau stok yang tertahan.",
+    "risk_findings": [
+      {
+        "clause_type": "termination",
+        "severity": "high",
+        "explanation": "Penonaktifan permanen tanpa pemberitahuan dan tanpa pengembalian aset seller melanggar prinsip keadilan.",
+        "recommendation": "Wajibkan pemberitahuan 30 hari, periode banding 14 hari, dan pengembalian saldo/stok dalam 30 hari.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Platform memberikan pemberitahuan 30 hari sebelum penonaktifan kecuali pelanggaran berat. Saldo dikembalikan dalam 14 hari kerja.",
+    "source_reference": "Syarat dan Ketentuan marketplace Indonesia 2024",
+    "applicable_law": "UU 8/1999 Perlindungan Konsumen",
+    "locale": "id-ID"
+  },
+  {
+    "id": 21,
+    "category": "non_compete",
+    "severity": "high",
+    "industry": "pendidikan_online",
+    "party": "instruktur_freelance",
+    "contract_snippet": "Instruktur dilarang membuat atau menjual kursus serupa di platform lain selama 3 tahun setelah kontrak berakhir.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "high",
+        "explanation": "Larangan 3 tahun di semua platform pendidikan membatasi mata pencaharian instruktur secara tidak proporsional.",
+        "recommendation": "Batasi eksklusivitas selama kontrak aktif saja, atau 6 bulan setelahnya untuk topik yang persis sama.",
+        "confidence": 0.92
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Instruktur tidak membuat kursus dengan konten identik di platform kompetitor langsung selama masa kontrak berlaku.",
+    "source_reference": "Kontrak instruktur e-learning Indonesia 2024",
+    "applicable_law": "UU 13/2003 Ketenagakerjaan",
+    "locale": "id-ID"
+  },
+  {
+    "id": 22,
+    "category": "ip_assignment",
+    "severity": "high",
+    "industry": "fotografi",
+    "party": "fotografer_wedding",
+    "contract_snippet": "Klien berhak menggunakan foto pernikahan untuk keperluan komersial tanpa batas termasuk iklan dan lisensi kepada pihak ketiga tanpa persetujuan fotografer.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "high",
+        "explanation": "Penggunaan komersial dan sublisensing foto tanpa persetujuan fotografer melanggar hak moral fotografer.",
+        "recommendation": "Batasi penggunaan untuk keperluan pribadi keluarga saja. Penggunaan komersial memerlukan perjanjian terpisah.",
+        "confidence": 0.94
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Klien berhak menggunakan foto untuk keperluan pribadi dan media sosial pribadi. Penggunaan komersial memerlukan lisensi terpisah.",
+    "source_reference": "Kontrak fotografer wedding Indonesia 2023",
+    "applicable_law": "UU 28/2014 Hak Cipta Pasal 5",
+    "locale": "id-ID"
+  },
+  {
+    "id": 23,
+    "category": "payment_terms",
+    "severity": "critical",
+    "industry": "teknologi",
+    "party": "vendor_erp",
+    "contract_snippet": "Vendor wajib menyelesaikan implementasi ERP dalam 3 bulan. Keterlambatan dikenai penalti 5% per hari dari nilai kontrak tanpa batas maksimum.",
+    "risk_findings": [
+      {
+        "clause_type": "payment_terms",
+        "severity": "critical",
+        "explanation": "Penalti 5% per hari tanpa batas maksimum dapat melebihi nilai kontrak dalam 20 hari, ini tidak wajar.",
+        "recommendation": "Batasi penalti maksimal 10% dari nilai kontrak dan tetapkan mekanisme force majeure yang jelas.",
+        "confidence": 0.98
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Penalti keterlambatan 0.5% per hari maksimal 10% dari nilai kontrak. Force majeure membebaskan dari penalti.",
+    "source_reference": "Kontrak implementasi ERP Indonesia 2023",
+    "applicable_law": "KUHPerdata 1249",
+    "locale": "id-ID"
+  },
+  {
+    "id": 24,
+    "category": "indemnity",
+    "severity": "high",
+    "industry": "logistik",
+    "party": "mitra_pengemudi",
+    "contract_snippet": "Pengemudi mitra menanggung sepenuhnya biaya kerusakan barang pengiriman termasuk akibat kondisi jalan, bencana alam, atau kondisi di luar kendali pengemudi.",
+    "risk_findings": [
+      {
+        "clause_type": "indemnity",
+        "severity": "high",
+        "explanation": "Pengemudi tidak dapat bertanggung jawab atas kejadian force majeure atau kondisi jalan yang bukan kesalahannya.",
+        "recommendation": "Batasi tanggung jawab pengemudi hanya untuk kelalaian yang terbukti. Asuransikan risiko force majeure.",
+        "confidence": 0.96
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "other",
+        "severity": "low",
+        "explanation": "Status mitra pengemudi sebagai PKWT atau hubungan kemitraan menentukan kewajiban BPJS.",
+        "recommendation": "Klarifikasi status hubungan kerja untuk menentukan kewajiban BPJS Ketenagakerjaan.",
+        "applicable_regulation": "UU 24/2011 BPJS"
+      }
+    ],
+    "counter_suggestion": "Pengemudi bertanggung jawab atas kerusakan akibat kelalaiannya yang terbukti. Risiko force majeure ditanggung platform melalui asuransi.",
+    "source_reference": "Kontrak mitra pengemudi logistik Indonesia 2024",
+    "applicable_law": "KUHPerdata 1365",
+    "locale": "id-ID"
+  },
+  {
+    "id": 25,
+    "category": "auto_renewal",
+    "severity": "medium",
+    "industry": "gym_fitness",
+    "party": "anggota_gym",
+    "contract_snippet": "Keanggotaan diperpanjang otomatis setiap tahun. Pembatalan hanya dapat dilakukan 60 hari sebelum tanggal perpanjangan melalui surat tercatat.",
+    "risk_findings": [
+      {
+        "clause_type": "auto_renewal",
+        "severity": "medium",
+        "explanation": "Perpanjangan otomatis dengan syarat pembatalan 60 hari via surat tercatat memberatkan konsumen.",
+        "recommendation": "Izinkan pembatalan melalui aplikasi atau email dengan notifikasi 30 hari.",
+        "confidence": 0.89
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Keanggotaan diperpanjang otomatis. Anggota dapat membatalkan melalui aplikasi atau email 30 hari sebelum perpanjangan.",
+    "source_reference": "Kontrak keanggotaan gym Indonesia 2023",
+    "applicable_law": "UU 8/1999 Perlindungan Konsumen",
+    "locale": "id-ID"
+  },
+  {
+    "id": 26,
+    "category": "governing_law",
+    "severity": "high",
+    "industry": "startup_agritech",
+    "party": "petani_mitra",
+    "contract_snippet": "Semua sengketa diselesaikan melalui arbitrase internasional di London. Bahasa arbitrase Inggris. Biaya ditanggung pihak yang kalah.",
+    "risk_findings": [
+      {
+        "clause_type": "governing_law",
+        "severity": "high",
+        "explanation": "Arbitrase London dalam bahasa Inggris sangat memberatkan petani mitra Indonesia yang tidak memiliki sumber daya hukum internasional.",
+        "recommendation": "Gunakan mediasi lokal atau BANI dengan bahasa Indonesia sebagai bahasa arbitrase.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Sengketa diselesaikan melalui musyawarah mufakat. Jika gagal, melalui BANI di Jakarta dengan bahasa Indonesia.",
+    "source_reference": "Kontrak agritech dengan petani mitra Indonesia 2024",
+    "applicable_law": "UU 30/1999 Arbitrase",
+    "locale": "id-ID"
+  },
+  {
+    "id": 27,
+    "category": "limitation_of_liability",
+    "severity": "high",
+    "industry": "keamanan_siber",
+    "party": "klien_korporat",
+    "contract_snippet": "Konsultan keamanan siber tidak bertanggung jawab atas kebocoran data yang terjadi setelah audit selesai meskipun ditemukan celah yang belum diperbaiki.",
+    "risk_findings": [
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "high",
+        "explanation": "Pembebasan tanggung jawab atas celah yang diketahui namun belum dilaporkan dengan benar tidak dapat diterima.",
+        "recommendation": "Konsultan wajib mendokumentasikan semua celah dan bertanggung jawab jika laporan tidak disampaikan tepat waktu.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Konsultan bertanggung jawab atas kelalaian dalam pelaporan celah keamanan yang ditemukan selama periode audit.",
+    "source_reference": "Kontrak security audit Indonesia 2024",
+    "applicable_law": "UU 11/2008 ITE",
+    "locale": "id-ID"
+  },
+  {
+    "id": 28,
+    "category": "pph23",
+    "severity": "high",
+    "industry": "properti",
+    "party": "agen_properti_independen",
+    "contract_snippet": "Komisi agen 2% dari nilai transaksi dibayarkan gross tanpa pemotongan pajak. Agen bertanggung jawab penuh atas pajak.",
+    "risk_findings": [],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "high",
+        "explanation": "Komisi agen properti atas jasa perantara dikenakan PPh 23 sebesar 2% yang wajib dipotong pemberi komisi.",
+        "recommendation": "Pengembang atau pembeli wajib memotong PPh 23 dari komisi agen dan menerbitkan bukti potong.",
+        "applicable_regulation": "UU PPh Pasal 23 ayat 1 huruf c"
+      }
+    ],
+    "counter_suggestion": "Komisi dibayarkan setelah dipotong PPh 23 sebesar 2%. Pemberi komisi menerbitkan bukti potong dalam 5 hari kerja.",
+    "source_reference": "Kontrak agen properti Indonesia 2023",
+    "applicable_law": "UU 36/2008 PPh",
+    "locale": "id-ID"
+  },
+  {
+    "id": 29,
+    "category": "confidentiality",
+    "severity": "medium",
+    "industry": "riset_pasar",
+    "party": "researcher_freelance",
+    "contract_snippet": "Peneliti dilarang mempublikasikan atau mendiskusikan metodologi penelitian yang dikembangkan sendiri selama proyek berlangsung atau setelahnya.",
+    "risk_findings": [
+      {
+        "clause_type": "confidentiality",
+        "severity": "medium",
+        "explanation": "Pelarangan metodologi yang dikembangkan peneliti sendiri menghambat perkembangan ilmiah dan karir profesional.",
+        "recommendation": "Bedakan antara data klien yang rahasia dengan metodologi umum yang dapat dipublikasikan.",
+        "confidence": 0.9
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Peneliti menjaga kerahasiaan data dan temuan klien. Metodologi umum dapat dipublikasikan dalam forum akademis.",
+    "source_reference": "Kontrak riset pasar freelance Indonesia 2023",
+    "applicable_law": "UU 18/2002 Iptek",
+    "locale": "id-ID"
+  },
+  {
+    "id": 30,
+    "category": "termination",
+    "severity": "medium",
+    "industry": "jasa_kebersihan",
+    "party": "penyedia_jasa_cleaning",
+    "contract_snippet": "Klien dapat mengakhiri kontrak jasa kebersihan kapan saja dengan pemberitahuan 24 jam. Tidak ada kompensasi untuk tim yang sudah dijadwalkan.",
+    "risk_findings": [
+      {
+        "clause_type": "termination",
+        "severity": "medium",
+        "explanation": "Pemberitahuan 24 jam tidak cukup bagi penyedia jasa untuk menyesuaikan jadwal dan kompensasi tim.",
+        "recommendation": "Perpanjang notice period menjadi 14 hari dan sertakan kompensasi untuk jadwal yang sudah terkonfirmasi.",
+        "confidence": 0.91
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Penghentian layanan dengan pemberitahuan 14 hari. Klien wajib membayar jadwal yang sudah terkonfirmasi dalam 7 hari ke depan.",
+    "source_reference": "Kontrak jasa kebersihan korporat Indonesia 2023",
+    "applicable_law": "KUHPerdata 1338",
+    "locale": "id-ID"
+  },
+  {
+    "id": 31,
+    "category": "non_compete",
+    "severity": "critical",
+    "industry": "farmasi",
+    "party": "apoteker_freelance",
+    "contract_snippet": "Apoteker dilarang bekerja di apotek atau klinik manapun dalam radius 10 km selama 3 tahun setelah kontrak berakhir.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "critical",
+        "explanation": "Larangan 10 km selama 3 tahun untuk apoteker menghambat hak bekerja di profesi yang sangat dibutuhkan masyarakat.",
+        "recommendation": "Batasi 6 bulan dan hanya untuk apotek kompetitor langsung, bukan semua apotek.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Apoteker tidak bekerja di apotek yang berstatus kompetitor langsung dalam radius 2 km selama 6 bulan setelah kontrak.",
+    "source_reference": "Kontrak apoteker freelance Indonesia 2023",
+    "applicable_law": "UU 36/2009 Kesehatan",
+    "locale": "id-ID"
+  },
+  {
+    "id": 32,
+    "category": "ip_assignment",
+    "severity": "critical",
+    "industry": "software_house",
+    "party": "developer_kontrak",
+    "contract_snippet": "Semua kode, library, framework, dan tool yang digunakan atau dikembangkan developer selama kontrak menjadi milik klien termasuk open source contributions.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "critical",
+        "explanation": "Klaim kepemilikan atas kontribusi open source dan library pihak ketiga melanggar lisensi open source (GPL, MIT, dll).",
+        "recommendation": "Batasi IP assignment hanya untuk kode yang dibuat khusus untuk proyek klien, bukan library atau open source contributions.",
+        "confidence": 0.99
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Klien memiliki hak atas source code yang dibuat khusus untuk proyek ini. Library open source tetap tunduk pada lisensi aslinya.",
+    "source_reference": "Kontrak software developer Indonesia 2024",
+    "applicable_law": "UU 28/2014 Hak Cipta, MIT/GPL License",
+    "locale": "id-ID"
+  },
+  {
+    "id": 33,
+    "category": "payment_terms",
+    "severity": "high",
+    "industry": "event_organizer",
+    "party": "vendor_catering",
+    "contract_snippet": "DP 50% dibayar di muka. Sisa 50% dibayar dalam 60 hari setelah event. Klien berhak memotong pembayaran sepihak untuk ketidakpuasan apapun.",
+    "risk_findings": [
+      {
+        "clause_type": "payment_terms",
+        "severity": "high",
+        "explanation": "Pemotongan pembayaran sepihak tanpa prosedur klaim formal menciptakan risiko tidak dibayar penuh.",
+        "recommendation": "Tetapkan prosedur klaim tertulis dalam 48 jam setelah event dengan bukti pendukung.",
+        "confidence": 0.94
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Jasa katering untuk acara korporat dikenakan PPh 23 sebesar 2%.",
+        "recommendation": "Sertakan klausul kewajiban pemotongan PPh 23 oleh klien korporat.",
+        "applicable_regulation": "UU PPh Pasal 23"
+      }
+    ],
+    "counter_suggestion": "Klaim pengurangan pembayaran disampaikan tertulis dalam 24 jam setelah event dengan bukti foto/video. Sisa pembayaran dalam 30 hari.",
+    "source_reference": "Kontrak vendor katering event Jakarta 2023",
+    "applicable_law": "KUHPerdata 1338",
+    "locale": "id-ID"
+  },
+  {
+    "id": 34,
+    "category": "indemnity",
+    "severity": "high",
+    "industry": "media_digital",
+    "party": "influencer",
+    "contract_snippet": "Influencer menanggung seluruh risiko hukum atas konten yang dibuat sesuai brief brand tanpa pengecualian, termasuk tuntutan konsumen atas klaim produk.",
+    "risk_findings": [
+      {
+        "clause_type": "indemnity",
+        "severity": "high",
+        "explanation": "Influencer tidak seharusnya menanggung risiko hukum atas klaim produk yang dibuat brand dalam brief.",
+        "recommendation": "Brand menanggung tanggung jawab atas akurasi klaim produk. Influencer hanya bertanggung jawab atas konten yang ditambahkan di luar brief.",
+        "confidence": 0.96
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Endorsement fee influencer dikenakan PPh 23 2% yang dipotong brand.",
+        "recommendation": "Brand memotong PPh 23 dari endorsement fee dan menerbitkan bukti potong.",
+        "applicable_regulation": "UU PPh Pasal 23"
+      }
+    ],
+    "counter_suggestion": "Brand bertanggung jawab atas akurasi klaim produk dalam brief. Influencer bertanggung jawab atas tambahan klaim di luar brief yang tidak disetujui brand.",
+    "source_reference": "Kontrak endorsement influencer Indonesia 2024",
+    "applicable_law": "UU 8/1999 Perlindungan Konsumen",
+    "locale": "id-ID"
+  },
+  {
+    "id": 35,
+    "category": "auto_renewal",
+    "severity": "high",
+    "industry": "asuransi",
+    "party": "pemegang_polis",
+    "contract_snippet": "Polis diperpanjang otomatis dengan kenaikan premi hingga 30% per tahun tanpa persetujuan pemegang polis. Pembatalan dikenai surrender charge 80% dari premi.",
+    "risk_findings": [
+      {
+        "clause_type": "auto_renewal",
+        "severity": "high",
+        "explanation": "Kenaikan premi 30% otomatis dan surrender charge 80% melanggar prinsip perlindungan konsumen asuransi.",
+        "recommendation": "Kenaikan premi wajib dinotifikasikan 60 hari sebelumnya. Surrender charge maksimal 10% setelah tahun ke-3.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Kenaikan premi dinotifikasikan 60 hari sebelum perpanjangan. Pemegang polis dapat membatalkan tanpa penalti dalam 30 hari setelah notifikasi.",
+    "source_reference": "Polis asuransi jiwa Indonesia 2023",
+    "applicable_law": "UU 40/2014 Perasuransian, POJK 69/2016",
+    "locale": "id-ID"
+  },
+  {
+    "id": 36,
+    "category": "governing_law",
+    "severity": "medium",
+    "industry": "impor_ekspor",
+    "party": "importir_lokal",
+    "contract_snippet": "Governing law Singapore. Pembayaran dalam USD. Sengketa melalui ICC arbitration Paris.",
+    "risk_findings": [
+      {
+        "clause_type": "governing_law",
+        "severity": "medium",
+        "explanation": "Kombinasi Singapore law, USD payment, dan ICC Paris menciptakan beban kepatuhan multi-yurisdiksi untuk importir lokal.",
+        "recommendation": "Negosiasikan Indonesian law dengan USD payment yang diperbolehkan BI, dan SIAC sebagai forum arbitrase.",
+        "confidence": 0.87
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "foreign_currency",
+        "severity": "high",
+        "explanation": "Transaksi impor dalam USD di atas threshold wajib dilaporkan ke BI dan mengikuti ketentuan DHE.",
+        "recommendation": "Pastikan kepatuhan Devisa Hasil Ekspor-Impor sesuai PBI terbaru.",
+        "applicable_regulation": "PBI No.21/14/PBI/2019"
+      }
+    ],
+    "counter_suggestion": "Governing law Indonesia. Pembayaran USD sesuai ketentuan BI. Sengketa melalui BANI Jakarta.",
+    "source_reference": "Kontrak impor barang consumer goods Indonesia 2023",
+    "applicable_law": "UU 7/2014 Perdagangan",
+    "locale": "id-ID"
+  },
+  {
+    "id": 37,
+    "category": "limitation_of_liability",
+    "severity": "critical",
+    "industry": "medtech",
+    "party": "klinik_pelanggan",
+    "contract_snippet": "Vendor software klinik tidak bertanggung jawab atas kesalahan data pasien, misdiagnosis akibat bug sistem, atau downtime yang mengakibatkan keterlambatan penanganan medis.",
+    "risk_findings": [
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "critical",
+        "explanation": "Pembebasan tanggung jawab total untuk software medis yang dapat berdampak pada keselamatan pasien tidak dapat diterima secara etis dan hukum.",
+        "recommendation": "Vendor wajib memiliki SLA 99.9%, asuransi professional liability, dan bertanggung jawab atas kerugian langsung akibat bug kritis.",
+        "confidence": 0.99
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Vendor bertanggung jawab atas kerugian langsung akibat bug kritis yang dilaporkan dan tidak diperbaiki dalam SLA yang disepakati.",
+    "source_reference": "Kontrak software klinik Indonesia 2024",
+    "applicable_law": "UU 36/2009 Kesehatan, UU 11/2008 ITE",
+    "locale": "id-ID"
+  },
+  {
+    "id": 38,
+    "category": "pph23",
+    "severity": "medium",
+    "industry": "jasa_riset",
+    "party": "lembaga_riset_independen",
+    "contract_snippet": "Biaya riset dibayarkan sebagai penggantian biaya tanpa pemotongan pajak apapun dengan alasan bukan penghasilan.",
+    "risk_findings": [],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Biaya riset yang diterima lembaga riset tetap merupakan penghasilan jasa yang dikenakan PPh 23 meski disebut penggantian biaya.",
+        "recommendation": "Pisahkan antara fee jasa (kena PPh 23) dan reimburstment biaya (tidak kena PPh jika didukung bukti asli).",
+        "applicable_regulation": "SE-35/PJ/2010"
+      }
+    ],
+    "counter_suggestion": "Fee jasa riset dikenakan PPh 23 2%. Penggantian biaya nyata dengan bukti asli tidak dikenakan PPh 23.",
+    "source_reference": "Kontrak riset independen Indonesia 2023",
+    "applicable_law": "UU 36/2008 PPh Pasal 23",
+    "locale": "id-ID"
+  },
+  {
+    "id": 39,
+    "category": "confidentiality",
+    "severity": "high",
+    "industry": "hukum",
+    "party": "paralegal_freelance",
+    "contract_snippet": "Paralegal wajib melaporkan kepada klien semua informasi yang diperoleh dari pihak ketiga terkait kasus termasuk komunikasi privileged antara pengacara dan kliennya.",
+    "risk_findings": [
+      {
+        "clause_type": "confidentiality",
+        "severity": "high",
+        "explanation": "Kewajiban melaporkan komunikasi privileged attorney-client melanggar etika hukum dan peraturan profesi advokat.",
+        "recommendation": "Hapus kewajiban melaporkan komunikasi yang dilindungi privilege. Klausul ini tidak dapat dilaksanakan secara hukum.",
+        "confidence": 0.98
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Paralegal menjaga kerahasiaan seluruh informasi kasus klien. Dilarang mengungkap komunikasi yang dilindungi attorney-client privilege.",
+    "source_reference": "Kontrak paralegal freelance Indonesia 2023",
+    "applicable_law": "UU 18/2003 Advokat Pasal 19",
+    "locale": "id-ID"
+  },
+  {
+    "id": 40,
+    "category": "termination",
+    "severity": "critical",
+    "industry": "startup",
+    "party": "co_founder",
+    "contract_snippet": "Co-founder yang mengundurkan diri atau diberhentikan kehilangan seluruh saham dan opsi yang belum di-vest tanpa kompensasi. Vesting cliff 4 tahun tanpa acceleration clause.",
+    "risk_findings": [
+      {
+        "clause_type": "termination",
+        "severity": "critical",
+        "explanation": "Kehilangan seluruh saham tanpa acceleration clause untuk termination without cause sangat merugikan co-founder.",
+        "recommendation": "Tambahkan acceleration clause: single trigger 50% dan double trigger 100% untuk termination without cause atau change of control.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "other",
+        "severity": "medium",
+        "explanation": "Pengalihan saham co-founder dikenakan PPh atas capital gain dan wajib dilaporkan dalam SPT tahunan.",
+        "recommendation": "Pastikan struktur vesting memperhitungkan implikasi pajak pengalihan saham.",
+        "applicable_regulation": "UU 36/2008 PPh Pasal 4 ayat 2"
+      }
+    ],
+    "counter_suggestion": "Co-founder mendapat single trigger acceleration 50% jika diberhentikan without cause dan double trigger 100% jika terjadi change of control.",
+    "source_reference": "Founders agreement startup Indonesia 2024",
+    "applicable_law": "UU 40/2007 Perseroan Terbatas",
+    "locale": "id-ID"
+  },
+  {
+    "id": 41,
+    "category": "non_compete",
+    "severity": "medium",
+    "industry": "kuliner",
+    "party": "chef_freelance",
+    "contract_snippet": "Chef dilarang membuka usaha kuliner sejenis dalam radius 5 km selama 2 tahun setelah kontrak.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "medium",
+        "explanation": "Radius 5 km dan 2 tahun untuk chef freelance membatasi mata pencaharian secara tidak proporsional.",
+        "recommendation": "Batasi 6 bulan dan radius 1 km dari lokasi restoran klien.",
+        "confidence": 0.88
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Chef tidak membuka usaha kuliner dalam radius 500 meter dari lokasi klien selama 6 bulan setelah kontrak berakhir.",
+    "source_reference": "Kontrak chef freelance Jakarta 2023",
+    "applicable_law": "UU 13/2003",
+    "locale": "id-ID"
+  },
+  {
+    "id": 42,
+    "category": "ip_assignment",
+    "severity": "high",
+    "industry": "game_development",
+    "party": "indie_game_developer",
+    "contract_snippet": "Publisher berhak mengubah, memodifikasi, sequel, atau membuat franchise dari game tanpa persetujuan developer asli dan tanpa royalti tambahan.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "high",
+        "explanation": "Hak modifikasi dan franchise tanpa persetujuan developer asli menghilangkan kontrol kreatif developer.",
+        "recommendation": "Tetapkan hak moral developer, royalti 10-15% untuk sekuel, dan hak veto atas perubahan substantif.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Publisher dapat membuat sekuel atas persetujuan developer dengan royalti 12% dari pendapatan bersih sekuel tersebut.",
+    "source_reference": "Kontrak publishing game Indonesia 2024",
+    "applicable_law": "UU 28/2014 Hak Cipta",
+    "locale": "id-ID"
+  },
+  {
+    "id": 43,
+    "category": "payment_terms",
+    "severity": "high",
+    "industry": "jasa_hukum",
+    "party": "pengacara_junior",
+    "contract_snippet": "Fee pengacara dibayar success-based saja. Tidak ada pembayaran untuk jam kerja jika kasus kalah meskipun berlangsung bertahun-tahun.",
+    "risk_findings": [
+      {
+        "clause_type": "payment_terms",
+        "severity": "high",
+        "explanation": "Pure contingency fee tanpa retainer untuk kasus panjang tidak adil bagi pengacara junior.",
+        "recommendation": "Tambahkan retainer bulanan minimal dan success fee yang lebih tinggi untuk mengkompensasi risiko.",
+        "confidence": 0.93
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Fee pengacara dari klien korporat dikenakan PPh 23 2%.",
+        "recommendation": "Klien korporat wajib memotong PPh 23 dari pembayaran fee pengacara.",
+        "applicable_regulation": "UU PPh Pasal 23"
+      }
+    ],
+    "counter_suggestion": "Retainer Rp5 juta/bulan plus success fee 15% dari nilai gugatan yang berhasil. Retainer dideduct dari success fee.",
+    "source_reference": "Kontrak pengacara junior Indonesia 2023",
+    "applicable_law": "UU 18/2003 Advokat",
+    "locale": "id-ID"
+  },
+  {
+    "id": 44,
+    "category": "indemnity",
+    "severity": "medium",
+    "industry": "jasa_keamanan",
+    "party": "vendor_security",
+    "contract_snippet": "Vendor keamanan menanggung seluruh kerugian akibat kehilangan aset klien selama masa penjagaan termasuk force majeure dan bencana alam.",
+    "risk_findings": [
+      {
+        "clause_type": "indemnity",
+        "severity": "medium",
+        "explanation": "Tanggung jawab atas force majeure dan bencana alam tidak dapat dibebankan kepada vendor keamanan.",
+        "recommendation": "Batasi tanggung jawab pada kelalaian yang terbukti dan wajibkan asuransi liability.",
+        "confidence": 0.91
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Vendor bertanggung jawab atas kehilangan aset akibat kelalaian petugasnya. Risiko force majeure dikecualikan dan diasuransikan terpisah.",
+    "source_reference": "Kontrak jasa keamanan korporat Indonesia 2023",
+    "applicable_law": "KUHPerdata 1244",
+    "locale": "id-ID"
+  },
+  {
+    "id": 45,
+    "category": "auto_renewal",
+    "severity": "medium",
+    "industry": "software_akuntansi",
+    "party": "umkm_pengguna",
+    "contract_snippet": "Lisensi software diperpanjang otomatis. Harga dapat dinaikkan hingga 50% tanpa persetujuan pengguna asal diberitahukan 7 hari sebelumnya.",
+    "risk_findings": [
+      {
+        "clause_type": "auto_renewal",
+        "severity": "medium",
+        "explanation": "Kenaikan harga 50% dengan notifikasi hanya 7 hari tidak memberikan cukup waktu bagi UMKM untuk beradaptasi.",
+        "recommendation": "Notifikasi kenaikan harga minimal 60 hari sebelumnya dengan hak keluar tanpa penalti jika kenaikan melebihi 10%.",
+        "confidence": 0.92
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Kenaikan harga dinotifikasikan 60 hari sebelumnya. Pengguna berhak membatalkan tanpa penalti jika kenaikan melebihi 15%.",
+    "source_reference": "Kontrak software akuntansi UMKM Indonesia 2024",
+    "applicable_law": "UU 8/1999 Perlindungan Konsumen",
+    "locale": "id-ID"
+  },
+  {
+    "id": 46,
+    "category": "governing_law",
+    "severity": "high",
+    "industry": "fintech_lending",
+    "party": "peminjam_individu",
+    "contract_snippet": "Perjanjian pinjaman tunduk pada hukum Cayman Islands. Sengketa melalui arbitrase di Singapura. Peminjam melepaskan hak untuk mengajukan class action.",
+    "risk_findings": [
+      {
+        "clause_type": "governing_law",
+        "severity": "high",
+        "explanation": "Hukum Cayman Islands dan pelepasan hak class action sangat tidak adil bagi peminjam individu Indonesia.",
+        "recommendation": "Gunakan hukum Indonesia dan yurisdiksi OJK/Pengadilan Negeri. Class action waiver tidak sah menurut hukum Indonesia.",
+        "confidence": 0.98
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Perjanjian tunduk hukum Indonesia. Sengketa diselesaikan melalui OJK atau Pengadilan Negeri domisili peminjam.",
+    "source_reference": "Kontrak pinjaman P2P lending Indonesia 2024",
+    "applicable_law": "POJK 77/2016, UU 8/1999",
+    "locale": "id-ID"
+  },
+  {
+    "id": 47,
+    "category": "limitation_of_liability",
+    "severity": "high",
+    "industry": "telekomunikasi",
+    "party": "pelanggan_bisnis",
+    "contract_snippet": "Operator telekomunikasi tidak bertanggung jawab atas gangguan layanan lebih dari 72 jam berturut-turut. Kompensasi maksimal Rp50.000 per insiden.",
+    "risk_findings": [
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "high",
+        "explanation": "Kompensasi Rp50.000 untuk downtime 72 jam tidak proporsional untuk pelanggan bisnis yang kehilangan jutaan rupiah pendapatan.",
+        "recommendation": "Kompensasi prorata berdasarkan nilai kontrak bulanan plus penalti SLA jika downtime melebihi threshold.",
+        "confidence": 0.94
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Kompensasi downtime 10x prorata biaya bulanan untuk setiap jam downtime di luar SLA yang disepakati.",
+    "source_reference": "Kontrak internet bisnis Indonesia 2024",
+    "applicable_law": "UU 36/1999 Telekomunikasi",
+    "locale": "id-ID"
+  },
+  {
+    "id": 48,
+    "category": "pph23",
+    "severity": "high",
+    "industry": "periklanan",
+    "party": "biro_iklan",
+    "contract_snippet": "Fee kreatif dan media placement dibundel dalam satu invoice tanpa pemisahan. Klien tidak memotong pajak dengan alasan bukan jasa.",
+    "risk_findings": [],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "high",
+        "explanation": "Fee jasa kreatif biro iklan dikenakan PPh 23 2%. Pembunduan dengan media placement tidak menghilangkan kewajiban pajak atas komponen jasa.",
+        "recommendation": "Pisahkan fee jasa kreatif dari biaya media placement dalam invoice. PPh 23 dipotong dari komponen jasa.",
+        "applicable_regulation": "UU PPh Pasal 23, SE-53/PJ/2009"
+      }
+    ],
+    "counter_suggestion": "Invoice dipisahkan: fee jasa kreatif (kena PPh 23 2%) dan biaya media placement (pass-through, tidak kena PPh 23).",
+    "source_reference": "Kontrak biro iklan Indonesia 2023",
+    "applicable_law": "UU 36/2008 PPh",
+    "locale": "id-ID"
+  },
+  {
+    "id": 49,
+    "category": "confidentiality",
+    "severity": "medium",
+    "industry": "teknologi_kesehatan",
+    "party": "developer_aplikasi_kesehatan",
+    "contract_snippet": "Developer wajib menjaga kerahasiaan data kesehatan pasien sesuai kebijakan internal perusahaan yang dapat berubah sewaktu-waktu tanpa pemberitahuan.",
+    "risk_findings": [
+      {
+        "clause_type": "confidentiality",
+        "severity": "medium",
+        "explanation": "Kewajiban kerahasiaan yang mengacu pada kebijakan yang dapat berubah sepihak menciptakan ketidakpastian hukum.",
+        "recommendation": "Tetapkan standar minimum kerahasiaan dalam kontrak yang tidak dapat diubah tanpa persetujuan kedua pihak.",
+        "confidence": 0.9
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Standar kerahasiaan data kesehatan mengikuti UU 27/2022 Perlindungan Data Pribadi dan tidak dapat dikurangi tanpa persetujuan tertulis developer.",
+    "source_reference": "Kontrak developer aplikasi kesehatan Indonesia 2024",
+    "applicable_law": "UU 27/2022 PDP, UU 36/2009 Kesehatan",
+    "locale": "id-ID"
+  },
+  {
+    "id": 50,
+    "category": "termination",
+    "severity": "high",
+    "industry": "pendidikan",
+    "party": "guru_les_privat",
+    "contract_snippet": "Lembaga bimbel dapat memberhentikan guru kapan saja tanpa alasan. Guru tidak berhak atas kompensasi apapun termasuk gaji bulan berjalan yang sudah diajarkan.",
+    "risk_findings": [
+      {
+        "clause_type": "termination",
+        "severity": "high",
+        "explanation": "Pemberhentian tanpa kompensasi termasuk gaji yang sudah diperoleh melanggar hak dasar pekerja.",
+        "recommendation": "Guru berhak atas kompensasi proporsional untuk jam mengajar yang sudah dilaksanakan. Notice period minimal 14 hari.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Pemberhentian dengan pemberitahuan 14 hari. Guru berhak atas pembayaran penuh untuk semua jam mengajar yang sudah dilaksanakan.",
+    "source_reference": "Kontrak guru bimbel Indonesia 2023",
+    "applicable_law": "UU 13/2003 Ketenagakerjaan Pasal 156",
+    "locale": "id-ID"
+  },
+  {
+    "id": 51,
+    "category": "non_compete",
+    "severity": "high",
+    "industry": "keuangan",
+    "party": "analis_keuangan_freelance",
+    "contract_snippet": "Analis dilarang memberikan jasa analisis keuangan kepada perusahaan manapun yang terdaftar di BEI selama 2 tahun setelah kontrak.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "high",
+        "explanation": "Larangan bekerja untuk semua perusahaan publik BEI selama 2 tahun terlalu luas dan menghambat karir analis.",
+        "recommendation": "Batasi pada perusahaan di sektor industri yang sama dengan klien selama 6 bulan.",
+        "confidence": 0.94
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Analis tidak memberikan jasa kepada 5 kompetitor langsung yang tercantum dalam Lampiran A selama 6 bulan setelah kontrak.",
+    "source_reference": "Kontrak analis keuangan independen Indonesia 2023",
+    "applicable_law": "UU 8/1995 Pasar Modal",
+    "locale": "id-ID"
+  },
+  {
+    "id": 52,
+    "category": "ip_assignment",
+    "severity": "medium",
+    "industry": "arsitektur",
+    "party": "arsitek_freelance",
+    "contract_snippet": "Desain arsitektur yang dibuat arsitek menjadi milik klien. Arsitek tidak dapat menampilkan desain tersebut dalam portofolio profesionalnya.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "medium",
+        "explanation": "Larangan menampilkan karya dalam portofolio menghambat perkembangan karir arsitek secara tidak perlu.",
+        "recommendation": "Izinkan arsitek menampilkan foto dan deskripsi proyek dalam portofolio tanpa mengungkap data rahasia klien.",
+        "confidence": 0.89
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Arsitek diperkenankan menampilkan desain dalam portofolio profesional dengan mencantumkan nama proyek dan tahun, tanpa data pribadi klien.",
+    "source_reference": "Kontrak arsitek freelance Indonesia 2023",
+    "applicable_law": "UU 28/2014 Hak Cipta, IAI",
+    "locale": "id-ID"
+  },
+  {
+    "id": 53,
+    "category": "payment_terms",
+    "severity": "medium",
+    "industry": "jasa_terjemahan",
+    "party": "penerjemah_freelance",
+    "contract_snippet": "Pembayaran per halaman dihitung oleh klien secara sepihak. Klien berhak mengurangi hitungan halaman jika menilai terjemahan perlu direvisi besar.",
+    "risk_findings": [
+      {
+        "clause_type": "payment_terms",
+        "severity": "medium",
+        "explanation": "Hitungan halaman dan pengurangan sepihak tanpa standar jelas menciptakan potensi underpayment.",
+        "recommendation": "Tetapkan standar hitungan halaman yang jelas (misal 250 kata per halaman) dan prosedur revisi yang tidak mengurangi pembayaran.",
+        "confidence": 0.9
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Pembayaran dihitung berdasarkan jumlah kata terjemahan (1 halaman = 250 kata). Revisi tidak mengurangi pembayaran kecuali kesalahan yang terbukti.",
+    "source_reference": "Kontrak penerjemah freelance Indonesia 2023",
+    "applicable_law": "KUHPerdata 1338",
+    "locale": "id-ID"
+  },
+  {
+    "id": 54,
+    "category": "indemnity",
+    "severity": "critical",
+    "industry": "kesehatan",
+    "party": "dokter_konsulen",
+    "contract_snippet": "Dokter konsulen menanggung seluruh biaya malpraktik termasuk kasus yang timbul dari keputusan rumah sakit yang dibuat tanpa konsultasi dokter.",
+    "risk_findings": [
+      {
+        "clause_type": "indemnity",
+        "severity": "critical",
+        "explanation": "Dokter tidak dapat bertanggung jawab atas keputusan medis yang dibuat rumah sakit tanpa konsultasinya.",
+        "recommendation": "Tanggung jawab malpraktik hanya untuk tindakan medis yang dilakukan langsung oleh dokter konsulen dengan dokumentasi lengkap.",
+        "confidence": 0.99
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Dokter konsulen bertanggung jawab atas tindakan medis yang dilakukannya sendiri. Rumah sakit menanggung keputusan yang dibuat tanpa konsultasi dokter.",
+    "source_reference": "Kontrak dokter konsulen Indonesia 2024",
+    "applicable_law": "UU 29/2004 Praktik Kedokteran",
+    "locale": "id-ID"
+  },
+  {
+    "id": 55,
+    "category": "auto_renewal",
+    "severity": "low",
+    "industry": "domain_hosting",
+    "party": "pemilik_website",
+    "contract_snippet": "Domain diperpanjang otomatis. Email notifikasi dikirim ke alamat email yang mungkin sudah tidak aktif. Tidak ada metode notifikasi alternatif.",
+    "risk_findings": [
+      {
+        "clause_type": "auto_renewal",
+        "severity": "low",
+        "explanation": "Notifikasi hanya via email yang mungkin tidak aktif menciptakan risiko perpanjangan tidak disadari.",
+        "recommendation": "Tambahkan notifikasi SMS atau WhatsApp sebagai alternatif dan opsi penolakan perpanjangan di panel kontrol.",
+        "confidence": 0.85
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Notifikasi perpanjangan dikirim via email, SMS, dan notifikasi push 60 dan 30 hari sebelum jatuh tempo.",
+    "source_reference": "Kontrak domain hosting Indonesia 2023",
+    "applicable_law": "UU 8/1999 Perlindungan Konsumen",
+    "locale": "id-ID"
+  },
+  {
+    "id": 56,
+    "category": "governing_law",
+    "severity": "medium",
+    "industry": "franchise",
+    "party": "franchisee_lokal",
+    "contract_snippet": "Franchisor asing menetapkan hukum Amerika sebagai governing law dan melarang franchisee mengajukan gugatan di pengadilan Indonesia.",
+    "risk_findings": [
+      {
+        "clause_type": "governing_law",
+        "severity": "medium",
+        "explanation": "Pelarangan gugatan di pengadilan Indonesia bagi franchisee lokal berpotensi melanggar ketertiban umum Indonesia.",
+        "recommendation": "Tambahkan pilihan forum pengadilan Indonesia untuk sengketa operasional lokal di samping arbitrase internasional.",
+        "confidence": 0.91
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Royalti franchise kepada pihak asing dikenakan withholding tax 20% atau sesuai tax treaty.",
+        "recommendation": "Verifikasi keberadaan tax treaty antara Indonesia dan negara franchisor untuk menentukan tarif yang berlaku.",
+        "applicable_regulation": "UU 36/2008 PPh Pasal 26"
+      }
+    ],
+    "counter_suggestion": "Sengketa operasional diselesaikan di pengadilan Indonesia. Sengketa franchise agreement dapat melalui ICC dengan hukum Indonesia.",
+    "source_reference": "Kontrak franchise F&B Indonesia 2024",
+    "applicable_law": "PP 42/2007 Waralaba",
+    "locale": "id-ID"
+  },
+  {
+    "id": 57,
+    "category": "limitation_of_liability",
+    "severity": "medium",
+    "industry": "jasa_pengiriman",
+    "party": "e_commerce_seller",
+    "contract_snippet": "Jasa pengiriman bertanggung jawab maksimal Rp500.000 per paket terlepas dari nilai barang yang dikirim tanpa opsi asuransi tambahan.",
+    "risk_findings": [
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "medium",
+        "explanation": "Cap Rp500.000 tanpa opsi asuransi tidak adil untuk pengiriman barang bernilai tinggi.",
+        "recommendation": "Wajibkan opsi asuransi pengiriman dan tingkatkan kompensasi default minimal ke 10x ongkir.",
+        "confidence": 0.9
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Kompensasi default 10x ongkir atau nilai barang yang dideklarasikan, mana yang lebih rendah. Asuransi tambahan tersedia untuk nilai lebih tinggi.",
+    "source_reference": "Kontrak jasa pengiriman e-commerce Indonesia 2024",
+    "applicable_law": "UU 38/2009 Pos",
+    "locale": "id-ID"
+  },
+  {
+    "id": 58,
+    "category": "pph21",
+    "severity": "high",
+    "industry": "konstruksi",
+    "party": "mandor_harian",
+    "contract_snippet": "Upah harian mandor dibayar tunai tanpa pemotongan pajak dan tanpa pencatatan resmi dengan alasan di bawah PTKP.",
+    "risk_findings": [],
+    "tax_findings": [
+      {
+        "issue_type": "pph21",
+        "severity": "high",
+        "explanation": "Penghasilan mandor di atas PTKP wajib dipotong PPh 21. Pembayaran tunai tidak menghilangkan kewajiban pajak jika penghasilan melebihi PTKP.",
+        "recommendation": "Hitung akumulasi upah harian. Jika melebihi PTKP, wajib dipotong PPh 21 dan diberikan bukti potong.",
+        "applicable_regulation": "UU PPh Pasal 21, PER-16/PJ/2016"
+      }
+    ],
+    "counter_suggestion": "Upah harian dihitung akumulasinya. PPh 21 dipotong dan disetorkan jika akumulasi melebihi PTKP. Bukti potong diterbitkan setiap bulan.",
+    "source_reference": "Kontrak harian mandor konstruksi Indonesia 2023",
+    "applicable_law": "UU 36/2008 PPh Pasal 21",
+    "locale": "id-ID"
+  },
+  {
+    "id": 59,
+    "category": "confidentiality",
+    "severity": "low",
+    "industry": "event_organizer",
+    "party": "vendor_dekorasi",
+    "contract_snippet": "Vendor dekorasi wajib merahasiakan konsep dekorasi event selama 5 tahun meskipun konsep tersebut umum digunakan di industri.",
+    "risk_findings": [
+      {
+        "clause_type": "confidentiality",
+        "severity": "low",
+        "explanation": "Merahasiakan konsep dekorasi yang sudah umum digunakan di industri tidak dapat ditegakkan dan menghambat pekerjaan vendor.",
+        "recommendation": "Batasi kerahasiaan pada elemen unik dan spesifik yang benar-benar merupakan rahasia dagang klien.",
+        "confidence": 0.82
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Vendor menjaga kerahasiaan elemen desain unik yang secara tertulis ditetapkan sebagai rahasia dagang klien dalam Lampiran Kerahasiaan.",
+    "source_reference": "Kontrak vendor dekorasi event Indonesia 2023",
+    "applicable_law": "UU 30/2000 Rahasia Dagang",
+    "locale": "id-ID"
+  },
+  {
+    "id": 60,
+    "category": "termination",
+    "severity": "medium",
+    "industry": "konsultan_pajak",
+    "party": "konsultan_pajak_freelance",
+    "contract_snippet": "Klien dapat menghentikan jasa konsultan pajak kapan saja. Konsultan wajib menyelesaikan semua pekerjaan yang tertunda meskipun kontrak sudah dihentikan tanpa pembayaran tambahan.",
+    "risk_findings": [
+      {
+        "clause_type": "termination",
+        "severity": "medium",
+        "explanation": "Kewajiban menyelesaikan pekerjaan setelah terminasi tanpa pembayaran tambahan tidak adil.",
+        "recommendation": "Setelah terminasi, konsultan hanya wajib menyelesaikan pekerjaan yang sudah dimulai dan dibayar. Pekerjaan baru memerlukan kontrak baru.",
+        "confidence": 0.91
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Setelah terminasi, konsultan menyelesaikan pekerjaan yang sedang berjalan dan telah dibayar. Pekerjaan baru setelah terminasi memerlukan kontrak terpisah.",
+    "source_reference": "Kontrak konsultan pajak freelance Indonesia 2023",
+    "applicable_law": "KUHPerdata 1338",
+    "locale": "id-ID"
+  },
+  {
+    "id": 61,
+    "category": "non_compete",
+    "severity": "high",
+    "industry": "telekomunikasi",
+    "party": "teknisi_freelance",
+    "contract_snippet": "Teknisi jaringan dilarang bekerja untuk operator telekomunikasi manapun di Indonesia selama 2 tahun setelah kontrak.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "high",
+        "explanation": "Larangan bekerja untuk semua operator telekomunikasi di seluruh Indonesia terlalu luas.",
+        "recommendation": "Batasi pada 3 kompetitor langsung yang disebutkan secara spesifik selama 6 bulan.",
+        "confidence": 0.93
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Teknisi tidak bekerja untuk operator yang disebutkan dalam Lampiran A selama 6 bulan setelah kontrak.",
+    "source_reference": "Kontrak teknisi jaringan Indonesia 2023",
+    "applicable_law": "UU 13/2003",
+    "locale": "id-ID"
+  },
+  {
+    "id": 62,
+    "category": "ip_assignment",
+    "severity": "critical",
+    "industry": "bioteknologi",
+    "party": "peneliti_freelance",
+    "contract_snippet": "Semua penemuan, paten, dan hasil riset yang dikembangkan peneliti selama kontrak menjadi milik perusahaan tanpa kompensasi tambahan meskipun menggunakan sumber daya pribadi peneliti.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "critical",
+        "explanation": "Klaim paten atas penemuan yang menggunakan sumber daya pribadi peneliti di luar waktu kerja tidak dapat dibenarkan.",
+        "recommendation": "Bedakan penemuan yang menggunakan sumber daya perusahaan vs sumber daya pribadi peneliti.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Penemuan menggunakan fasilitas perusahaan menjadi milik perusahaan dengan kompensasi inventor. Penemuan mandiri tetap milik peneliti.",
+    "source_reference": "Kontrak peneliti freelance biotek Indonesia 2024",
+    "applicable_law": "UU 13/2016 Paten Pasal 12",
+    "locale": "id-ID"
+  },
+  {
+    "id": 63,
+    "category": "payment_terms",
+    "severity": "high",
+    "industry": "jasa_it_managed",
+    "party": "vendor_managed_services",
+    "contract_snippet": "Pembayaran monthly managed service ditahan jika ada satu tiket support yang belum terselesaikan, tanpa memandang prioritas atau kompleksitas tiket.",
+    "risk_findings": [
+      {
+        "clause_type": "payment_terms",
+        "severity": "high",
+        "explanation": "Penahanan seluruh pembayaran untuk satu tiket belum selesai tidak proporsional dan dapat dimanfaatkan klien untuk menghindari pembayaran.",
+        "recommendation": "Tetapkan SLA per prioritas tiket. Penahanan maksimal 5% dari invoice untuk tiket overdue.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Pembayaran penuh dilakukan sesuai jadwal. Tiket yang melewati SLA memberikan kredit 1% per hari keterlambatan, maksimal 10%.",
+    "source_reference": "Kontrak managed IT services Indonesia 2024",
+    "applicable_law": "KUHPerdata 1338",
+    "locale": "id-ID"
+  },
+  {
+    "id": 64,
+    "category": "indemnity",
+    "severity": "medium",
+    "industry": "jasa_audit",
+    "party": "auditor_eksternal",
+    "contract_snippet": "Auditor menanggung seluruh kerugian akibat keputusan bisnis klien yang didasarkan pada laporan audit meskipun klien telah memodifikasi rekomendasi auditor.",
+    "risk_findings": [
+      {
+        "clause_type": "indemnity",
+        "severity": "medium",
+        "explanation": "Auditor tidak dapat bertanggung jawab atas keputusan bisnis yang diambil setelah klien memodifikasi rekomendasinya.",
+        "recommendation": "Tanggung jawab auditor terbatas pada kesalahan material dalam laporan yang tidak dimodifikasi klien.",
+        "confidence": 0.92
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Auditor bertanggung jawab atas kesalahan material dalam laporan asli. Modifikasi oleh klien membebaskan auditor dari tanggung jawab.",
+    "source_reference": "Kontrak audit eksternal Indonesia 2023",
+    "applicable_law": "UU 5/2011 Akuntan Publik",
+    "locale": "id-ID"
+  },
+  {
+    "id": 65,
+    "category": "auto_renewal",
+    "severity": "high",
+    "industry": "crm_software",
+    "party": "umkm_user",
+    "contract_snippet": "Langganan CRM Enterprise diperpanjang otomatis dan di-upgrade ke tier lebih mahal jika penggunaan melebihi batas tier saat ini dalam bulan terakhir.",
+    "risk_findings": [
+      {
+        "clause_type": "auto_renewal",
+        "severity": "high",
+        "explanation": "Auto-upgrade ke tier mahal tanpa persetujuan eksplisit melanggar prinsip persetujuan konsumen.",
+        "recommendation": "Notifikasi sebelum upgrade dan berikan opsi untuk membatasi penggunaan atau memilih tier yang diinginkan.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Pengguna dinotifikasi jika mendekati batas tier. Upgrade hanya dilakukan setelah konfirmasi eksplisit pengguna.",
+    "source_reference": "Kontrak CRM SaaS UMKM Indonesia 2024",
+    "applicable_law": "UU 8/1999 Perlindungan Konsumen",
+    "locale": "id-ID"
+  },
+  {
+    "id": 66,
+    "category": "governing_law",
+    "severity": "critical",
+    "industry": "ojek_online",
+    "party": "mitra_driver",
+    "contract_snippet": "Perjanjian kemitraan tunduk pada hukum dan yurisdiksi negara tempat kantor pusat perusahaan berada. Mitra tidak mengetahui di mana kantor pusat sebenarnya.",
+    "risk_findings": [
+      {
+        "clause_type": "governing_law",
+        "severity": "critical",
+        "explanation": "Yurisdiksi yang tidak jelas dan tidak diketahui mitra menciptakan ketidakpastian hukum yang fundamental.",
+        "recommendation": "Tetapkan secara eksplisit hukum dan pengadilan Indonesia sebagai yurisdiksi untuk mitra driver Indonesia.",
+        "confidence": 0.98
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "other",
+        "severity": "high",
+        "explanation": "Status mitra driver sebagai bukan karyawan mempengaruhi kewajiban BPJS dan pajak penghasilan.",
+        "recommendation": "Klarifikasi status hubungan kerja dan kewajiban BPJS sesuai regulasi ketenagakerjaan Indonesia.",
+        "applicable_regulation": "PP 44/2015 BPJS"
+      }
+    ],
+    "counter_suggestion": "Perjanjian kemitraan tunduk pada hukum Republik Indonesia. Sengketa diselesaikan di Pengadilan Negeri domisili mitra.",
+    "source_reference": "Kontrak mitra driver ojek online Indonesia 2024",
+    "applicable_law": "UU 13/2003, Permenhub PM 12/2019",
+    "locale": "id-ID"
+  },
+  {
+    "id": 67,
+    "category": "limitation_of_liability",
+    "severity": "high",
+    "industry": "jasa_keuangan",
+    "party": "nasabah_investasi",
+    "contract_snippet": "Perusahaan sekuritas tidak bertanggung jawab atas kerugian investasi akibat rekomendasi analis yang diberikan secara tertulis kepada nasabah.",
+    "risk_findings": [
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "high",
+        "explanation": "Pembebasan tanggung jawab atas rekomendasi tertulis yang menyebabkan kerugian melanggar kewajiban fiduciary sekuritas.",
+        "recommendation": "Sekuritas bertanggung jawab atas rekomendasi yang terbukti tidak memenuhi standar kehati-hatian profesional.",
+        "confidence": 0.96
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Sekuritas bertanggung jawab atas rekomendasi yang terbukti tidak memenuhi standar POJK tentang rekomendasi investasi.",
+    "source_reference": "Kontrak nasabah sekuritas Indonesia 2024",
+    "applicable_law": "UU 8/1995 Pasar Modal, POJK 21/2014",
+    "locale": "id-ID"
+  },
+  {
+    "id": 68,
+    "category": "pph23",
+    "severity": "medium",
+    "industry": "jasa_desain_interior",
+    "party": "desainer_interior_freelance",
+    "contract_snippet": "Fee desain interior dibayar net tanpa pemotongan pajak. Klien menyatakan ini adalah pembelian produk bukan jasa.",
+    "risk_findings": [],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Jasa desain interior tetap merupakan jasa meski klien menyebutnya pembelian produk. PPh 23 2% wajib dipotong klien korporat.",
+        "recommendation": "Pastikan invoice mencantumkan jasa desain interior dan klien korporat memotong PPh 23 2%.",
+        "applicable_regulation": "UU PPh Pasal 23 ayat 1 huruf c"
+      }
+    ],
+    "counter_suggestion": "Fee jasa desain interior dikenakan PPh 23 2% yang dipotong klien korporat dan diterbitkan bukti potong.",
+    "source_reference": "Kontrak desainer interior Indonesia 2023",
+    "applicable_law": "UU 36/2008 PPh",
+    "locale": "id-ID"
+  },
+  {
+    "id": 69,
+    "category": "confidentiality",
+    "severity": "high",
+    "industry": "perbankan",
+    "party": "konsultan_digital_banking",
+    "contract_snippet": "Konsultan wajib menjaga kerahasiaan data nasabah bank yang diakses selama proyek tanpa batas waktu dan menanggung seluruh denda OJK akibat kebocoran data.",
+    "risk_findings": [
+      {
+        "clause_type": "confidentiality",
+        "severity": "high",
+        "explanation": "Tanggung jawab konsultan atas denda OJK yang merupakan tanggung jawab bank sendiri tidak dapat dipindahkan.",
+        "recommendation": "Konsultan bertanggung jawab atas kebocoran akibat kelalaiannya. Denda regulator ditanggung bank sebagai pemegang lisensi.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Konsultan menjaga kerahasiaan data nasabah dan bertanggung jawab atas kebocoran akibat kelalaiannya sendiri. Denda OJK ditanggung bank.",
+    "source_reference": "Kontrak konsultan digital banking Indonesia 2024",
+    "applicable_law": "UU 27/2022 PDP, POJK 11/2022",
+    "locale": "id-ID"
+  },
+  {
+    "id": 70,
+    "category": "termination",
+    "severity": "high",
+    "industry": "media_cetak",
+    "party": "jurnalis_freelance",
+    "contract_snippet": "Media dapat menolak dan tidak membayar artikel yang sudah dikerjakan jurnalis jika tidak memenuhi editorial standard yang tidak pernah dikomunikasikan sebelumnya.",
+    "risk_findings": [
+      {
+        "clause_type": "termination",
+        "severity": "high",
+        "explanation": "Penolakan artikel berdasarkan standar editorial yang tidak dikomunikasikan di awal tidak adil bagi jurnalis.",
+        "recommendation": "Tetapkan editorial brief yang jelas sebelum penugasan. Kill fee minimal 50% untuk artikel yang ditolak tanpa alasan substantif.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Jurnalis menerima kill fee 50% untuk artikel yang ditolak bukan karena pelanggaran brief awal. Brief editorial diberikan tertulis sebelum penugasan.",
+    "source_reference": "Kontrak jurnalis freelance media Indonesia 2023",
+    "applicable_law": "UU 40/1999 Pers",
+    "locale": "id-ID"
+  },
+  {
+    "id": 71,
+    "category": "non_compete",
+    "severity": "medium",
+    "industry": "konsultan_sdm",
+    "party": "konsultan_hr_freelance",
+    "contract_snippet": "Konsultan HR dilarang melakukan rekrutmen atau headhunting untuk perusahaan manapun selama 1 tahun setelah kontrak di kota yang sama.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "medium",
+        "explanation": "Larangan rekrutmen untuk semua perusahaan di seluruh kota terlalu luas untuk konsultan HR independen.",
+        "recommendation": "Batasi larangan hanya untuk klien langsung yang dilayani selama kontrak, bukan semua perusahaan.",
+        "confidence": 0.89
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Konsultan tidak melakukan rekrutmen untuk klien yang secara langsung dilayani selama 6 bulan setelah kontrak.",
+    "source_reference": "Kontrak konsultan HR freelance Indonesia 2023",
+    "applicable_law": "UU 13/2003",
+    "locale": "id-ID"
+  },
+  {
+    "id": 72,
+    "category": "ip_assignment",
+    "severity": "high",
+    "industry": "penerbitan",
+    "party": "penulis_buku",
+    "contract_snippet": "Penerbit mendapat hak eksklusif selamanya untuk semua edisi, format, dan bahasa di seluruh dunia dengan royalti flat 5%.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "high",
+        "explanation": "Lisensi selamanya untuk semua format dan bahasa dengan royalti 5% tidak kompetitif untuk penulis Indonesia.",
+        "recommendation": "Batasi eksklusivitas 5-7 tahun untuk bahasa Indonesia saja, royalti minimal 10%, dengan klausul revert of rights.",
+        "confidence": 0.94
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Royalti buku dikenakan PPh 23 sebesar 15% dari jumlah bruto.",
+        "recommendation": "Penerbit memotong PPh 23 15% dari setiap pembayaran royalti kepada penulis.",
+        "applicable_regulation": "UU PPh Pasal 23 ayat 1 huruf a"
+      }
+    ],
+    "counter_suggestion": "Lisensi eksklusif 5 tahun bahasa Indonesia. Royalti 12% harga jual. Hak revert jika buku tidak dicetak ulang dalam 2 tahun.",
+    "source_reference": "Kontrak penerbitan buku Indonesia 2023",
+    "applicable_law": "UU 28/2014 Hak Cipta",
+    "locale": "id-ID"
+  },
+  {
+    "id": 73,
+    "category": "payment_terms",
+    "severity": "medium",
+    "industry": "jasa_kebersihan_industri",
+    "party": "vendor_industrial_cleaning",
+    "contract_snippet": "Pembayaran invoice diproses dalam 45 hari. Klien berhak mengaudit dan mengurangi invoice tanpa pemberitahuan berdasarkan penilaian internal.",
+    "risk_findings": [
+      {
+        "clause_type": "payment_terms",
+        "severity": "medium",
+        "explanation": "Pengurangan invoice sepihak tanpa pemberitahuan dan tanpa prosedur dispute menciptakan ketidakpastian pembayaran.",
+        "recommendation": "Dispute invoice harus dikomunikasikan dalam 7 hari setelah invoice diterima dengan alasan tertulis.",
+        "confidence": 0.9
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Dispute invoice dikomunikasikan tertulis dalam 5 hari kerja setelah diterima. Invoice yang tidak didisputekan dibayar penuh dalam 30 hari.",
+    "source_reference": "Kontrak industrial cleaning korporat Indonesia 2023",
+    "applicable_law": "KUHPerdata 1338",
+    "locale": "id-ID"
+  },
+  {
+    "id": 74,
+    "category": "indemnity",
+    "severity": "high",
+    "industry": "jasa_konsultasi_pajak",
+    "party": "konsultan_pajak",
+    "contract_snippet": "Konsultan pajak menanggung seluruh sanksi dan denda pajak yang dikenakan kepada klien termasuk akibat perubahan peraturan pajak yang terjadi setelah saran diberikan.",
+    "risk_findings": [
+      {
+        "clause_type": "indemnity",
+        "severity": "high",
+        "explanation": "Konsultan tidak dapat bertanggung jawab atas perubahan regulasi pajak yang terjadi setelah saran diberikan.",
+        "recommendation": "Batasi tanggung jawab pada kesalahan saran berdasarkan regulasi yang berlaku saat saran diberikan.",
+        "confidence": 0.96
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Konsultan bertanggung jawab atas kesalahan saran berdasarkan regulasi yang berlaku pada tanggal saran. Perubahan regulasi berikutnya bukan tanggung jawab konsultan.",
+    "source_reference": "Kontrak konsultan pajak Indonesia 2024",
+    "applicable_law": "UU 28/2007 KUP",
+    "locale": "id-ID"
+  },
+  {
+    "id": 75,
+    "category": "auto_renewal",
+    "severity": "medium",
+    "industry": "berlangganan_majalah",
+    "party": "pelanggan_digital",
+    "contract_snippet": "Berlangganan digital diperpanjang otomatis. Harga langganan tahun kedua dan seterusnya dua kali lipat harga promosi awal tanpa pengungkapan yang jelas.",
+    "risk_findings": [
+      {
+        "clause_type": "auto_renewal",
+        "severity": "medium",
+        "explanation": "Harga dua kali lipat setelah periode promosi tanpa pengungkapan yang jelas saat sign-up adalah praktik tidak transparan.",
+        "recommendation": "Informasikan harga reguler dengan jelas saat sign-up dan notifikasikan 30 hari sebelum perpanjangan.",
+        "confidence": 0.92
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Harga reguler setelah periode promosi dicantumkan jelas saat sign-up. Notifikasi 30 hari sebelum perpanjangan dengan harga yang berlaku.",
+    "source_reference": "Kontrak langganan media digital Indonesia 2024",
+    "applicable_law": "UU 8/1999 Perlindungan Konsumen",
+    "locale": "id-ID"
+  },
+  {
+    "id": 76,
+    "category": "governing_law",
+    "severity": "medium",
+    "industry": "marketplace_freelance",
+    "party": "freelancer_lokal",
+    "contract_snippet": "Platform menetapkan arbitrase di Singapura untuk semua sengketa termasuk sengketa nilai rendah di bawah Rp5 juta.",
+    "risk_findings": [
+      {
+        "clause_type": "governing_law",
+        "severity": "medium",
+        "explanation": "Arbitrase internasional untuk sengketa kecil di bawah Rp5 juta tidak proporsional dan menghalangi akses keadilan freelancer lokal.",
+        "recommendation": "Sengketa di bawah Rp50 juta diselesaikan melalui mekanisme internal platform atau BPSK.",
+        "confidence": 0.91
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Sengketa di bawah Rp50 juta diselesaikan melalui mediasi internal platform. Di atas Rp50 juta dapat melalui BANI.",
+    "source_reference": "Kontrak marketplace freelance Indonesia 2024",
+    "applicable_law": "UU 8/1999, UU 30/1999",
+    "locale": "id-ID"
+  },
+  {
+    "id": 77,
+    "category": "limitation_of_liability",
+    "severity": "medium",
+    "industry": "jasa_percetakan",
+    "party": "percetakan_offset",
+    "contract_snippet": "Percetakan tidak bertanggung jawab atas kesalahan yang sudah disetujui klien dalam proof. Termasuk kesalahan typo yang terlewat dalam proses approval.",
+    "risk_findings": [
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "medium",
+        "explanation": "Meski klien menyetujui proof, percetakan masih bertanggung jawab jika proof yang dikirim tidak sesuai file asli yang diberikan.",
+        "recommendation": "Klarifikasi bahwa persetujuan proof membebaskan percetakan untuk konten, tapi percetakan tetap bertanggung jawab atas deviasi dari file asli.",
+        "confidence": 0.87
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Persetujuan proof membebaskan percetakan dari kesalahan konten. Percetakan bertanggung jawab jika hasil cetak berbeda dari proof yang disetujui.",
+    "source_reference": "Kontrak percetakan offset Indonesia 2023",
+    "applicable_law": "KUHPerdata 1365",
+    "locale": "id-ID"
+  },
+  {
+    "id": 78,
+    "category": "pph23",
+    "severity": "high",
+    "industry": "jasa_outsourcing",
+    "party": "perusahaan_outsourcing",
+    "contract_snippet": "Fee outsourcing dibayar sebagai biaya penggantian gaji karyawan outsourcing tanpa pemotongan PPh 23 dengan alasan bukan jasa.",
+    "risk_findings": [],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "high",
+        "explanation": "Fee jasa outsourcing tetap dikenakan PPh 23 2% dari nilai bruto jasa meskipun sebagian besar adalah gaji karyawan yang di-pass through.",
+        "recommendation": "PPh 23 dihitung dari seluruh nilai invoice outsourcing. Jika ada breakdown gaji yang jelas dengan bukti, dapat dikurangi dari dasar penghitungan.",
+        "applicable_regulation": "SE-53/PJ/2009, UU PPh Pasal 23"
+      }
+    ],
+    "counter_suggestion": "PPh 23 2% dipotong dari fee outsourcing. Jika ada komponen gaji dengan bukti slip gaji, dapat dikeluarkan dari dasar penghitungan setelah verifikasi.",
+    "source_reference": "Kontrak outsourcing karyawan Indonesia 2024",
+    "applicable_law": "UU 36/2008 PPh Pasal 23",
+    "locale": "id-ID"
+  },
+  {
+    "id": 79,
+    "category": "confidentiality",
+    "severity": "critical",
+    "industry": "intelijen_bisnis",
+    "party": "analis_kompetitif",
+    "contract_snippet": "Analis wajib mengumpulkan informasi kompetitor dengan cara apapun termasuk cara yang mungkin melanggar hukum. Perusahaan tidak bertanggung jawab atas metode yang digunakan analis.",
+    "risk_findings": [
+      {
+        "clause_type": "confidentiality",
+        "severity": "critical",
+        "explanation": "Klausul ini mendorong pengumpulan informasi dengan cara ilegal dan melepaskan tanggung jawab perusahaan atas tindakan ilegal tersebut. Ini tidak dapat dilaksanakan.",
+        "recommendation": "Hapus klausul ini sepenuhnya. Pengumpulan intelijen bisnis harus dilakukan sesuai hukum yang berlaku.",
+        "confidence": 0.99
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Analis mengumpulkan informasi kompetitor hanya melalui sumber publik yang legal dan etis sesuai UU ITE dan peraturan yang berlaku.",
+    "source_reference": "Kontrak analis kompetitif Indonesia 2024",
+    "applicable_law": "UU 11/2008 ITE, UU 5/1999",
+    "locale": "id-ID"
+  },
+  {
+    "id": 80,
+    "category": "termination",
+    "severity": "medium",
+    "industry": "jasa_fotografi_produk",
+    "party": "fotografer_produk",
+    "contract_snippet": "Klien dapat meminta revisi tak terbatas sebelum menyatakan pekerjaan selesai dan membayar. Tidak ada batasan waktu untuk proses review.",
+    "risk_findings": [
+      {
+        "clause_type": "termination",
+        "severity": "medium",
+        "explanation": "Revisi tak terbatas tanpa batas waktu dapat digunakan klien untuk menunda pembayaran tanpa batas.",
+        "recommendation": "Tetapkan jumlah revisi (misal 3 kali) dan batas waktu review (misal 7 hari per sesi revisi).",
+        "confidence": 0.92
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Paket meliputi 3 sesi revisi. Review setiap sesi maksimal 5 hari kerja. Lewat batas waktu, pekerjaan dianggap diterima dan pembayaran jatuh tempo.",
+    "source_reference": "Kontrak fotografer produk e-commerce Indonesia 2023",
+    "applicable_law": "KUHPerdata 1338",
+    "locale": "id-ID"
+  },
+  {
+    "id": 81,
+    "category": "non_compete",
+    "severity": "critical",
+    "industry": "perbankan",
+    "party": "bankir_senior",
+    "contract_snippet": "Direktur yang mengundurkan diri dilarang bekerja di industri perbankan dan keuangan di Indonesia dan Singapura selama 3 tahun.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "critical",
+        "explanation": "Larangan 3 tahun di dua negara untuk seluruh industri perbankan tidak proporsional dan menghambat hak bekerja eksekutif senior.",
+        "recommendation": "Batasi pada bank kompetitor langsung yang disebutkan, maksimal 12 bulan, dengan kompensasi garden leave.",
+        "confidence": 0.96
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Larangan bekerja di 5 bank kompetitor langsung selama 12 bulan dengan kompensasi garden leave sebesar 50% gaji pokok.",
+    "source_reference": "Kontrak direktur perbankan Indonesia 2024",
+    "applicable_law": "POJK 33/2014 tentang Direksi Bank",
+    "locale": "id-ID"
+  },
+  {
+    "id": 82,
+    "category": "ip_assignment",
+    "severity": "high",
+    "industry": "animasi",
+    "party": "animator_freelance",
+    "contract_snippet": "Studio animasi memiliki hak untuk menggunakan karakter yang diciptakan animator dalam merchandise, game, dan theme park tanpa royalti tambahan.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "high",
+        "explanation": "Penggunaan karakter untuk merchandise, game, dan theme park bernilai jauh lebih tinggi dari fee animasi awal dan wajar mendapat royalti terpisah.",
+        "recommendation": "Tetapkan royalti 5-10% dari revenue merchandise dan licensing fee terpisah untuk game dan theme park.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Penggunaan karakter untuk merchandise dikenakan royalti 7% dari revenue bersih. Game dan theme park memerlukan lisensi terpisah.",
+    "source_reference": "Kontrak animator freelance studio Indonesia 2024",
+    "applicable_law": "UU 28/2014 Hak Cipta",
+    "locale": "id-ID"
+  },
+  {
+    "id": 83,
+    "category": "payment_terms",
+    "severity": "critical",
+    "industry": "konstruksi_gedung",
+    "party": "subkontraktor",
+    "contract_snippet": "Subkontraktor dibayar setelah kontraktor utama menerima pembayaran dari owner. Tidak ada kepastian kapan kontraktor utama akan dibayar. Pay-when-paid clause berlaku penuh.",
+    "risk_findings": [
+      {
+        "clause_type": "payment_terms",
+        "severity": "critical",
+        "explanation": "Pure pay-when-paid clause tanpa batas waktu menciptakan rantai ketidakpastian pembayaran yang merugikan subkontraktor.",
+        "recommendation": "Tetapkan batas waktu maksimal pembayaran kepada subkontraktor terlepas dari kapan kontraktor utama menerima pembayaran.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "medium",
+        "explanation": "Jasa subkontraktor konstruksi dikenakan PPh Pasal 4 ayat 2 final 2-4%.",
+        "recommendation": "Kontraktor utama memotong PPh final dari pembayaran kepada subkontraktor.",
+        "applicable_regulation": "PP 51/2008"
+      }
+    ],
+    "counter_suggestion": "Pembayaran kepada subkontraktor maksimal 45 hari setelah pekerjaan selesai terlepas dari status pembayaran owner kepada kontraktor utama.",
+    "source_reference": "Kontrak subkontraktor konstruksi Indonesia 2024",
+    "applicable_law": "UU 2/2017 Jasa Konstruksi Pasal 57",
+    "locale": "id-ID"
+  },
+  {
+    "id": 84,
+    "category": "indemnity",
+    "severity": "medium",
+    "industry": "jasa_pengujian",
+    "party": "laboratorium_independen",
+    "contract_snippet": "Lab bertanggung jawab atas seluruh kerugian bisnis klien jika hasil pengujian terbukti salah termasuk kerugian konsekuensial dan kehilangan reputasi.",
+    "risk_findings": [
+      {
+        "clause_type": "indemnity",
+        "severity": "medium",
+        "explanation": "Kerugian konsekuensial dan reputasi sangat sulit diukur dan berpotensi tidak proporsional dengan biaya pengujian.",
+        "recommendation": "Batasi tanggung jawab pada biaya pengujian ulang dan kerugian langsung yang terbukti, maksimal 10x biaya jasa.",
+        "confidence": 0.9
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Tanggung jawab lab terbatas pada pengujian ulang gratis dan kompensasi kerugian langsung maksimal 5x biaya jasa pengujian.",
+    "source_reference": "Kontrak laboratorium pengujian Indonesia 2023",
+    "applicable_law": "KUHPerdata 1246",
+    "locale": "id-ID"
+  },
+  {
+    "id": 85,
+    "category": "auto_renewal",
+    "severity": "high",
+    "industry": "manajemen_properti",
+    "party": "pemilik_properti",
+    "contract_snippet": "Kontrak manajemen properti diperpanjang otomatis 2 tahun. Biaya manajemen dinaikkan 15% setiap perpanjangan tanpa negosiasi.",
+    "risk_findings": [
+      {
+        "clause_type": "auto_renewal",
+        "severity": "high",
+        "explanation": "Kenaikan 15% otomatis tanpa negosiasi setiap 2 tahun dapat mengakumulasi menjadi sangat memberatkan pemilik properti.",
+        "recommendation": "Kenaikan biaya maksimal sesuai inflasi atau 5% whichever is lower, dengan hak negosiasi sebelum perpanjangan.",
+        "confidence": 0.93
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Kenaikan biaya manajemen maksimal 5% atau sesuai inflasi tahunan. Kedua pihak bernegosiasi 60 hari sebelum perpanjangan.",
+    "source_reference": "Kontrak manajemen properti Indonesia 2024",
+    "applicable_law": "KUHPerdata 1548 sewa-menyewa",
+    "locale": "id-ID"
+  },
+  {
+    "id": 86,
+    "category": "governing_law",
+    "severity": "high",
+    "industry": "penerbangan",
+    "party": "agen_perjalanan",
+    "contract_snippet": "Semua sengketa dengan maskapai asing diselesaikan sesuai hukum negara asal maskapai. Agen perjalanan melepaskan hak perlindungan konsumen Indonesia.",
+    "risk_findings": [
+      {
+        "clause_type": "governing_law",
+        "severity": "high",
+        "explanation": "Pelepasan hak perlindungan konsumen Indonesia tidak sah dan tidak dapat ditegakkan berdasarkan hukum Indonesia.",
+        "recommendation": "Perlindungan konsumen Indonesia tetap berlaku. Sengketa dapat melalui BPSK atau BANI.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Hak perlindungan konsumen berdasarkan hukum Indonesia tidak dapat dikesampingkan. Sengketa terkait penerbangan ke/dari Indonesia tunduk pada hukum Indonesia.",
+    "source_reference": "Kontrak keagenan maskapai Indonesia 2024",
+    "applicable_law": "UU 8/1999, PM 77/2011 Angkutan Udara",
+    "locale": "id-ID"
+  },
+  {
+    "id": 87,
+    "category": "limitation_of_liability",
+    "severity": "high",
+    "industry": "logistik_gudang",
+    "party": "pemilik_barang",
+    "contract_snippet": "Gudang tidak bertanggung jawab atas kerusakan barang akibat hama, banjir, atau kondisi penyimpanan yang tidak sesuai spesifikasi yang dijanjikan.",
+    "risk_findings": [
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "high",
+        "explanation": "Pembebasan tanggung jawab atas kondisi penyimpanan yang tidak sesuai janji merupakan pelanggaran kontrak yang tidak dapat dikecualikan.",
+        "recommendation": "Gudang bertanggung jawab jika kondisi penyimpanan tidak sesuai SLA yang dijanjikan.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Gudang bertanggung jawab atas kerusakan yang diakibatkan oleh kegagalan memenuhi spesifikasi penyimpanan yang dijanjikan dalam SLA.",
+    "source_reference": "Kontrak warehousing Indonesia 2024",
+    "applicable_law": "UU 40/2007 PT, KUHPerdata 1365",
+    "locale": "id-ID"
+  },
+  {
+    "id": 88,
+    "category": "pph23",
+    "severity": "high",
+    "industry": "jasa_pelatihan",
+    "party": "trainer_freelance",
+    "contract_snippet": "Fee pelatihan korporat dibayar ke rekening pribadi trainer tanpa invoice resmi dan tanpa pemotongan pajak.",
+    "risk_findings": [],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "high",
+        "explanation": "Fee jasa pelatihan dari klien korporat wajib dipotong PPh 23 2% dan diterbitkan bukti potong. Pembayaran ke rekening pribadi tidak menghilangkan kewajiban pajak.",
+        "recommendation": "Trainer menerbitkan invoice resmi. Klien korporat memotong PPh 23 dan menerbitkan bukti potong.",
+        "applicable_regulation": "UU PPh Pasal 23, PER-03/PJ/2022"
+      }
+    ],
+    "counter_suggestion": "Trainer menerbitkan invoice dengan NPWP. Klien memotong PPh 23 2%, menyetorkan ke kas negara, dan menerbitkan bukti potong dalam 5 hari kerja.",
+    "source_reference": "Kontrak trainer freelance korporat Indonesia 2024",
+    "applicable_law": "UU 36/2008 PPh Pasal 23",
+    "locale": "id-ID"
+  },
+  {
+    "id": 89,
+    "category": "confidentiality",
+    "severity": "high",
+    "industry": "startup_ai",
+    "party": "data_scientist_freelance",
+    "contract_snippet": "Data scientist dilarang menggunakan teknik, algoritma, atau pendekatan ML yang dipelajari atau dikembangkan selama proyek untuk pekerjaan lain selamanya.",
+    "risk_findings": [
+      {
+        "clause_type": "confidentiality",
+        "severity": "high",
+        "explanation": "Larangan menggunakan pengetahuan dan teknik ML umum seumur hidup tidak dapat ditegakkan dan menghambat pengembangan profesional.",
+        "recommendation": "Batasi pada model spesifik dan data proprietary klien, bukan teknik ML umum yang dipelajari.",
+        "confidence": 0.96
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Data scientist menjaga kerahasiaan model, data, dan parameter spesifik klien. Teknik dan pendekatan ML umum dapat digunakan bebas.",
+    "source_reference": "Kontrak data scientist freelance startup AI Indonesia 2024",
+    "applicable_law": "UU 30/2000 Rahasia Dagang",
+    "locale": "id-ID"
+  },
+  {
+    "id": 90,
+    "category": "termination",
+    "severity": "critical",
+    "industry": "healthcare_startup",
+    "party": "dokter_digital",
+    "contract_snippet": "Platform telemedicine dapat mengakhiri akun dokter kapan saja tanpa alasan, memblokir akses ke riwayat konsultasi pasien, dan tidak mengembalikan data pasien ke dokter.",
+    "risk_findings": [
+      {
+        "clause_type": "termination",
+        "severity": "critical",
+        "explanation": "Pemblokiran akses riwayat pasien setelah terminasi berpotensi melanggar kesinambungan perawatan pasien dan kewajiban rekam medis dokter.",
+        "recommendation": "Dokter berhak mengekspor data konsultasi pasiennya sendiri sebelum akun ditutup. Periode transisi minimal 30 hari.",
+        "confidence": 0.99
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Sebelum terminasi, dokter diberikan 30 hari untuk mengekspor data konsultasi pasiennya. Platform menyediakan format ekspor standar yang dapat dibaca.",
+    "source_reference": "Kontrak dokter platform telemedicine Indonesia 2024",
+    "applicable_law": "UU 29/2004 Praktik Kedokteran Pasal 46, UU 27/2022 PDP",
+    "locale": "id-ID"
+  },
+  {
+    "id": 91,
+    "category": "non_compete",
+    "severity": "high",
+    "industry": "retail_fashion",
+    "party": "buyer_freelance",
+    "contract_snippet": "Buyer fashion dilarang bekerja untuk brand lokal manapun yang menjual produk serupa selama 18 bulan setelah kontrak di seluruh Indonesia.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "high",
+        "explanation": "Larangan 18 bulan untuk semua brand lokal serupa di seluruh Indonesia terlalu luas untuk posisi buyer.",
+        "recommendation": "Batasi pada 5 kompetitor langsung yang disebutkan selama 6 bulan.",
+        "confidence": 0.91
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Buyer tidak bekerja untuk kompetitor langsung dalam Lampiran A selama 6 bulan setelah kontrak berakhir.",
+    "source_reference": "Kontrak buyer fashion freelance Indonesia 2023",
+    "applicable_law": "UU 13/2003",
+    "locale": "id-ID"
+  },
+  {
+    "id": 92,
+    "category": "ip_assignment",
+    "severity": "medium",
+    "industry": "podcast",
+    "party": "podcaster_independen",
+    "contract_snippet": "Platform podcast memiliki hak non-eksklusif untuk mendistribusikan, mempromosikan, dan memonetisasi episode tanpa batas waktu dan tanpa revenue sharing.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "medium",
+        "explanation": "Lisensi tanpa batas waktu dan tanpa revenue sharing tidak adil jika platform memonetisasi konten kreator.",
+        "recommendation": "Tetapkan revenue sharing minimal 70:30 untuk kreator, atau berikan opsi hapus episode dari platform.",
+        "confidence": 0.9
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Kreator menerima 70% dari revenue iklan episode-nya. Kreator dapat menarik episode dari platform dengan pemberitahuan 30 hari.",
+    "source_reference": "Kontrak podcaster platform Indonesia 2024",
+    "applicable_law": "UU 28/2014 Hak Cipta",
+    "locale": "id-ID"
+  },
+  {
+    "id": 93,
+    "category": "payment_terms",
+    "severity": "high",
+    "industry": "jasa_konsultasi_bisnis",
+    "party": "konsultan_strategi",
+    "contract_snippet": "Fee konsultan dibayar hanya jika strategi yang direkomendasikan menghasilkan peningkatan revenue minimal 20% dalam 12 bulan. Tidak ada pembayaran untuk riset dan analisis awal.",
+    "risk_findings": [
+      {
+        "clause_type": "payment_terms",
+        "severity": "high",
+        "explanation": "Pure performance-based fee tanpa pembayaran untuk riset dan analisis awal sangat merugikan konsultan strategik.",
+        "recommendation": "Tetapkan fee riset dan analisis awal yang dibayar terlepas dari hasil, plus bonus kinerja jika target tercapai.",
+        "confidence": 0.94
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Fee riset dan analisis awal Rp50 juta dibayar di muka. Bonus kinerja 15% dari peningkatan revenue jika target 20% tercapai.",
+    "source_reference": "Kontrak konsultan strategi bisnis Indonesia 2024",
+    "applicable_law": "KUHPerdata 1338",
+    "locale": "id-ID"
+  },
+  {
+    "id": 94,
+    "category": "indemnity",
+    "severity": "critical",
+    "industry": "nuclear_energy",
+    "party": "vendor_teknis",
+    "contract_snippet": "Vendor teknis menanggung seluruh tanggung jawab atas insiden nuklir termasuk tanggung jawab yang seharusnya ditanggung operator lisensi.",
+    "risk_findings": [
+      {
+        "clause_type": "indemnity",
+        "severity": "critical",
+        "explanation": "Pengalihan tanggung jawab insiden nuklir kepada vendor teknis melanggar konvensi internasional dan tidak dapat dilaksanakan.",
+        "recommendation": "Tanggung jawab insiden nuklir tetap pada operator lisensi sesuai konvensi nuklir internasional. Vendor bertanggung jawab hanya atas kelalaian teknis spesifik.",
+        "confidence": 0.99
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Tanggung jawab insiden nuklir mengikuti Vienna Convention on Nuclear Liability. Vendor bertanggung jawab terbatas pada kelalaian teknis dalam lingkup pekerjaan.",
+    "source_reference": "Kontrak vendor pembangkit nuklir Indonesia 2025",
+    "applicable_law": "Vienna Convention Nuclear Liability, PP 54/2012",
+    "locale": "id-ID"
+  },
+  {
+    "id": 95,
+    "category": "governing_law",
+    "severity": "medium",
+    "industry": "startup_edutech",
+    "party": "mitra_sekolah",
+    "contract_snippet": "Perjanjian kemitraan dengan sekolah negeri tunduk pada arbitrase komersial swasta, mengabaikan statusnya sebagai badan hukum publik.",
+    "risk_findings": [
+      {
+        "clause_type": "governing_law",
+        "severity": "medium",
+        "explanation": "Sekolah negeri sebagai badan publik tunduk pada regulasi pengadaan pemerintah dan tidak dapat sepenuhnya tunduk pada arbitrase komersial swasta.",
+        "recommendation": "Klausul penyelesaian sengketa harus mempertimbangkan status sekolah negeri sebagai badan publik dan mengikuti mekanisme yang sesuai.",
+        "confidence": 0.88
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Sengketa dengan sekolah negeri diselesaikan sesuai ketentuan pengadaan pemerintah dan Peradilan Tata Usaha Negara jika diperlukan.",
+    "source_reference": "Kontrak edutech dengan sekolah negeri Indonesia 2024",
+    "applicable_law": "UU 30/2014 Administrasi Pemerintahan",
+    "locale": "id-ID"
+  },
+  {
+    "id": 96,
+    "category": "limitation_of_liability",
+    "severity": "critical",
+    "industry": "kendaraan_otonom",
+    "party": "mitra_teknologi",
+    "contract_snippet": "Developer software kendaraan otonom tidak bertanggung jawab atas kecelakaan yang disebabkan oleh bug atau kegagalan sistem meskipun sudah dilaporkan dan belum diperbaiki.",
+    "risk_findings": [
+      {
+        "clause_type": "limitation_of_liability",
+        "severity": "critical",
+        "explanation": "Pembebasan tanggung jawab atas bug yang diketahui namun tidak diperbaiki dan menyebabkan kecelakaan tidak dapat diterima secara hukum maupun etika.",
+        "recommendation": "Developer bertanggung jawab atas bug kritis yang dilaporkan dan tidak diperbaiki dalam SLA yang disepakati.",
+        "confidence": 0.99
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Developer bertanggung jawab penuh atas kecelakaan yang disebabkan bug yang dilaporkan namun tidak diperbaiki dalam periode SLA kritis yang disepakati.",
+    "source_reference": "Kontrak developer autonomous vehicle Indonesia 2025",
+    "applicable_law": "UU 22/2009 LLAJ, KUHPerdata 1365",
+    "locale": "id-ID"
+  },
+  {
+    "id": 97,
+    "category": "pph23",
+    "severity": "critical",
+    "industry": "jasa_teknologi_informasi",
+    "party": "perusahaan_teknologi_asing",
+    "contract_snippet": "Perusahaan teknologi asing memberikan jasa cloud computing ke klien Indonesia tanpa BUT dan mengklaim tidak ada kewajiban pajak di Indonesia.",
+    "risk_findings": [],
+    "tax_findings": [
+      {
+        "issue_type": "pph23",
+        "severity": "critical",
+        "explanation": "Pembayaran jasa kepada perusahaan asing tanpa BUT dikenakan withholding tax PPh Pasal 26 sebesar 20% atau sesuai tax treaty. Klaim bebas pajak tidak berdasar.",
+        "recommendation": "Klien Indonesia wajib memotong PPh Pasal 26 dari pembayaran ke penyedia asing dan menyetorkan ke DJP.",
+        "applicable_regulation": "UU PPh Pasal 26, PMK 35/2019"
+      }
+    ],
+    "counter_suggestion": "Klien memotong PPh Pasal 26 sesuai tarif tax treaty yang berlaku. Bukti pemotongan diterbitkan dan dilaporkan dalam SPT masa.",
+    "source_reference": "Kontrak cloud computing dengan penyedia asing Indonesia 2024",
+    "applicable_law": "UU 36/2008 PPh Pasal 26, PMK 35/2019",
+    "locale": "id-ID"
+  },
+  {
+    "id": 98,
+    "category": "confidentiality",
+    "severity": "medium",
+    "industry": "jasa_akuntansi",
+    "party": "akuntan_freelance",
+    "contract_snippet": "Akuntan wajib menyimpan seluruh dokumen keuangan klien selama kontrak dan setelahnya. Klien berhak meminta akses kapan saja tanpa pemberitahuan.",
+    "risk_findings": [
+      {
+        "clause_type": "confidentiality",
+        "severity": "medium",
+        "explanation": "Kewajiban menyimpan dokumen tanpa batas waktu dan akses tanpa pemberitahuan menciptakan beban yang tidak wajar bagi akuntan freelance.",
+        "recommendation": "Tetapkan periode penyimpanan maksimal 5 tahun sesuai regulasi perpajakan dan prosedur akses yang terstruktur.",
+        "confidence": 0.88
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Akuntan menyimpan dokumen 5 tahun sesuai kewajiban perpajakan. Permintaan akses diberitahukan 2 hari kerja sebelumnya.",
+    "source_reference": "Kontrak akuntan freelance Indonesia 2023",
+    "applicable_law": "UU 28/2007 KUP Pasal 28 tentang pembukuan",
+    "locale": "id-ID"
+  },
+  {
+    "id": 99,
+    "category": "termination",
+    "severity": "high",
+    "industry": "jasa_keamanan_siber",
+    "party": "incident_responder",
+    "contract_snippet": "Perusahaan dapat mengakhiri kontrak responden insiden siber di tengah insiden aktif tanpa kewajiban membayar untuk pekerjaan yang sudah dilakukan.",
+    "risk_findings": [
+      {
+        "clause_type": "termination",
+        "severity": "high",
+        "explanation": "Terminasi di tengah insiden siber aktif tanpa kompensasi menciptakan insentif negatif dan dapat memperburuk insiden.",
+        "recommendation": "Terminasi selama insiden aktif hanya diperbolehkan untuk pelanggaran berat. Pembayaran penuh untuk waktu yang sudah dijalani wajib dibayarkan.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Terminasi selama insiden aktif memerlukan notice 72 jam dan pembayaran penuh untuk waktu yang sudah dijalani. Handover terstruktur wajib dilakukan.",
+    "source_reference": "Kontrak incident response cybersecurity Indonesia 2024",
+    "applicable_law": "UU 11/2008 ITE, KUHPerdata 1338",
+    "locale": "id-ID"
+  },
+  {
+    "id": 100,
+    "category": "ip_assignment",
+    "severity": "critical",
+    "industry": "kecerdasan_buatan",
+    "party": "peneliti_ai",
+    "contract_snippet": "Semua model AI, dataset, weight, dan metodologi yang dikembangkan peneliti menggunakan data publik dan resource pribadi selama kontrak menjadi milik eksklusif perusahaan. Peneliti tidak dapat mempublikasikan temuan akademis.",
+    "risk_findings": [
+      {
+        "clause_type": "ip_assignment",
+        "severity": "critical",
+        "explanation": "Klaim kepemilikan atas penelitian yang menggunakan data publik dan resource pribadi, plus larangan publikasi akademis, menghambat kemajuan ilmu pengetahuan dan tidak sejalan dengan norma penelitian.",
+        "recommendation": "Pisahkan penelitian yang menggunakan fasilitas perusahaan dari penelitian independen. Izinkan publikasi akademis dengan review 30 hari untuk kepentingan kerahasiaan.",
+        "confidence": 0.98
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Model yang dilatih dengan data dan fasilitas perusahaan menjadi milik perusahaan. Penelitian independen menggunakan resource pribadi tetap milik peneliti. Publikasi akademis diizinkan setelah review 30 hari.",
+    "source_reference": "Kontrak peneliti AI perusahaan teknologi Indonesia 2025",
+    "applicable_law": "UU 18/2002 Iptek, UU 28/2014 Hak Cipta, UU 13/2016 Paten",
+    "locale": "id-ID"
+  }
+]

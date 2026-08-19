@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}LegalShield Agent{% endblock %}</title>
+  <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2uH8H7ou8iZpTao12EMtxpi0yF9RtBMFGhb" crossorigin="anonymous"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/app.css" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <div class="nav-inner">
+        <a href="/" class="logo">
+          <div class="logo-icon">&#x2696;&#xFE0F;</div>
+          Legal<em>Shield</em>
+        </a>
+        <span class="nav-pill">MVP Beta</span>
+      </div>
+    </div>
+  </nav>
+  <main>
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+  <footer>
+    LegalShield Agent &copy; 2026 &mdash;
+    <a href="#">Syarat Penggunaan</a> &middot; Demo only. Bukan nasihat hukum.
+  </footer>
+  <script src="/static/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

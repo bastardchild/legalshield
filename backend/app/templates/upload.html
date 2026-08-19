@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Upload Kontrak — LegalShield Agent{% endblock %}
+
+{% block content %}
+<div style="max-width:640px;margin:0 auto;" x-data="uploadApp()">
+
+  <!-- Hero -->
+  <div style="text-align:center;margin-bottom:2.5rem;padding-top:0.5rem;">
+    <div style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--accent-dim);border:1px solid rgba(59,130,246,.2);border-radius:9999px;padding:0.3rem 0.875rem;margin-bottom:1.25rem;">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 6px var(--accent);animation:pdot 2s ease-in-out infinite;"></span>
+      <span style="font-size:0.7rem;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;">AI-Powered Contract Analysis</span>
+    </div>
+    <h1 style="font-size:1.875rem;font-weight:700;letter-spacing:-.03em;line-height:1.2;margin-bottom:0.875rem;">
+      Lindungi Diri dari<br>
+      <span style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Kontrak Berbahaya</span>
+    </h1>
+    <p style="color:var(--text-2);font-size:0.875rem;max-width:440px;margin:0 auto;line-height:1.65;">Upload kontrak PDF — 3 agen AI mendeteksi klausul jebakan, memeriksa kepatuhan pajak, dan menyusun draft balasan profesional.</p>
+  </div>
+
+  <!-- Upload Card -->
+  <div class="card" style="margin-bottom:1rem;">
+    <form id="upload-form"
+      hx-post="/api/contracts/upload"
+      hx-encoding="multipart/form-data"
+      hx-target="#upload-result"
+      hx-swap="innerHTML"
+      hx-indicator="#upload-spinner"
+      @htmx:after-request="onUploadDone($event)">
+
+      <div
+        style="border:2px dashed var(--border);border-radius:var(--r-lg);padding:2.25rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg-elevated);"
+        :style="dragOver ? 'border-color:var(--accent);background:rgba(59,130,246,.05)' : (fileName ? 'border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.04)' : '')"
+        @dragover.prevent="dragOver=true"
+        @dragleave="dragOver=false"
+        @drop.prevent="onDrop($event)"
+        @click="$refs.fileInput.click()"
+        role="button" aria-label="Upload file kontrak">
+
+        <div x-show="!fileName">
+          <div style="width:48px;height:48px;border-radius:var(--r-lg);background:var(--accent-dim);border:1px solid rgba(59,130,246,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 0.875rem;font-size:1.375rem;">📄</div>
+          <p style="font-weight:600;color:var(--text-1);margin-bottom:0.3rem;">Klik atau drag &amp; drop</p>
+          <p style="font-size:0.775rem;color:var(--text-3);">PDF atau TXT &mdash; maks. 20 MB</p>
+        </div>
+        <div x-show="fileName" style="display:none;">
+          <div style="width:48px;height:48px;border-radius:var(--r-lg);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 0.875rem;font-size:1.375rem;">✅</div>
+          <p style="font-weight:600;color:#34d399;margin-bottom:0.2rem;" x-text="fileName"></p>
+          <p style="font-size:0.775rem;color:var(--text-3);">Klik untuk ganti file</p>
+        </div>
+        <input type="file" name="file" accept=".pdf,.txt" x-ref="fileInput" style="display:none" @change="onFileChange($event)" />
+      </div>
+
+      <div style="margin-top:0.875rem;display:flex;gap:0.625rem;">
+        <button type="submit" class="btn btn-primary" :disabled="!fileName || loading"
+          style="flex:1;justify-content:center;padding:0.625rem;font-size:0.875rem;">
+          <span id="upload-spinner" class="htmx-indicator"><span class="spinner"></span></span>
+          <span>🔍 Analisis Kontrak</span>
+        </button>
+        <button type="button" class="btn btn-ghost" x-show="fileName" x-cloak
+          @click.stop="clearFile()" title="Hapus file">✕</button>
+      </div>
+    </form>
+    <div id="upload-result" style="margin-top:0.75rem;"></div>
+  </div>
+
+  <!-- Feature pills -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.625rem;margin-bottom:2rem;">
+    <div class="card" style="padding:0.875rem;text-align:center;">
+      <div style="font-size:1.25rem;margin-bottom:0.4rem;">🔍</div>
+      <div style="font-size:0.75rem;font-weight:600;color:var(--text-1);margin-bottom:0.2rem;">Klausul Berbahaya</div>
+      <div style="font-size:0.68rem;color:var(--text-3);line-height:1.4;">Non-compete, IP assignment, indemnity</div>
+    </div>
+    <div class="card" style="padding:0.875rem;text-align:center;">
+      <div style="font-size:1.25rem;margin-bottom:0.4rem;">📊</div>
+      <div style="font-size:0.75rem;font-weight:600;color:var(--text-1);margin-bottom:0.2rem;">Pajak &amp; Regulasi</div>
+      <div style="font-size:0.68rem;color:var(--text-3);line-height:1.4;">PPh 21/23, NPWP, yurisdiksi</div>
+    </div>
+    <div class="card" style="padding:0.875rem;text-align:center;">
+      <div style="font-size:1.25rem;margin-bottom:0.4rem;">✍️</div>
+      <div style="font-size:0.75rem;font-weight:600;color:var(--text-1);margin-bottom:0.2rem;">Counter-Draft</div>
+      <div style="font-size:0.68rem;color:var(--text-3);line-height:1.4;">Draft balasan profesional</div>
+    </div>
+  </div>
+
+  <div x-show="toast" x-cloak x-transition:enter="fade-up"
+    class="toast" :class="toastType==='ok'?'toast-ok':'toast-err'">
+    <span x-text="toastType==='ok'?'✅':'❌'"></span>
+    <span x-text="toastMsg"></span>
+  </div>
+</div>
+{% endblock %}
+

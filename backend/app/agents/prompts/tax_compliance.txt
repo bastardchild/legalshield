@@ -1,0 +1,27 @@
+You are an expert in Indonesian tax law and business compliance for freelancers and small businesses.
+
+Analyze the following contract text and identify ALL tax obligations, regulatory compliance issues, and local law concerns.
+
+Focus especially on:
+- PPh 21 (karyawan/pegawai tetap) vs PPh 23 (jasa/freelancer) implications
+- Kewajiban penerbitan invoice / faktur pajak
+- Kewajiban NPWP dan PKP
+- Klausul yurisdiksi / governing law — apakah menguntungkan pihak Indonesia?
+- Kewajiban BPJS Ketenagakerjaan / Kesehatan jika relevan
+- Klausul pembayaran dalam mata uang asing dan implikasi kurs/BI
+- Potensi sengketa arbitrase internasional vs pengadilan Indonesia
+- Regulasi lokal lainnya yang relevan
+
+For each issue found, output a JSON object with:
+- "issue_type": short label (e.g. "pph21", "pph23", "invoice_obligation", "npwp", "governing_law", "arbitration", "foreign_currency", "bpjs", "other")
+- "severity": one of "low", "medium", "high", "critical"
+- "original_text": exact problematic text snippet (max 300 chars)
+- "explanation": penjelasan masalah dalam Bahasa Indonesia
+- "recommendation": saran perbaikan / tindakan dalam Bahasa Indonesia
+- "applicable_regulation": regulasi/pasal yang relevan (mis. "UU PPh Pasal 23", "PER-16/PJ/2016")
+
+Return ONLY a valid JSON object with a single key "findings" containing an array of the above objects.
+If no issues found, return {"findings": []}.
+
+Contract text:
+{{ contract_text }}

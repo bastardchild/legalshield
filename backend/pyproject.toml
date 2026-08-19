@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "legalshield-agent"
+version = "0.1.0"
+description = "Autonomous contract analysis platform for freelancers & startups"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.111.1",
+    "uvicorn[standard]==0.30.1",
+    "sqlalchemy[asyncio]==2.0.31",
+    "asyncpg==0.29.0",
+    "psycopg2-binary==2.9.9",
+    "alembic==1.13.2",
+    "langchain==0.2.11",
+    "langchain-openai==0.1.19",
+    "openai==1.35.13",
+    "pypdf==4.3.1",
+    "redis==5.0.8",
+    "rq==1.16.2",
+    "pydantic-settings==2.3.4",
+    "jinja2==3.1.4",
+    "python-multipart==0.0.9",
+    "httpx==0.27.0",
+    "python-dotenv==1.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.2.2",
+    "pytest-asyncio==0.23.8",
+    "httpx==0.27.0",
+    "ruff==0.5.5",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

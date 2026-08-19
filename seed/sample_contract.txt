@@ -1,0 +1,49 @@
+KONTRAK PERJANJIAN JASA FREELANCE
+
+Perjanjian ini dibuat pada tanggal 1 Agustus 2026, antara:
+
+PIHAK PERTAMA (Klien):
+PT Maju Bersama Teknologi, beralamat di Jl. Sudirman No. 100, Jakarta Selatan
+(selanjutnya disebut "Klien")
+
+PIHAK KEDUA (Freelancer):
+Budi Santoso, S.Kom, beralamat di Jl. Kebon Jeruk No. 5, Jakarta Barat
+(selanjutnya disebut "Freelancer")
+
+PASAL 1 — LINGKUP PEKERJAAN
+Freelancer setuju untuk menyediakan jasa pengembangan perangkat lunak secara eksklusif dan penuh waktu untuk Klien, termasuk namun tidak terbatas pada desain, pengembangan, testing, dan deployment semua produk digital Klien selama periode kontrak.
+
+PASAL 2 — KOMPENSASI
+Klien setuju membayar Freelancer sebesar Rp 5.000.000 per bulan. Pembayaran dilakukan paling lambat 60 (enam puluh) hari setelah invoice diterima. Klien berhak menahan pembayaran tanpa batas waktu jika menilai hasil kerja belum memuaskan berdasarkan penilaian subjektif Klien semata.
+
+PASAL 3 — HAK KEKAYAAN INTELEKTUAL
+Seluruh hasil kerja, kode, desain, konsep, ide, inovasi, dan karya intelektual apa pun yang dibuat oleh Freelancer — baik selama jam kerja maupun di luar jam kerja, baik berkaitan langsung dengan proyek maupun tidak — menjadi milik penuh dan eksklusif Klien secara otomatis dan permanen, tanpa kompensasi tambahan apa pun. Freelancer dengan ini melepaskan semua hak moral atas seluruh karya tersebut.
+
+PASAL 4 — NON-COMPETE
+Freelancer setuju untuk tidak, selama kontrak berlaku DAN selama 5 (lima) tahun setelah berakhirnya kontrak, bekerja untuk, memberikan jasa kepada, mendirikan, atau berinvestasi dalam bisnis apa pun di seluruh wilayah Indonesia dan negara-negara ASEAN yang bergerak di bidang teknologi informasi, pengembangan perangkat lunak, atau bidang yang dianggap bersaing oleh Klien.
+
+PASAL 5 — KERAHASIAAN
+Freelancer wajib menjaga kerahasiaan seluruh informasi yang diperoleh dari Klien selamanya (tanpa batas waktu), termasuk setelah kontrak berakhir. Pelanggaran ketentuan ini mengakibatkan denda otomatis sebesar Rp 500.000.000 (lima ratus juta rupiah) per kejadian.
+
+PASAL 6 — INDEMNIFIKASI
+Freelancer setuju untuk menanggung, membela, dan membebaskan Klien dari segala tuntutan, kerugian, biaya hukum, dan tanggung jawab apa pun yang timbul dari atau berkaitan dengan jasa yang diberikan Freelancer, termasuk akibat kelalaian Klien sendiri.
+
+PASAL 7 — PERPANJANGAN OTOMATIS
+Kontrak ini akan diperpanjang secara otomatis untuk periode yang sama tanpa pemberitahuan lebih lanjut kecuali salah satu pihak memberikan pemberitahuan tertulis minimal 90 (sembilan puluh) hari sebelum tanggal berakhir. Biaya pembatalan kontrak sebesar 6 (enam) bulan gaji penuh berlaku jika Freelancer mengakhiri kontrak lebih awal.
+
+PASAL 8 — PEMBATASAN TANGGUNG JAWAB
+Tanggung jawab total Klien kepada Freelancer berdasarkan perjanjian ini dalam keadaan apa pun tidak akan melebihi Rp 100.000 (seratus ribu rupiah).
+
+PASAL 9 — HUKUM YANG BERLAKU DAN YURISDIKSI
+Perjanjian ini diatur oleh hukum negara bagian Delaware, Amerika Serikat. Segala sengketa diselesaikan melalui arbitrase di Singapura dengan bahasa arbitrase Bahasa Inggris, dan biaya arbitrase ditanggung sepenuhnya oleh Freelancer.
+
+PASAL 10 — PAJAK
+Semua pembayaran adalah gross, dan Freelancer bertanggung jawab penuh atas seluruh kewajiban pajak termasuk pajak yang seharusnya dipotong oleh Klien. Klien tidak akan menerbitkan bukti potong PPh 23.
+
+PASAL 11 — PERUBAHAN KONTRAK
+Klien berhak mengubah syarat dan ketentuan kontrak ini kapan saja dengan pemberitahuan melalui email 24 jam sebelumnya. Freelancer dianggap menyetujui perubahan tersebut jika tidak memberikan keberatan secara tertulis dalam 24 jam.
+
+Ditandatangani oleh para pihak,
+
+PT Maju Bersama Teknologi                    Budi Santoso
+Direktur Utama                                Freelancer
