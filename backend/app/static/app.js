@@ -61,19 +61,29 @@ document.addEventListener('alpine:init', () => {
     toast: false,
     toastMsg: '',
     toastType: 'ok',
-    _stopPolling: false,
+    _stopped: false,
 
     init() {
-      document.body.addEventListener('htmx:afterSwap', (evt) => {
-        if (this._stopPolling) return;
-        const text = evt.detail.target?.innerText || '';
-        if (text.includes('selesai') || text.includes('gagal') || text.includes('Counter-Draft') || text.includes('counter_draft')) {
-          this._stopPolling = true;
-          ['status-area', 'result-inner'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) { el.removeAttribute('hx-trigger'); htmx.process(el); }
-          });
-        }
+      document.body.addEventListener('htmx:afterSwap', () => this.checkTerminal());
+      this.checkTerminal();
+    },
+
+    // Stop polling only when the *result* partial reports a terminal state.
+    // Two rules matter here:
+    //  1. Never match on rendered prose — the "processing" copy contains the word
+    //     "selesai", which used to cancel polling on the very first swap.
+    //  2. Gate on the result marker, not the status marker: the contract row flips
+    //     to `done` slightly before the result partial has rendered its cards.
+    checkTerminal() {
+      if (this._stopped) return;
+      const status = document.querySelector('[data-result-status]')?.dataset.resultStatus;
+      if (status !== 'done' && status !== 'failed') return;
+      this._stopped = true;
+      ['status-area', 'result-inner'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.removeAttribute('hx-trigger');
+        if (window.htmx) htmx.process(el);
       });
     },
     showToast(msg, type = 'ok') {

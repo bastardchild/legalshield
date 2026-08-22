@@ -1,4 +1,7 @@
 {% set status = contract.status.value %}
+{# Machine-readable polling signal for resultApp() in app.js.
+   Do not match on rendered prose: the "Biasanya selesai..." copy below contains "selesai". #}
+<span data-result-status="{{ status }}" hidden></span>
 {% if status != "done" %}
   {% if status == "processing" or status == "uploaded" %}
   <div style="text-align:center;padding:3rem 1.5rem;color:var(--text-2);">
@@ -17,6 +20,11 @@
   {% set tax  = analysis.get('tax_compliance') %}
   {% set counter = analysis.get('counter_draft') %}
 
+  {# Only these four severities have badge/stripe styles in app.css. Anything else the
+     LLM invents falls back to `info` with no stripe rather than emitting a dead class. #}
+  {% set SEV_OK = ['critical', 'high', 'medium', 'low'] %}
+  {% set STRIPE = {'critical': 'c', 'high': 'h', 'medium': 'm', 'low': 'l'} %}
+
   <!-- Risk Clause -->
   <div class="card fade-up" style="margin-bottom:1rem;">
     <div class="card-hd">
@@ -30,15 +38,20 @@
     </div>
     {% if risk and risk.result_json and risk.result_json.get('findings') %}
       {% for f in risk.result_json['findings'] %}
-      <div class="fc fc-s{{ f.severity[0] }}">
+      {# Every field is read via .get() with a fallback: a single malformed finding
+         must not 500 the whole partial (KNOWN_ISSUES #14). #}
+      {% set sev = f.get('severity') if f.get('severity') in SEV_OK else 'info' %}
+      {% set conf = f.get('confidence') %}
+      {% set quote = f.get('original_text') or '' %}
+      <div class="fc fc-s{{ STRIPE.get(sev, '') }}">
         <div class="fc-meta">
-          <span class="badge badge-{{ f.severity }}">{{ f.severity }}</span>
-          <span class="fc-type">{{ f.clause_type|replace('_',' ')|title }}</span>
-          <span class="fc-conf">{{ (f.confidence*100)|int }}%</span>
+          <span class="badge badge-{{ sev }}">{{ f.get('severity') or 'n/a' }}</span>
+          <span class="fc-type">{{ (f.get('clause_type') or 'other')|replace('_',' ')|title }}</span>
+          {% if conf is number %}<span class="fc-conf">{{ (conf * 100)|int }}%</span>{% endif %}
         </div>
-        <div class="fc-quote">"{{ f.original_text[:220] }}{% if f.original_text|length>220 %}…{% endif %}"</div>
-        <div class="fc-row"><div class="fc-lbl">Risiko</div><div class="fc-txt">{{ f.explanation }}</div></div>
-        <div class="fc-row"><div class="fc-lbl">Saran</div><div class="fc-txt">{{ f.recommendation }}</div></div>
+        {% if quote %}<div class="fc-quote">"{{ quote[:220] }}{% if quote|length > 220 %}…{% endif %}"</div>{% endif %}
+        <div class="fc-row"><div class="fc-lbl">Risiko</div><div class="fc-txt">{{ f.get('explanation') or '—' }}</div></div>
+        <div class="fc-row"><div class="fc-lbl">Saran</div><div class="fc-txt">{{ f.get('recommendation') or '—' }}</div></div>
       </div>
       {% endfor %}
     {% elif risk and risk.error %}
@@ -61,17 +74,19 @@
     </div>
     {% if tax and tax.result_json and tax.result_json.get('findings') %}
       {% for f in tax.result_json['findings'] %}
-      <div class="fc fc-s{{ f.severity[0] }}">
+      {% set sev = f.get('severity') if f.get('severity') in SEV_OK else 'info' %}
+      {% set quote = f.get('original_text') or '' %}
+      <div class="fc fc-s{{ STRIPE.get(sev, '') }}">
         <div class="fc-meta">
-          <span class="badge badge-{{ f.severity }}">{{ f.severity }}</span>
-          <span class="fc-type">{{ f.issue_type|replace('_',' ')|title }}</span>
+          <span class="badge badge-{{ sev }}">{{ f.get('severity') or 'n/a' }}</span>
+          <span class="fc-type">{{ (f.get('issue_type') or 'other')|replace('_',' ')|title }}</span>
           {% if f.get('applicable_regulation') %}
           <span class="reg-chip">{{ f.applicable_regulation }}</span>
           {% endif %}
         </div>
-        <div class="fc-quote">"{{ f.original_text[:220] }}{% if f.original_text|length>220 %}…{% endif %}"</div>
-        <div class="fc-row"><div class="fc-lbl">Masalah</div><div class="fc-txt">{{ f.explanation }}</div></div>
-        <div class="fc-row"><div class="fc-lbl">Rekomendasi</div><div class="fc-txt">{{ f.recommendation }}</div></div>
+        {% if quote %}<div class="fc-quote">"{{ quote[:220] }}{% if quote|length > 220 %}…{% endif %}"</div>{% endif %}
+        <div class="fc-row"><div class="fc-lbl">Masalah</div><div class="fc-txt">{{ f.get('explanation') or '—' }}</div></div>
+        <div class="fc-row"><div class="fc-lbl">Rekomendasi</div><div class="fc-txt">{{ f.get('recommendation') or '—' }}</div></div>
       </div>
       {% endfor %}
     {% elif tax and tax.error %}
@@ -80,21 +95,6 @@
       <p style="color:var(--text-3);font-size:0.825rem;">Tidak ada isu kepatuhan terdeteksi.</p>
     {% endif %}
   </div>
-
-    <p style="font-weight:600;">Agen sedang menganalisis kontrak Anda...</p>
-    <p style="font-size:0.875rem;margin-top:0.5rem;">Biasanya selesai dalam 30–90 detik.</p>
-  </div>
-  {% elif status == "failed" %}
-  <div style="text-align:center;padding:3rem;color:#991b1b;">
-    <div style="font-size:3rem;margin-bottom:1rem;">❌</div>
-    <p style="font-weight:600;">Analisis gagal. Silakan upload ulang kontrak Anda.</p>
-  </div>
-  {% endif %}
-{% else %}
-  {% set risk = analysis.get('risk_clause') %}
-  {% set tax = analysis.get('tax_compliance') %}
-  {% set counter = analysis.get('counter_draft') %}
-
 
   <!-- Counter Draft -->
   <div class="card fade-up" x-data="sendApp('{{ contract_id }}')">

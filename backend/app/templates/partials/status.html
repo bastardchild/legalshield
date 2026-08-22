@@ -1,4 +1,8 @@
 {% set status = contract.status.value %}
+{# data-status-marker is the machine-readable polling signal read by app.js.
+   Polling is driven solely by the #status-area container in result.html — these
+   partials must not re-declare hx-trigger, or two timers race (duplicate polling). #}
+<span data-status-marker="{{ status }}" hidden></span>
 {% if status == "done" %}
 <div class="sb sb-done fade-up">
   <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
@@ -11,19 +15,13 @@
   <span>Analisis gagal — coba upload ulang kontrak Anda</span>
 </div>
 {% elif status == "processing" %}
-<div class="sb sb-proc"
-  hx-get="/partials/{{ contract_id }}/status"
-  hx-trigger="every 2s"
-  hx-swap="outerHTML">
+<div class="sb sb-proc">
   <div class="spinner"></div>
   <span>Agen sedang menganalisis kontrak</span>
   <span style="margin-left:auto;" class="pdot"><span></span><span></span><span></span></span>
 </div>
 {% else %}
-<div class="sb sb-wait"
-  hx-get="/partials/{{ contract_id }}/status"
-  hx-trigger="every 2s"
-  hx-swap="outerHTML">
+<div class="sb sb-wait">
   <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="opacity:.5"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
   <span>File diterima — menunggu antrian analisis</span>
 </div>

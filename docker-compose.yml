@@ -57,5 +57,32 @@ services:
       redis:
         condition: service_healthy
 
+  # Test runner. Not started by `docker compose up` (guarded by a profile).
+  # Run with:  docker compose run --rm test
+  # Config is set inline rather than via .env so tests can never reach a real
+  # LLM provider or depend on developer-specific secrets.
+  test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        INSTALL_DEV: "true"
+    command: pytest
+    volumes:
+      - ./backend:/app
+    environment:
+      DATABASE_URL: postgresql+asyncpg://legalshield:legalshield@postgres:5432/legalshield
+      REDIS_URL: redis://redis:6379/0
+      HERMES_BASE_URL: http://llm.invalid
+      HERMES_API_KEY: test-key
+      LLM_MODEL: test-model
+    profiles:
+      - test
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:

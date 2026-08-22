@@ -8,10 +8,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install pip build backend and project deps from pyproject.toml
+# Install pip build backend and project deps from pyproject.toml.
+# Set INSTALL_DEV=true to additionally install the test/lint extras (used by the
+# `test` service in docker-compose.yml). Production images keep it false.
+ARG INSTALL_DEV=false
 COPY pyproject.toml .
 RUN pip install --no-cache-dir hatchling && \
-    pip install --no-cache-dir .
+    if [ "$INSTALL_DEV" = "true" ]; then \
+        pip install --no-cache-dir ".[dev]"; \
+    else \
+        pip install --no-cache-dir .; \
+    fi
 
 COPY . .
 
