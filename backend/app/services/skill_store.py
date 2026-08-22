@@ -1,34 +1,57 @@
+import hashlib
 import logging
+import re
 from datetime import datetime, timezone
-from sqlalchemy import select, update
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.db.models import ClausePattern
 
 logger = logging.getLogger(__name__)
 
-# Minimum confidence to consider saving as new pattern
+# Minimum confidence before a finding is trusted enough to enter the shared store.
 CONFIDENCE_THRESHOLD = 0.75
-# Simple similarity: if pattern_name already exists (case-insensitive), don't duplicate
-SIMILARITY_CHECK_FIELD = "pattern_name"
+# Default cap on patterns returned for RAG context.
+DEFAULT_PATTERN_LIMIT = 40
 
 
-async def get_active_patterns(db: AsyncSession | None = None) -> list[dict]:
+def fingerprint(clause_type: str, example_text: str) -> str:
     """
-    Retrieve all active clause patterns for use as RAG context in the risk agent.
-    Opens its own session if none provided.
+    Content fingerprint for deduplication.
+
+    Keying on `clause_type:severity` (the previous scheme) collapsed every non-compete
+    into one row, so the first example seen was the only one ever stored. Hashing the
+    normalised example text instead keeps genuinely different clauses apart while still
+    recognising the same clause across uploads.
+    """
+    normalized = re.sub(r"\s+", " ", example_text or "").strip().lower()
+    digest = hashlib.sha256(f"{clause_type}|{normalized}".encode("utf-8")).hexdigest()
+    return digest[:32]
+
+
+async def get_active_patterns(
+    db: AsyncSession | None = None,
+    limit: int = DEFAULT_PATTERN_LIMIT,
+) -> list[dict]:
+    """
+    Active clause patterns for RAG context, most-matched first.
+
+    `limit` is mandatory in effect: the risk agent injects these into every prompt, so an
+    unbounded result set grows the prompt (and cost) until the context window overflows.
     """
     from app.db.session import AsyncSessionLocal
-    close_after = False
+
+    close_after = db is None
     if db is None:
         db = AsyncSessionLocal()
-        close_after = True
     try:
         result = await db.execute(
             select(ClausePattern)
-            .where(ClausePattern.is_active == True)
-            .order_by(ClausePattern.times_matched.desc())
+            .where(ClausePattern.is_active.is_(True))
+            .order_by(ClausePattern.times_matched.desc(), ClausePattern.created_at.desc())
+            .limit(limit)
         )
-        patterns = result.scalars().all()
         return [
             {
                 "id": str(p.id),
@@ -39,56 +62,71 @@ async def get_active_patterns(db: AsyncSession | None = None) -> list[dict]:
                 "times_matched": p.times_matched,
                 "confidence": p.confidence,
             }
-            for p in patterns
+            for p in result.scalars().all()
         ]
     finally:
         if close_after:
             await db.close()
 
 
-async def save_new_patterns(db: AsyncSession, findings: list[dict]):
+async def save_new_patterns(db: AsyncSession, findings: list[dict]) -> int:
     """
-    For each high-confidence finding from the risk agent:
-    - If a matching pattern already exists (by clause_type + similar name), increment times_matched.
-    - Otherwise, insert a new ClausePattern row.
+    Persist high-confidence findings as reusable patterns.
+
+    Findings are expected to be pre-normalised by `services.findings.normalize_findings`,
+    so severity and confidence are already canonical. Returns the number of new rows.
+
+    Note: patterns are global, so a poisoned upload can influence later analyses.
+    The confidence threshold is the only gate today — see KNOWN_ISSUES #6.
     """
+    inserted = 0
     for finding in findings:
-        confidence = float(finding.get("confidence", 0.0))
+        confidence = float(finding.get("confidence", 0.0) or 0.0)
         if confidence < CONFIDENCE_THRESHOLD:
             continue
 
-        clause_type = finding.get("clause_type", "other")
-        explanation = finding.get("explanation", "")
-        original_text = finding.get("original_text", "")
-        severity = finding.get("severity", "medium")
-        pattern_name = f"{clause_type}:{severity}"
+        clause_type = (finding.get("clause_type") or "other").strip() or "other"
+        example_text = (finding.get("original_text") or "").strip()
+        explanation = (finding.get("explanation") or "").strip()
+        severity = finding.get("severity") or "medium"
 
-        # Check for existing match by pattern_name
-        result = await db.execute(
-            select(ClausePattern).where(
-                ClausePattern.pattern_name == pattern_name,
-                ClausePattern.is_active == True,
-            )
-        )
-        existing = result.scalar_one_or_none()
+        # Without example text there is nothing to match on later, and nothing useful to
+        # show the model as an example.
+        if not example_text:
+            continue
+
+        fp = fingerprint(clause_type, example_text)
+        existing = (
+            await db.execute(select(ClausePattern).where(ClausePattern.fingerprint == fp))
+        ).scalar_one_or_none()
 
         if existing:
             existing.times_matched += 1
+            existing.confidence = max(existing.confidence, confidence)
             existing.updated_at = datetime.now(timezone.utc)
             logger.info(
-                f"[SkillStore] Pattern '{pattern_name}' matched — times_matched={existing.times_matched}"
+                f"[SkillStore] Pattern '{existing.pattern_name}' matched again "
+                f"(times_matched={existing.times_matched})"
             )
-        else:
-            new_pattern = ClausePattern(
-                pattern_name=pattern_name,
+            continue
+
+        db.add(
+            ClausePattern(
+                pattern_name=f"{clause_type}:{severity}",
+                fingerprint=fp,
                 description=explanation[:500],
-                example_text=original_text[:500],
+                example_text=example_text[:500],
                 severity=severity,
                 times_matched=1,
                 confidence=confidence,
                 is_active=True,
             )
-            db.add(new_pattern)
-            logger.info(f"[SkillStore] New pattern saved: '{pattern_name}' (confidence={confidence:.2f})")
+        )
+        inserted += 1
+        logger.info(
+            f"[SkillStore] New pattern '{clause_type}:{severity}' "
+            f"(confidence={confidence:.2f}, fp={fp[:8]})"
+        )
 
     await db.commit()
+    return inserted

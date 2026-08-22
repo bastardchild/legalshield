@@ -29,7 +29,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # Migrations run here rather than in the app lifespan, so a broken migration fails
+    # loudly at boot instead of being papered over by metadata.create_all.
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
       - ./backend:/app
     ports:
@@ -46,7 +48,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: python -m app.worker
+    command: sh -c "alembic upgrade head && python -m app.worker"
     volumes:
       - ./backend:/app
     env_file:

@@ -3,7 +3,7 @@ import enum
 from datetime import datetime
 from sqlalchemy import (
     Column, String, Text, DateTime, Enum, Float, Integer,
-    ForeignKey, Boolean
+    ForeignKey, Boolean, UniqueConstraint, Index
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
@@ -26,6 +26,9 @@ class AgentType(str, enum.Enum):
 
 class Contract(Base):
     __tablename__ = "contracts"
+    __table_args__ = (
+        Index("ix_contracts_status", "status"),
+    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     filename = Column(String(512), nullable=False)
@@ -44,6 +47,12 @@ class Contract(Base):
 
 class AnalysisResult(Base):
     __tablename__ = "analysis_results"
+    # The orchestrator upserts on (contract_id, agent_type); without this constraint a
+    # re-run can create a second row and every later upsert raises MultipleResultsFound.
+    __table_args__ = (
+        UniqueConstraint("contract_id", "agent_type", name="uq_analysis_results_contract_agent"),
+        Index("ix_analysis_results_contract_id", "contract_id"),
+    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     contract_id = Column(UUID(as_uuid=True), ForeignKey("contracts.id", ondelete="CASCADE"), nullable=False)
@@ -62,9 +71,15 @@ class AnalysisResult(Base):
 
 class ClausePattern(Base):
     __tablename__ = "clause_patterns"
+    __table_args__ = (
+        UniqueConstraint("fingerprint", name="uq_clause_patterns_fingerprint"),
+    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     pattern_name = Column(String(256), nullable=False)
+    # Content hash of (clause_type, normalised example_text). Dedupes on substance rather
+    # than on clause_type:severity, which collapsed unrelated clauses into one row.
+    fingerprint = Column(String(64), nullable=False)
     description = Column(Text, nullable=False)
     example_text = Column(Text, nullable=False)
     severity = Column(String(32), nullable=False, default="medium")  # low | medium | high | critical

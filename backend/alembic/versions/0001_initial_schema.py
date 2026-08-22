@@ -13,17 +13,48 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
+# PostgreSQL has no CREATE TYPE IF NOT EXISTS, so guard on the duplicate_object error
+# instead. Keeps `upgrade` re-runnable against a database where the types already exist
+# (e.g. one previously bootstrapped by metadata.create_all).
+CREATE_ENUMS = """
+DO $$
+BEGIN
+    CREATE TYPE contract_status AS ENUM ('uploaded', 'processing', 'done', 'failed');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+    CREATE TYPE agent_type AS ENUM ('risk_clause', 'tax_compliance', 'counter_draft');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+"""
+
+# create_type=False stops SQLAlchemy emitting its own CREATE TYPE for each column that
+# references the enum, which would fail now that the block above owns creation.
+contract_status = postgresql.ENUM(
+    'uploaded', 'processing', 'done', 'failed',
+    name='contract_status',
+    create_type=False,
+)
+agent_type = postgresql.ENUM(
+    'risk_clause', 'tax_compliance', 'counter_draft',
+    name='agent_type',
+    create_type=False,
+)
+
 
 def upgrade() -> None:
-    op.execute("CREATE TYPE IF NOT EXISTS contract_status AS ENUM ('uploaded', 'processing', 'done', 'failed')")
-    op.execute("CREATE TYPE IF NOT EXISTS agent_type AS ENUM ('risk_clause', 'tax_compliance', 'counter_draft')")
+    op.execute(CREATE_ENUMS)
 
     op.create_table(
         'contracts',
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column('filename', sa.String(512), nullable=False),
         sa.Column('raw_text', sa.Text, nullable=True),
-        sa.Column('status', sa.Enum('uploaded', 'processing', 'done', 'failed', name='contract_status'), nullable=False, server_default='uploaded'),
+        sa.Column('status', contract_status, nullable=False, server_default='uploaded'),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
         sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
@@ -32,7 +63,7 @@ def upgrade() -> None:
         'analysis_results',
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column('contract_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('contracts.id', ondelete='CASCADE'), nullable=False),
-        sa.Column('agent_type', sa.Enum('risk_clause', 'tax_compliance', 'counter_draft', name='agent_type'), nullable=False),
+        sa.Column('agent_type', agent_type, nullable=False),
         sa.Column('result_json', postgresql.JSONB, nullable=True),
         sa.Column('error', sa.Text, nullable=True),
         sa.Column('started_at', sa.DateTime(timezone=True), nullable=True),

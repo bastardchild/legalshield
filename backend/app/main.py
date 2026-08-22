@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 import logging
 
 from app.config import get_settings
-from app.db.session import engine, Base
+from app.db.session import engine
 from app.api.routes_pages import router as pages_router
 from app.api.routes_upload import router as upload_router
 from app.api.routes_analysis import router as analysis_router
@@ -18,11 +18,9 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Import models so metadata is populated before create_all
-    from app.db import models  # noqa: F401
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables ensured.")
+    # Schema is owned by Alembic (`alembic upgrade head`, run by the container command).
+    # metadata.create_all used to run here, which masked migration failures and never
+    # created the indexes or constraints declared in __table_args__.
     yield
     await engine.dispose()
 
