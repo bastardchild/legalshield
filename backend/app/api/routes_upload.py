@@ -1,52 +1,62 @@
-import uuid
 import logging
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+import uuid
+
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.session import get_db
 from app.db.models import Contract, ContractStatus
-from app.services.pdf_extractor import extract_text_from_pdf
-from app.services.queue import enqueue_analysis
+from app.db.session import get_db
 from app.schemas import ContractUploadResponse
+from app.services.pdf_extractor import extract_text_from_pdf
+from app.services.queue import EnqueueError, enqueue_analysis
+from app.services.upload_validation import (
+    UploadValidationError,
+    decode_text,
+    read_limited,
+    validate_content_type,
+    validate_declared_size,
+    validate_filename,
+    validate_payload,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-ALLOWED_EXTENSIONS = {".pdf", ".txt"}
-ALLOWED_MIMETYPES = {"application/pdf", "text/plain"}
+ENQUEUE_FAILED_MESSAGE = (
+    "Antrean analisis tidak dapat dihubungi saat unggah. Silakan coba lagi beberapa saat lagi."
+)
 
 
 @router.post("/contracts/upload", response_model=ContractUploadResponse)
 async def upload_contract(
+    request: Request,
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
-    if not file.filename:
-        raise HTTPException(status_code=400, detail="No filename provided.")
+    try:
+        ext = validate_filename(file.filename)
+        validate_content_type(file.content_type)
+        # Checked from the header first so an oversized body is refused before buffering.
+        validate_declared_size(request.headers.get("content-length"))
+        file_bytes = await read_limited(file)
+        ext = validate_payload(ext, file_bytes)
 
-    ext = "." + file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
-    if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Only PDF or TXT files are accepted.")
-
-    file_bytes = await file.read()
-    if len(file_bytes) > 20 * 1024 * 1024:  # 20 MB limit
-        raise HTTPException(status_code=413, detail="File too large. Max 20 MB.")
-
-    # Extract text
-    if ext == ".pdf":
-        try:
-            raw_text = extract_text_from_pdf(file_bytes)
-        except ValueError as e:
-            raise HTTPException(status_code=422, detail=str(e))
-    else:
-        # Plain text — decode directly
-        try:
-            raw_text = file_bytes.decode("utf-8")
-        except UnicodeDecodeError:
-            raw_text = file_bytes.decode("latin-1")
+        if ext == ".pdf":
+            try:
+                raw_text = extract_text_from_pdf(file_bytes)
+            except ValueError as e:
+                raise UploadValidationError(str(e), status_code=422) from e
+        else:
+            raw_text = decode_text(file_bytes)
+    except UploadValidationError as e:
+        logger.info(f"Rejected upload '{file.filename}': {e.detail}")
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
 
     if not raw_text.strip():
-        raise HTTPException(status_code=422, detail="Could not extract text from file. Is it a scanned image?")
+        raise HTTPException(
+            status_code=422,
+            detail="Tidak ada teks yang bisa diekstrak dari file. Apakah ini hasil scan gambar?",
+        )
 
     contract = Contract(
         id=uuid.uuid4(),
@@ -58,13 +68,22 @@ async def upload_contract(
     await db.commit()
     await db.refresh(contract)
 
-    # Push to Redis queue
-    enqueue_analysis(str(contract.id))
-    logger.info(f"Contract {contract.id} uploaded ({ext}), job enqueued.")
+    # The row is already committed, so a dead Redis would otherwise strand this contract
+    # in `uploaded` and the front-end would poll it forever (KNOWN_ISSUES #9).
+    try:
+        contract.job_id = enqueue_analysis(str(contract.id))
+    except EnqueueError as e:
+        contract.status = ContractStatus.failed
+        contract.error = ENQUEUE_FAILED_MESSAGE
+        await db.commit()
+        logger.error(f"Contract {contract.id} marked failed: enqueue error: {e}")
+        raise HTTPException(status_code=503, detail=ENQUEUE_FAILED_MESSAGE) from e
+
+    await db.commit()
+    logger.info(f"Contract {contract.id} uploaded ({ext}), job {contract.job_id} enqueued.")
 
     return ContractUploadResponse(
         id=str(contract.id),
         filename=contract.filename,
         status=contract.status.value,
     )
-

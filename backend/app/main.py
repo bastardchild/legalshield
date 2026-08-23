@@ -3,12 +3,13 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import logging
 
-from app.config import get_settings
-from app.db.session import engine
+from app.api.routes_analysis import router as analysis_router
+from app.api.routes_health import router as health_router
+from app.api.routes_negotiate import router as negotiate_router
 from app.api.routes_pages import router as pages_router
 from app.api.routes_upload import router as upload_router
-from app.api.routes_analysis import router as analysis_router
-from app.api.routes_negotiate import router as negotiate_router
+from app.config import get_settings
+from app.db.session import dispose_engine
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ async def lifespan(app: FastAPI):
     # metadata.create_all used to run here, which masked migration failures and never
     # created the indexes or constraints declared in __table_args__.
     yield
-    await engine.dispose()
+    await dispose_engine()
 
 
 app = FastAPI(
@@ -34,6 +35,7 @@ app = FastAPI(
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+app.include_router(health_router)
 app.include_router(pages_router)
 app.include_router(upload_router, prefix="/api")
 app.include_router(analysis_router, prefix="/api")

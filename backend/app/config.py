@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     # Cap on skill-store patterns injected as RAG context, newest-most-matched first.
     max_rag_patterns: int = 40
 
+    # A contract sits in `processing` only while a job holds it. RQ kills jobs at
+    # job_timeout (600s), so anything older than this has lost its worker — a crashed
+    # container, an OOM kill, or a flushed Redis — and must not stay there forever.
+    stuck_contract_timeout_seconds: int = 900
+    # How often the reaper sweeps. Set to 0 to disable it (e.g. in tests).
+    reaper_interval_seconds: int = 300
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

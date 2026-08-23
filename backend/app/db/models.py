@@ -28,6 +28,7 @@ class Contract(Base):
     __tablename__ = "contracts"
     __table_args__ = (
         Index("ix_contracts_status", "status"),
+        Index("ix_contracts_status_updated_at", "status", "updated_at"),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -38,6 +39,9 @@ class Contract(Base):
         nullable=False,
         default=ContractStatus.uploaded,
     )
+    # RQ job id, so the reaper can tell a genuinely lost job from a slow one.
+    job_id = Column(String(64), nullable=True)
+    error = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
