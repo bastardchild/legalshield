@@ -24,6 +24,17 @@ cp .env.example .env
 docker compose up --build
 ```
 
+Untuk deployment (bukan development):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+Overlay produksi menghapus bind mount `./backend:/app`, mematikan `--reload`, dan berhenti
+mempublikasikan port Postgres/Redis ke host. Rincian alasannya ada di komentar
+`docker-compose.prod.yml`. Isi dulu `SECRET_KEY`, `ACCESS_TOKEN`, dan `COOKIE_SECURE=true`
+(bila di belakang TLS) sebelum memakainya.
+
 Service `migrate` berjalan sekali (`alembic upgrade head` lalu `python -m app.seed`);
 `api` dan `worker` menunggu sampai service itu keluar dengan status 0. Seeding bersifat
 idempoten: 100 pola klausul dari `seed/dataset1.json` dimuat sekali, menjalankan ulang
@@ -119,6 +130,7 @@ konten (sha256 dari `clause_type` + teks contoh yang dinormalisasi), bukan
 ```
 legalshield/
 ├── docker-compose.yml              # postgres, redis, migrate, api, worker, test
+├── docker-compose.prod.yml         # overlay produksi: tanpa bind mount / --reload / port DB
 ├── .env.example
 ├── .memory/                       # catatan agent: mapping proyek & known issues
 ├── seed/

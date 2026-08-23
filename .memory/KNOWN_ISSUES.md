@@ -46,7 +46,7 @@ As of commit `49b537a`. Verified against a live Docker stack with a real LLM pro
 | 23 | `langchain` declared but unused | **fixed** (removed) | `9ec0723` |
 | 24 | Unused / misleading declarations | **fixed** | `9ec0723` |
 | 25 | No health endpoint | **fixed** | `89cbac6` |
-| 26 | Image build discarded by the bind mount | **partly fixed** | `49b537a` |
+| 26 | Image build discarded by the bind mount | **fixed** | `49b537a`, `PHASE9` |
 | 27 | Styling split between CSS and inline attributes | **partly fixed** | `9ec0723` |
 
 ### Notes on the non-"fixed" rows
@@ -65,11 +65,13 @@ never read). A reader sees own + global; a writer only ever writes under its own
 never bumps a global row's counter, because that would be a runtime write to shared state.
 Blast radius of a successful injection is now one owner's own future analyses.
 
-**#26 — partly fixed.** The image is now multi-stage and ships without `gcc`/`libpq-dev`,
-and `backend/.dockerignore` exists (`.gitignore` had listed it as ignored, so the entire
-host tree including `.git` was uploaded to the daemon on every build). The `./backend:/app`
-bind mount is still there because `--reload` depends on it; a production compose file
-should drop it. The Dockerfile carries a comment saying so.
+**#26 — fixed.** The image is multi-stage and ships without `gcc`/`libpq-dev`, and
+`backend/.dockerignore` exists (`.gitignore` had listed it as ignored, so the entire host
+tree including `.git` was uploaded to the daemon on every build). `docker-compose.prod.yml`
+now drops the `./backend:/app` mount, drops `--reload`, and stops publishing 5432/6379 to
+the host; the base file keeps all three because `--reload` depends on the mount and local
+development wants direct database access. `tests/test_deployment_config.py` fails if the
+overlay regains the mount or the base file loses `--reload`.
 
 **#27 — partly fixed.** Inline `font-family` declarations are gone from every template, so
 the CSS fallback stacks actually apply, and `tests/test_static_assets.py` fails if one
@@ -456,11 +458,9 @@ it makes UI edits error-prone and inflates diffs.
 The original repair order is complete, as are the two security phases that followed it.
 What is left, in the order it should be tackled:
 
-1. **Production compose file** without the `./backend:/app` bind mount and without
-   `--reload` (#26).
-2. **Real SMTP** in `services/mailer.py` — still a logging stub, by design.
-3. **Retire remaining inline layout styles** (#27).
-4. **A real account system**, if the product needs contracts to survive a cleared cookie.
+1. **Real SMTP** in `services/mailer.py` — still a logging stub, by design.
+2. **Retire remaining inline layout styles** (#27).
+3. **A real account system**, if the product needs contracts to survive a cleared cookie.
    The anonymous owner id is the right shape for it: replace `contracts.owner_id` with a FK
    to a `users` table and `middleware.OwnerMiddleware` with a session lookup. Nothing else
    needs to change, because `api/deps.py::load_owned_contract` is the only place the

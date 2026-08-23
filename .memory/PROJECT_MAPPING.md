@@ -14,6 +14,7 @@ C:\legalshield\
 ├── .env.example                  # env template (git-tracked; .env is ignored)
 ├── .gitignore
 ├── docker-compose.yml            # postgres, redis, migrate, api, worker, test (profile)
+├── docker-compose.prod.yml       # production overlay: no bind mount, no --reload, no DB ports
 ├── README.md                     # user-facing docs (Bahasa Indonesia)
 ├── .memory/                      # ← agent memory (this directory)
 ├── seed/                         # bind-mounted read-only into every service at /app/seed
@@ -48,6 +49,7 @@ C:\legalshield\
     │   ├── test_seed_loader.py   # dataset shape and prompt wiring (#18)
     │   ├── test_static_assets.py # vendored JS, font fallbacks (#20, #27)
     │   ├── test_security.py      # cookie signing, access gate, limiter, ownership (#5)
+    │   ├── test_deployment_config.py # compose guards: prod overlay, dev ergonomics (#26)
     │   └── integration/          # needs live Postgres; skipped under --no-deps
     │       ├── conftest.py       # creates/migrates/drops legalshield_test
     │       ├── test_db_schema.py # migration chain, model drift, fingerprint SQL parity
@@ -487,3 +489,35 @@ things whose bugs live in SQL are no longer verified only by hand.
   divergence there is silent and permanent: backfilled rows would never match again.
 - `TestPerLoopEngine` proves a *second* `asyncio.run` can actually query, which is the
   production failure the unit test only approximates by comparing engine identities.
+
+**Production overlay (phase 9).** `docker-compose.prod.yml` is used as a second `-f`:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+It changes three things, each a correctness issue rather than a preference:
+
+- Drops `./backend:/app`, so the running code is the built image rather than whatever is on
+  the host disk. `volumes: !override` is required — Compose *merges* volume lists by default,
+  so an ordinary redefinition would keep the inherited mount. `./seed:/app/seed:ro` stays,
+  because that is data.
+- Drops `--reload`. With no bind mount there is nothing to watch, and the reloader's
+  supervisor process obscures crash exit codes.
+- `ports: !override []` on `postgres` and `redis`. The base file publishes 5432 and 6379 with
+  the credentials `legalshield:legalshield` and no Redis password; on a server that is a
+  direct path in. Services reach each other over the compose network.
+
+`--proxy-headers --forwarded-allow-ips=*` is deliberately **not** set: it makes uvicorn
+rewrite `request.client.host` from `X-Forwarded-For`, which is the value the rate limiter
+keys on, so a wildcard lets any caller mint a fresh identity per request. Behind a proxy,
+name the proxy's IP explicitly and set `TRUST_PROXY_HEADERS=true`.
+
+`tests/test_deployment_config.py` guards all of this by parsing both files. It strips `#`
+comments before "this flag must not appear" assertions, because the overlay's comments
+explain the flags they forbid.
+
+> The compose files sit above the Docker build context (`./backend`), so the `test` service
+> mounts them at **`/deploy`**, not under `/app`. A file mount nested inside the
+> `./backend:/app` mount makes Docker create empty placeholder files on the host — that
+> produced a stray `backend/deploy/` directory with two zero-byte files on the first attempt.

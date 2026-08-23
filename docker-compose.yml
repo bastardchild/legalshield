@@ -103,6 +103,11 @@ services:
     volumes:
       - ./backend:/app
       - ./seed:/app/seed:ro
+      # The compose files are the subject of tests/test_deployment_config.py, but they live
+      # above the build context. Mounted at /deploy rather than under /app: a file mount
+      # inside the ./backend:/app mount makes Docker create empty placeholders on the host.
+      - ./docker-compose.yml:/deploy/docker-compose.yml:ro
+      - ./docker-compose.prod.yml:/deploy/docker-compose.prod.yml:ro
     environment:
       DATABASE_URL: postgresql+asyncpg://legalshield:legalshield@postgres:5432/legalshield
       REDIS_URL: redis://redis:6379/0

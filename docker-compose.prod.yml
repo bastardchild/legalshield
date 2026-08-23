@@ -1,0 +1,51 @@
+# Production overlay. Use together with the base file:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Three things differ from local development, and each one is a correctness issue rather
+# than a preference:
+#
+# 1. **No source bind mount.** The base file mounts ./backend over /app so uvicorn --reload
+#    can see edits, which shadows everything `pip install .` put in the image (KNOWN_ISSUES
+#    #26). In production that means the running code is whatever happens to be on the host
+#    disk, not what was built and tested. The overlay drops the mount, so the image is the
+#    only source of truth. Seed data is still mounted read-only because it is data, not code.
+# 2. **No --reload.** The reloader runs a supervisor plus a child per worker and watches the
+#    filesystem; with no bind mount there is nothing to watch, and the extra process only
+#    obscures crash exit codes.
+# 3. **No published database or Redis ports.** The base file publishes 5432 and 6379 to the
+#    host with the credentials legalshield:legalshield and no Redis password. On a server
+#    that is a direct path into the database. Services reach each other over the compose
+#    network, so nothing needs publishing.
+#
+# Set at minimum SECRET_KEY, ACCESS_TOKEN and COOKIE_SECURE=true in .env before using this.
+services:
+  postgres:
+    # Overriding with an empty list is how Compose removes inherited port mappings.
+    ports: !override []
+    # A real deployment should point this at managed storage or a named volume with backups.
+    restart: unless-stopped
+
+  redis:
+    ports: !override []
+    restart: unless-stopped
+
+  migrate:
+    volumes: !override
+      - ./seed:/app/seed:ro
+
+  api:
+    # Deliberately *not* passing --proxy-headers/--forwarded-allow-ips=*. Those make uvicorn
+    # rewrite request.client.host from X-Forwarded-For, which is exactly the value the rate
+    # limiter keys on: with a wildcard, any caller can spoof a fresh identity per request and
+    # the limiter stops working. Behind a reverse proxy, set TRUST_PROXY_HEADERS=true and add
+    # `--proxy-headers --forwarded-allow-ips=<proxy ip>` here, naming the proxy explicitly.
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes: !override
+      - ./seed:/app/seed:ro
+    restart: unless-stopped
+
+  worker:
+    volumes: !override
+      - ./seed:/app/seed:ro
+    restart: unless-stopped
