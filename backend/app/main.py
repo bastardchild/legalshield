@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
+docs_url, redoc_url, openapi_url = settings.docs_urls()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,6 +41,11 @@ app = FastAPI(
     description="Autonomous contract analysis platform for freelancers & startups",
     version="0.1.0",
     lifespan=lifespan,
+    # None disables the route entirely: DOCS_ENABLED=false hides the API surface (404)
+    # instead of serving it open. The production overlay forces this off.
+    docs_url=docs_url,
+    redoc_url=redoc_url,
+    openapi_url=openapi_url,
 )
 
 # Starlette runs middleware in reverse registration order, so these are added
