@@ -472,3 +472,7 @@ The original repair order is complete. What is left, in the order it should be t
 - Docker Desktop's WSL engine crashed once mid-session during a rebuild. `docker desktop
   restart` recovered it with no data loss; the symptom is a `500 Internal Server Error` from
   the `/networks` API route.
+- **Test a clean boot, not just a restart.** Two defects only appeared on the first boot of an
+  empty volume: the `alembic_version` race between `api` and `worker` (fixed by the one-shot
+  `migrate` service) and the per-loop engine failure on a worker's *second* job. Use
+  `docker compose down && docker volume rm legalshield_postgres_data && docker compose up -d`.

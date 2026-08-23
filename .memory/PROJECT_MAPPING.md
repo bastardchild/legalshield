@@ -13,7 +13,7 @@ Line references are approximate anchors, not guarantees.
 C:\legalshield\
 ├── .env.example                  # env template (git-tracked; .env is ignored)
 ├── .gitignore
-├── docker-compose.yml            # postgres, redis, api, worker, test (profile)
+├── docker-compose.yml            # postgres, redis, migrate, api, worker, test (profile)
 ├── README.md                     # user-facing docs (Bahasa Indonesia)
 ├── .memory/                      # ← agent memory (this directory)
 ├── seed/                         # bind-mounted read-only into every service at /app/seed
@@ -347,9 +347,16 @@ which does not exist.
 
 What changed relative to sections 2–12 above:
 
-**Schema ownership.** `main.py` no longer calls `Base.metadata.create_all`. Both the `api`
-and `worker` container commands run `alembic upgrade head` first; `api` then runs
-`python -m app.seed`. A broken migration now fails at boot instead of being masked.
+**Schema ownership.** `main.py` no longer calls `Base.metadata.create_all`. A one-shot
+`migrate` service runs `alembic upgrade head` then `python -m app.seed`, and both `api` and
+`worker` gate on `service_completed_successfully`. A broken migration now fails at boot
+instead of being masked.
+
+> Running `alembic upgrade head` from both the `api` and `worker` commands looked simpler
+> but raced on a fresh database: both tried to `CREATE TABLE alembic_version` and the loser
+> died on `duplicate key value violates unique constraint "pg_type_typname_nsp_index"`. The
+> race only appears on the very first boot of an empty volume, which is why it survived
+> several restarts before being caught.
 
 **Sessions.** `db/session.py` no longer exposes a module-level `engine`. Engines and
 sessionmakers are keyed by `id(asyncio.get_running_loop())`, because RQ runs each job in a

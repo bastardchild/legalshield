@@ -24,9 +24,10 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Service `api` menjalankan `alembic upgrade head`, lalu `python -m app.seed`, lalu uvicorn.
-Seeding bersifat idempoten: 100 pola klausul dari `seed/dataset1.json` dimuat sekali,
-menjalankan ulang tidak menduplikasi apa pun.
+Service `migrate` berjalan sekali (`alembic upgrade head` lalu `python -m app.seed`);
+`api` dan `worker` menunggu sampai service itu keluar dengan status 0. Seeding bersifat
+idempoten: 100 pola klausul dari `seed/dataset1.json` dimuat sekali, menjalankan ulang
+tidak menduplikasi apa pun.
 
 Tunggu sampai `docker compose ps` melaporkan `api` sebagai `healthy`.
 
@@ -109,7 +110,7 @@ bukan `clause_type:severity`.
 
 ```
 legalshield/
-├── docker-compose.yml
+├── docker-compose.yml              # postgres, redis, migrate, api, worker, test
 ├── .env.example
 ├── .memory/                       # catatan agent: mapping proyek & known issues
 ├── seed/

@@ -20,7 +20,7 @@ contracts (PDF or TXT) with three LLM sub-agents and produces a counter-draft.
 - **Queue**: Redis 7 + RQ (sync worker bridging into `asyncio.run`)
 - **LLM**: any OpenAI-compatible endpoint via `openai.AsyncOpenAI` (default: Hermes / Nous Research)
 - **Frontend**: Jinja2 + HTMX polling + Alpine.js, no build step, assets vendored locally
-- **Infra**: Docker Compose (`postgres`, `redis`, `api`, `worker`, `test` behind a profile)
+- **Infra**: Docker Compose (`postgres`, `redis`, `migrate`, `api`, `worker`, `test` behind a profile)
 - **Repo state**: repaired through phases 1–5; 237 tests; verified end-to-end against a live
   LLM provider. See `KNOWN_ISSUES.md` for the status ledger.
 

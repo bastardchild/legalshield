@@ -25,14 +25,29 @@ services:
       timeout: 5s
       retries: 10
 
+  # One-shot migration + seed runner. Both api and worker wait for this to exit 0.
+  # Running `alembic upgrade head` in each service raced on a fresh database: both tried
+  # to CREATE TABLE alembic_version and the loser died on a unique violation.
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: sh -c "alembic upgrade head && python -m app.seed"
+    volumes:
+      - ./backend:/app
+      - ./seed:/app/seed:ro
+    env_file:
+      - .env
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   api:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    # Migrations run here rather than in the app lifespan, so a broken migration fails
-    # loudly at boot instead of being papered over by metadata.create_all. Seeding is
-    # idempotent and non-fatal, so it can run on every start.
-    command: sh -c "alembic upgrade head && python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       # The bind mount shadows the image's own copy of the source, which is what makes
       # --reload work. A production deployment should drop it and use the built image.
@@ -53,12 +68,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   worker:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: sh -c "alembic upgrade head && python -m app.worker"
+    command: python -m app.worker
     volumes:
       - ./backend:/app
       - ./seed:/app/seed:ro
@@ -69,6 +86,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   # Test runner. Not started by `docker compose up` (guarded by a profile).
   # Run with:  docker compose run --rm test
