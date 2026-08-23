@@ -31,8 +31,11 @@ C:\legalshield\
     │   └── versions/
     │       ├── 0001_initial_schema.py              # enums guarded by DO/duplicate_object
     │       ├── 0002_fingerprint_and_constraints.py # fingerprint + unique constraints
-    │       └── 0003_contract_job_tracking.py       # job_id, error, (status, updated_at)
-    ├── tests/                    # 237 tests; `docker compose run --rm --no-deps test`
+    │       ├── 0003_contract_job_tracking.py       # job_id, error, (status, updated_at)
+    │       └── 0004_contract_ownership.py          # owner_id (NOT NULL, indexed)
+    ├── scripts/
+    │   └── e2e_access_check.py    # live-stack access-control check (not in pytest)
+    ├── tests/                    # 289 tests; `docker compose run --rm --no-deps test`
     │   ├── conftest.py           # env defaults set before any app import; Jinja fixtures
     │   ├── test_templates.py     # compile + polling-marker regressions (#1, #4, #14, #15)
     │   ├── test_llm_client.py    # JSON extraction, base-URL normalisation (#7, #10)
@@ -42,11 +45,14 @@ C:\legalshield\
     │   ├── test_upload_validation.py  # magic bytes, binary detection, size (#16)
     │   ├── test_queue_and_reaper.py   # enqueue failure, per-loop engine (#9)
     │   ├── test_seed_loader.py   # dataset shape and prompt wiring (#18)
-    │   └── test_static_assets.py # vendored JS, font fallbacks (#20, #27)
+    │   ├── test_static_assets.py # vendored JS, font fallbacks (#20, #27)
+    │   └── test_security.py      # cookie signing, access gate, limiter, ownership (#5)
     └── app/
         ├── __init__.py
         ├── main.py               # FastAPI app, lifespan, static mount, router wiring
         ├── config.py             # pydantic-settings Settings + cached get_settings()
+        ├── security.py           # HMAC cookie signing, owner ids, token compare
+        ├── middleware.py         # rate limit → access gate → owner identity
         ├── schemas.py            # Pydantic request/response models
         ├── worker.py             # RQ worker entrypoint + reaper thread
         ├── seed.py               # idempotent `python -m app.seed` CLI
@@ -54,6 +60,7 @@ C:\legalshield\
         │   ├── session.py        # per-event-loop engine registry, AsyncSessionLocal, Base, get_db()
         │   └── models.py         # Contract, AnalysisResult, ClausePattern, NegotiationSend
         ├── api/
+        │   ├── deps.py           # load_owned_contract — the one ownership check
         │   ├── routes_pages.py   # HTML pages + HTMX partials
         │   ├── routes_upload.py  # POST /api/contracts/upload
         │   ├── routes_analysis.py# status + result JSON
@@ -71,6 +78,7 @@ C:\legalshield\
         │   ├── upload_validation.py  # content-first upload checks
         │   ├── pdf_extractor.py  # pypdf text extraction
         │   ├── queue.py          # Redis/RQ enqueue (raises EnqueueError) + sync wrapper
+        │   ├── rate_limit.py     # fixed-window limiter on Redis, fail-open to memory
         │   ├── reaper.py         # sweeps contracts stuck in uploaded/processing
         │   ├── seed_loader.py    # dataset1 → clause_patterns; datasetpasal1 → citations
         │   ├── skill_store.py    # self-improving clause pattern store (RAG context)
@@ -177,6 +185,7 @@ erDiagram
     CLAUSE_PATTERNS
     CONTRACTS {
         uuid id PK
+        string owner_id
         string filename
         text raw_text
         enum status "uploaded|processing|done|failed"
@@ -248,8 +257,11 @@ erDiagram
 | GET | `/docs`, `/openapi.json` | FastAPI default | Swagger UI / schema |
 
 Notes: routers are mounted with `prefix="/api"` in `main.py`, so the paths above are final.
-There is **no** authentication, rate limiting, CORS config, or health endpoint.
 `/partials/...` are not under `/api` because `routes_pages` is included without a prefix.
+
+> Superseded by phase 6: `/health` and `/health/ready` exist, and every route except those
+> two and `/static/*` passes through rate limiting, the optional `ACCESS_TOKEN` gate, and
+> owner-scoped contract lookup. See the deltas section.
 
 ## 8. Frontend map
 
@@ -336,7 +348,7 @@ which does not exist.
 | Bootstrap the skill store from `seed/dataset1.json` | done — `services/seed_loader.py`, CLI in `app/seed.py` |
 | Add legal-citation RAG for tax agent | done — `legal_references_text()` → `{{ legal_references }}` |
 | Real email delivery | replace `services/mailer.py` body, set `NegotiationSend.status="sent"` |
-| Multi-tenancy / auth | new `users` table + FK on `contracts`, dependency in every router |
+| Multi-tenancy / auth | done (anonymous, cookie-scoped) — `app/security.py`, `app/middleware.py`, `app/api/deps.py`. A real account system replaces `owner_id` with a `users` FK |
 | Add a 4th agent | new `agents/agent_*.py`, new `AgentType` enum member + migration, wire into `orchestrator.run_analysis`, render in `partials/result.html` |
 | Replace polling with push | SSE/WebSocket endpoint in `routes_pages.py`, drop `hx-trigger="every ..."` |
 | Retry failed agents | `llm_client.chat_completion_json` already retries JSON failures; re-enqueue in `queue.py` for whole-job retries |
@@ -396,3 +408,29 @@ when status is `failed`), and an `ix_contracts_status_updated_at` index for the 
 **Configuration.** Ten new settings; see the table in `README.md`. `Settings` uses
 `SettingsConfigDict` with `extra="ignore"`, so an unrecognised `.env` key no longer crashes
 startup.
+
+**Access control (phase 6).** Three middlewares in `app/middleware.py`, registered in
+`main.py` so the per-request order is rate limit → access gate → owner identity (Starlette
+applies `add_middleware` in reverse, so the registration order is the inverse).
+
+- `app/security.py` — HMAC-SHA256 cookie signing over `SECRET_KEY`, anonymous 32-hex owner
+  ids, constant-time token comparison. With no `SECRET_KEY` a random per-process key is
+  generated and a warning is logged.
+- `app/services/rate_limit.py` — fixed-window counters in Redis (`INCR` + `EXPIRE` on a
+  window-suffixed key), **fail-open** to a bounded in-memory dict when Redis is down.
+- `contracts.owner_id` (migration `0004`, `NOT NULL`, indexed) is the authorization key.
+  Pre-existing rows are backfilled to the sentinel `legacy`, which `new_owner_id()` can
+  never produce, so they are retained but unreachable.
+- `app/api/deps.py::load_owned_contract` is the **only** place the ownership rule lives.
+  Every contract read goes through it; `tests/test_security.py` fails if a route
+  reintroduces a bare `select(Contract)`. A foreign or missing contract both yield 404.
+- The HTMX partials catch the dependency's `HTTPException` and return an HTML fragment,
+  because htmx swaps the response body into the page and a JSON error blob would land
+  inside the results card.
+- `/health*` and `/static/*` bypass the gate and the limiter: an orchestrator cannot present
+  a credential, and gating liveness turns a credential mistake into a restart loop.
+- CORS middleware is only added when `ALLOWED_ORIGINS` is non-empty.
+
+`scripts/e2e_access_check.py` exercises all of this against a running stack (stdlib only,
+exits non-zero on failure). It is not in the pytest suite because the suite must stay
+runnable with `--no-deps`.

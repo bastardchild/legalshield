@@ -25,7 +25,7 @@ As of commit `49b537a`. Verified against a live Docker stack with a real LLM pro
 | 2 | `CREATE TYPE IF NOT EXISTS` is invalid PostgreSQL | **fixed** | `2a0c0ac` |
 | 3 | Migrations bypassed by `create_all` | **fixed** | `2a0c0ac` |
 | 4 | Polling stops on the first poll | **fixed** | `e94aa87` |
-| 5 | No auth, rate limiting, or CORS | **open — deferred** | documented in `README.md` |
+| 5 | No auth, rate limiting, or CORS | **fixed** | `PHASE6` |
 | 6 | Prompt injection via contract text | **mitigated** | `2a0c0ac` |
 | 7 | No LLM timeout/retry; strict JSON parsing | **fixed** | `2a0c0ac` |
 | 8 | No contract truncation | **fixed** | `2a0c0ac` |
@@ -50,12 +50,6 @@ As of commit `49b537a`. Verified against a live Docker stack with a real LLM pro
 | 27 | Styling split between CSS and inline attributes | **partly fixed** | `9ec0723` |
 
 ### Notes on the non-"fixed" rows
-
-**#5 — deliberately not fixed.** Adding auth is a product decision, not a bug fix: it
-determines whether this is a single-tenant demo or a multi-tenant service, and the wrong
-choice is expensive to unwind. Anyone who can reach port 8000 can upload contracts, read
-other contracts by UUID, and spend your LLM budget. `README.md` now says so explicitly.
-Decide the model (session cookie + owner column, or an API key per tenant) before deploying.
 
 **#6 — mitigated, not solved.** Contract text is fenced between
 `===== UNTRUSTED CONTRACT TEXT =====` markers, the sentinel is stripped from the payload so
@@ -90,6 +84,12 @@ New modules, all with tests:
 | `app/api/routes_health.py` | `/health` (liveness) and `/health/ready` (Postgres + Redis, 503 when degraded) |
 | `alembic/versions/0002_*.py` | `clause_patterns.fingerprint` + both unique constraints, with dedupe and SQL backfill |
 | `alembic/versions/0003_*.py` | `contracts.job_id`, `contracts.error`, `(status, updated_at)` index |
+| `app/security.py` | HMAC cookie signing, anonymous owner ids, constant-time token compare |
+| `app/middleware.py` | Rate limit → access gate → owner identity, in that request order |
+| `app/services/rate_limit.py` | Fixed-window limiter on Redis, fail-open to in-memory |
+| `app/api/deps.py` | `load_owned_contract` — the single place the ownership rule lives |
+| `alembic/versions/0004_*.py` | `contracts.owner_id` + index, legacy rows backfilled to `legacy` |
+| `scripts/e2e_access_check.py` | Live-stack access-control check (needs a running stack) |
 
 One defect was found during repair rather than in the original audit, and is worth
 remembering because it is invisible until the *second* job runs:

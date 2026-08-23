@@ -4,11 +4,14 @@ import uuid
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.db.models import Contract, ContractStatus
 from app.db.session import get_db
+from app.middleware import client_key, current_owner
 from app.schemas import ContractUploadResponse
 from app.services.pdf_extractor import extract_text_from_pdf
 from app.services.queue import EnqueueError, enqueue_analysis
+from app.services.rate_limit import RateLimitExceeded, check
 from app.services.upload_validation import (
     UploadValidationError,
     decode_text,
@@ -25,6 +28,29 @@ router = APIRouter()
 ENQUEUE_FAILED_MESSAGE = (
     "Antrean analisis tidak dapat dihubungi saat unggah. Silakan coba lagi beberapa saat lagi."
 )
+UPLOAD_LIMIT_MESSAGE = (
+    "Batas unggahan tercapai. Setiap unggahan menjalankan tiga agen LLM, jadi jumlahnya "
+    "dibatasi per jam. Coba lagi nanti."
+)
+
+
+def _enforce_upload_limit(request: Request) -> None:
+    """
+    Hourly upload cap, on top of the global per-minute request limit.
+
+    Uploads are the only endpoint that spends money: each one runs three LLM agents. The
+    general limit is far too generous to protect that, so uploads get their own window.
+    """
+    limit = get_settings().rate_limit_uploads_per_hour
+    try:
+        check(f"upload:{client_key(request)}", limit, 3600)
+    except RateLimitExceeded as e:
+        logger.warning(f"[RateLimit] {client_key(request)} exceeded {e.limit} uploads/hour")
+        raise HTTPException(
+            status_code=429,
+            detail=UPLOAD_LIMIT_MESSAGE,
+            headers={"Retry-After": str(e.retry_after)},
+        ) from e
 
 
 @router.post("/contracts/upload", response_model=ContractUploadResponse)
@@ -33,6 +59,8 @@ async def upload_contract(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
+    _enforce_upload_limit(request)
+
     try:
         ext = validate_filename(file.filename)
         validate_content_type(file.content_type)
@@ -60,6 +88,8 @@ async def upload_contract(
 
     contract = Contract(
         id=uuid.uuid4(),
+        # Stamped at creation: this is what every later read is filtered by.
+        owner_id=current_owner(request),
         filename=file.filename,
         raw_text=raw_text,
         status=ContractStatus.uploaded,

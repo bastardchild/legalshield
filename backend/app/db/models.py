@@ -39,9 +39,13 @@ class Contract(Base):
     __table_args__ = (
         Index("ix_contracts_status", "status"),
         Index("ix_contracts_status_updated_at", "status", "updated_at"),
+        Index("ix_contracts_owner_id", "owner_id"),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # Signed anonymous owner id from the cookie. Every read is scoped to it, so a leaked
+    # contract UUID is no longer sufficient to read the analysis.
+    owner_id = Column(String(64), nullable=False)
     filename = Column(String(512), nullable=False)
     raw_text = Column(Text, nullable=True)
     status = Column(

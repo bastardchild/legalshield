@@ -11,6 +11,8 @@ os.environ.setdefault("REDIS_URL", "redis://redis:6379/0")
 os.environ.setdefault("HERMES_BASE_URL", "http://llm.invalid")
 os.environ.setdefault("HERMES_API_KEY", "test-key")
 os.environ.setdefault("LLM_MODEL", "test-model")
+# Deterministic cookie signing; without it security.py generates a random per-process key.
+os.environ.setdefault("SECRET_KEY", "test-secret-key")
 
 from datetime import UTC, datetime  # noqa: E402
 from types import SimpleNamespace  # noqa: E402

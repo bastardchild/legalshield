@@ -157,6 +157,13 @@ legalshield/
 | `MAX_RAG_PATTERNS` | Batas pola skill store dalam prompt | `40` |
 | `MAX_LEGAL_REFERENCES` | Batas regulasi dalam prompt agent pajak | `25` |
 | `SEED_DIR` | Lokasi data seed | `seed` |
+| `SECRET_KEY` | Kunci HMAC untuk tanda tangan cookie pemilik. **Wajib diisi di produksi** | *(acak per proses)* |
+| `ACCESS_TOKEN` | Token bersama untuk seluruh app. Kosong = app terbuka | *(kosong)* |
+| `ALLOWED_ORIGINS` | Daftar origin CORS dipisah koma. Kosong = CORS nonaktif | *(kosong)* |
+| `RATE_LIMIT_REQUESTS_PER_MINUTE` | Batas request per IP per menit (`0` = nonaktif) | `240` |
+| `RATE_LIMIT_UPLOADS_PER_HOUR` | Batas unggahan per IP per jam (`0` = nonaktif) | `20` |
+| `COOKIE_SECURE` | Set `true` bila dilayani via HTTPS | `false` |
+| `TRUST_PROXY_HEADERS` | Percayai `X-Forwarded-For` untuk rate limit. Hanya di belakang proxy sendiri | `false` |
 | `STUCK_CONTRACT_TIMEOUT_SECONDS` | Umur maksimum status non-terminal sebelum di-reap | `900` |
 | `REAPER_INTERVAL_SECONDS` | Interval sweep reaper (`0` = nonaktif) | `300` |
 
@@ -186,16 +193,47 @@ legalshield/
 
 ---
 
-## Catatan keamanan
+## Keamanan
 
-Endpoint **belum memiliki autentikasi, otorisasi, rate limiting, maupun kebijakan CORS**.
-Siapa pun yang bisa menjangkau port 8000 dapat mengunggah kontrak, membaca kontrak orang
-lain jika mengetahui UUID-nya, dan menghabiskan kuota LLM Anda. `clause_patterns` juga
-bersifat global, sehingga unggahan berbahaya dapat memengaruhi analisis berikutnya
-(prompt injection dimitigasi dengan fencing, bukan dihilangkan).
+Tiga lapisan, masing-masing bisa dimatikan lewat konfigurasi:
 
-Jangan ekspos instance ini ke internet tanpa menambahkan lapisan tersebut lebih dulu.
-Rinciannya ada di `.memory/KNOWN_ISSUES.md` #5 dan #6.
+**1. Kepemilikan kontrak (selalu aktif).** Setiap pengunjung mendapat *owner id* anonim
+yang ditandatangani HMAC dan disimpan di cookie `ls_owner` (HttpOnly, SameSite=Lax).
+Kontrak dicap dengan id itu saat diunggah dan **setiap** pembacaan difilter olehnya, jadi
+mengetahui UUID kontrak tidak lagi cukup untuk membacanya. Kontrak milik orang lain
+dijawab `404` — bukan `403` — supaya keberadaan UUID tidak terkonfirmasi.
+
+Ini bukan sistem akun: menghapus cookie berarti kehilangan akses ke kontrak lama.
+Itu keputusan sadar — cukup untuk menutup celah tanpa memaksa produk memilih alur login.
+
+> **Isi `SECRET_KEY` di produksi.** Bila kosong, kunci acak dibuat per proses: cookie batal
+> setiap restart dan tidak valid antar replika. App mencatat peringatan saat ini terjadi.
+
+**2. Token akses bersama (opsional).** Set `ACCESS_TOKEN` dan seluruh app tertutup. Token
+dikirim via header `X-Access-Token`, atau `?token=...` sekali yang lalu ditukar menjadi
+cookie. `/health*` dan `/static/*` tetap terbuka: orchestrator tidak bisa membawa
+kredensial, dan menutup liveness probe mengubah salah konfigurasi menjadi restart loop.
+
+**3. Rate limit.** Dua jendela per IP: `240 req/menit` untuk semua request dan
+`20 unggahan/jam` — unggahan dibatasi terpisah karena satu unggahan menjalankan tiga agen
+LLM, yaitu satu-satunya endpoint yang menghabiskan uang. State ada di Redis supaya batas
+berlaku lintas replika; bila Redis mati limiter **fail open** ke jendela in-memory
+per-proses, karena mematikan seluruh trafik hanya karena limiter tumbang akan mengubah
+gangguan kecil menjadi outage.
+
+**CORS** nonaktif total kecuali `ALLOWED_ORIGINS` diisi. UI ini same-origin, jadi default
+yang benar adalah browser menolak pembacaan cross-origin.
+
+### Yang masih terbuka
+
+`clause_patterns` bersifat **global**. Prompt injection dimitigasi dengan fencing (teks
+kontrak dikurung penanda `UNTRUSTED CONTRACT TEXT` dan penanda itu di-strip dari payload),
+bukan dihilangkan — unggahan berbahaya yang berhasil masih bisa memengaruhi konteks RAG
+analisis pengguna lain. Skill store per-tenant akan membatasi dampaknya; lihat
+`.memory/KNOWN_ISSUES.md` #6.
+
+Untuk mengekspos ke internet: isi `SECRET_KEY`, set `ACCESS_TOKEN`, dan set
+`COOKIE_SECURE=true` di belakang TLS.
 
 ---
 

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import load_owned_contract
 from app.db.models import AgentType, AnalysisResult, Contract, NegotiationSend
 from app.db.session import get_db
 from app.schemas import NegotiationSendRequest, NegotiationSendResponse
@@ -15,22 +16,16 @@ router = APIRouter()
 
 @router.post("/contracts/{contract_id}/send", response_model=NegotiationSendResponse)
 async def send_negotiation(
-    contract_id: str,
     body: NegotiationSendRequest,
+    contract: Contract = Depends(load_owned_contract),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Contract).where(Contract.id == contract_id))
-    contract = result.scalar_one_or_none()
-    if not contract:
-        raise HTTPException(status_code=404, detail="Contract not found")
-
     if contract.status.value != "done":
         raise HTTPException(status_code=409, detail="Analysis not complete yet.")
 
-    # Get counter-draft text
     ar_result = await db.execute(
         select(AnalysisResult).where(
-            AnalysisResult.contract_id == contract_id,
+            AnalysisResult.contract_id == contract.id,
             AnalysisResult.agent_type == AgentType.counter_draft,
         )
     )
@@ -39,18 +34,25 @@ async def send_negotiation(
     if ar and ar.result_json:
         counter_draft_text = ar.result_json.get("counter_draft", "")
 
-    # Stub send
-    send_counter_draft(contract_id, body.recipient_email, counter_draft_text)
+    outcome = send_counter_draft(str(contract.id), body.recipient_email, counter_draft_text)
 
     send_record = NegotiationSend(
-        contract_id=contract_id,
+        contract_id=contract.id,
         recipient_email=body.recipient_email,
         counter_draft_text=counter_draft_text,
-        status="stub",
+        status=outcome["status"],
     )
     db.add(send_record)
     await db.commit()
     await db.refresh(send_record)
+
+    # A delivery failure is reported as 502 *after* the attempt is recorded, so the row is
+    # an audit trail of what was tried rather than only of what succeeded.
+    if outcome["status"] == "failed":
+        raise HTTPException(
+            status_code=502,
+            detail=outcome.get("error") or "Draft tidak dapat dikirim. Periksa konfigurasi SMTP.",
+        )
 
     return NegotiationSendResponse(
         id=str(send_record.id),

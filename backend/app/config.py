@@ -34,12 +34,37 @@ class Settings(BaseSettings):
     # Cap on legal references injected into the tax agent's prompt.
     max_legal_references: int = 25
 
+    # --- Security (KNOWN_ISSUES #5) ------------------------------------------------
+    # HMAC key for the owner cookie. Generated per-process when empty, which invalidates
+    # cookies on restart and does not validate across replicas — set it in production.
+    secret_key: str = ""
+    # Shared gate for the whole app. Empty means the app is open, which is only safe on
+    # localhost. When set, every request must present it (header, query param, or cookie).
+    access_token: str = ""
+    # Comma-separated CORS allow-list. Empty means no CORS middleware at all, so browsers
+    # refuse cross-origin reads — the correct default for a same-origin app.
+    allowed_origins: str = ""
+    # Fixed-window rate limits, per client IP. 0 disables the limiter.
+    rate_limit_requests_per_minute: int = 240
+    # Uploads are the expensive path: each one spends LLM budget. Limited separately.
+    rate_limit_uploads_per_hour: int = 20
+    owner_cookie_name: str = "ls_owner"
+    access_cookie_name: str = "ls_access"
+    # Set true when serving over HTTPS so the cookies are not sent in cleartext.
+    cookie_secure: bool = False
+    # Only enable behind a proxy you control. Otherwise any caller can spoof
+    # X-Forwarded-For and get a fresh rate-limit identity on every request.
+    trust_proxy_headers: bool = False
+
     # A contract sits in `processing` only while a job holds it. RQ kills jobs at
     # job_timeout (600s), so anything older than this has lost its worker — a crashed
     # container, an OOM kill, or a flushed Redis — and must not stay there forever.
     stuck_contract_timeout_seconds: int = 900
     # How often the reaper sweeps. Set to 0 to disable it (e.g. in tests).
     reaper_interval_seconds: int = 300
+
+    def cors_origins(self) -> list[str]:
+        return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
 
 
 @lru_cache

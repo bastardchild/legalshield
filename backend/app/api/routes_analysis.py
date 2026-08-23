@@ -1,9 +1,10 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import load_owned_contract
 from app.db.models import AnalysisResult, Contract
 from app.db.session import get_db
 from app.schemas import AnalysisResultOut, ContractResultResponse, ContractStatusResponse
@@ -13,11 +14,7 @@ router = APIRouter()
 
 
 @router.get("/contracts/{contract_id}/status", response_model=ContractStatusResponse)
-async def get_contract_status(contract_id: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Contract).where(Contract.id == contract_id))
-    contract = result.scalar_one_or_none()
-    if not contract:
-        raise HTTPException(status_code=404, detail="Contract not found")
+async def get_contract_status(contract: Contract = Depends(load_owned_contract)):
     return ContractStatusResponse(
         id=str(contract.id),
         filename=contract.filename,
@@ -28,14 +25,12 @@ async def get_contract_status(contract_id: str, db: AsyncSession = Depends(get_d
 
 
 @router.get("/contracts/{contract_id}/result", response_model=ContractResultResponse)
-async def get_contract_result(contract_id: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Contract).where(Contract.id == contract_id))
-    contract = result.scalar_one_or_none()
-    if not contract:
-        raise HTTPException(status_code=404, detail="Contract not found")
-
+async def get_contract_result(
+    contract: Contract = Depends(load_owned_contract),
+    db: AsyncSession = Depends(get_db),
+):
     ar_result = await db.execute(
-        select(AnalysisResult).where(AnalysisResult.contract_id == contract_id)
+        select(AnalysisResult).where(AnalysisResult.contract_id == contract.id)
     )
     analysis_rows = ar_result.scalars().all()
 
