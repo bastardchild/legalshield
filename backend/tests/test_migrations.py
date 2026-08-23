@@ -92,9 +92,14 @@ class TestModelConstraintsAreMigrated:
         "constraint",
         [
             "uq_analysis_results_contract_agent",
+            # Superseded by the per-owner constraint below, but still created by 0002 and
+            # dropped by 0005, so the chain must keep mentioning it.
             "uq_clause_patterns_fingerprint",
+            "uq_clause_patterns_owner_fingerprint",
             "ix_analysis_results_contract_id",
             "ix_contracts_status",
+            "ix_contracts_owner_id",
+            "ix_clause_patterns_owner_id",
         ],
     )
     def test_named_constraint_present_in_migrations(self, constraint):
@@ -119,6 +124,16 @@ class TestModelConstraintsAreMigrated:
 
     def test_status_index_declared_on_model(self):
         assert "ix_contracts_status" in {i.name for i in Contract.__table__.indexes}
+
+    def test_owner_scoped_constraints_are_declared_on_the_model(self):
+        """A global unique constraint would reject a second owner's copy of the same clause."""
+        names = {c.name for c in ClausePattern.__table__.constraints}
+        assert "uq_clause_patterns_owner_fingerprint" in names
+        assert "uq_clause_patterns_fingerprint" not in names
+
+    def test_owner_columns_are_required(self):
+        assert Contract.__table__.c.owner_id.nullable is False
+        assert ClausePattern.__table__.c.owner_id.nullable is False
 
 
 def test_app_does_not_create_schema_at_runtime():

@@ -29,11 +29,19 @@ def _load_prompt(contract_text: str, known_patterns: str) -> str:
     )
 
 
-async def _known_patterns_text() -> str:
-    """RAG context from the skill store. Capped: the prompt grows with every stored pattern."""
+async def _known_patterns_text(owner_id: str | None) -> str:
+    """
+    RAG context from the skill store. Capped: the prompt grows with every stored pattern.
+
+    Scoped to the contract's owner plus the curated global set, so a pattern learned from
+    someone else's (possibly hostile) contract cannot enter this prompt — see
+    KNOWN_ISSUES #6.
+    """
     settings = get_settings()
     try:
-        patterns = await get_active_patterns(limit=settings.max_rag_patterns)
+        patterns = await get_active_patterns(
+            limit=settings.max_rag_patterns, owner_id=owner_id
+        )
     except Exception as e:
         logger.warning(f"[{AGENT_LABEL}] Could not load skill store patterns: {e}")
         return "No known patterns yet."
@@ -46,13 +54,13 @@ async def _known_patterns_text() -> str:
     return "\n".join(lines) or "No known patterns yet."
 
 
-async def run_risk_clause_agent(contract_text: str) -> AgentRun:
+async def run_risk_clause_agent(contract_text: str, owner_id: str | None = None) -> AgentRun:
     """Sub-agent A: Risk Clause Detector. Returns normalised {'findings': [...]}."""
     started_at = datetime.now(UTC)
     logger.info(f"[{AGENT_LABEL}] Starting at {started_at.isoformat()}")
 
     text, truncated = truncate_contract(contract_text)
-    prompt = _load_prompt(wrap_untrusted(text), await _known_patterns_text())
+    prompt = _load_prompt(wrap_untrusted(text), await _known_patterns_text(owner_id))
     if truncated:
         prompt += "\n\nNote: the contract text above was truncated for length."
 

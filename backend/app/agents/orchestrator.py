@@ -70,6 +70,7 @@ async def _persist_agent(
     agent_type: AgentType,
     outcome: AgentRun | BaseException,
     label: str,
+    owner_id: str | None = None,
 ) -> dict | None:
     """
     Store one agent's outcome. Returns its payload, or None if it failed.
@@ -94,7 +95,9 @@ async def _persist_agent(
         )
         if agent_type is AgentType.risk_clause:
             try:
-                added = await save_new_patterns(db, outcome.result.get("findings", []))
+                added = await save_new_patterns(
+                    db, outcome.result.get("findings", []), owner_id=owner_id
+                )
                 if added:
                     logger.info(f"[SkillStore] Stored {added} new pattern(s).")
             except Exception as e:
@@ -124,6 +127,9 @@ async def run_analysis(contract_id: str) -> None:
                 logger.error(f"[Orchestrator] Contract {contract_id} not found; abandoning job.")
                 return
             raw_text = contract.raw_text or ""
+            # The skill store is scoped to this owner: patterns are read from their own set
+            # plus the curated global one, and written only under their id.
+            owner_id = contract.owner_id
 
         if not raw_text.strip():
             logger.error(f"[Orchestrator] Contract {contract_id} has no text to analyse.")
@@ -134,7 +140,7 @@ async def run_analysis(contract_id: str) -> None:
         t0 = datetime.now(UTC)
         logger.info("[Orchestrator] Agents A & B starting in parallel")
         risk_outcome, tax_outcome = await asyncio.gather(
-            run_risk_clause_agent(raw_text),
+            run_risk_clause_agent(raw_text, owner_id=owner_id),
             run_tax_compliance_agent(raw_text),
             return_exceptions=True,
         )
@@ -142,7 +148,8 @@ async def run_analysis(contract_id: str) -> None:
         logger.info(f"[Orchestrator] Agents A & B finished in {elapsed:.2f}s (parallel)")
 
         risk_result = await _persist_agent(
-            contract_id, AgentType.risk_clause, risk_outcome, "RiskClauseAgent"
+            contract_id, AgentType.risk_clause, risk_outcome, "RiskClauseAgent",
+            owner_id=owner_id,
         )
         tax_result = await _persist_agent(
             contract_id, AgentType.tax_compliance, tax_outcome, "TaxComplianceAgent"

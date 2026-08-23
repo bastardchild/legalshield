@@ -32,10 +32,11 @@ C:\legalshield\
     │       ├── 0001_initial_schema.py              # enums guarded by DO/duplicate_object
     │       ├── 0002_fingerprint_and_constraints.py # fingerprint + unique constraints
     │       ├── 0003_contract_job_tracking.py       # job_id, error, (status, updated_at)
-    │       └── 0004_contract_ownership.py          # owner_id (NOT NULL, indexed)
+    │       ├── 0004_contract_ownership.py          # owner_id (NOT NULL, indexed)
+    │       └── 0005_per_tenant_clause_patterns.py  # clause_patterns.owner_id + per-owner uq
     ├── scripts/
     │   └── e2e_access_check.py    # live-stack access-control check (not in pytest)
-    ├── tests/                    # 289 tests; `docker compose run --rm --no-deps test`
+    ├── tests/                    # 309 tests; `docker compose run --rm --no-deps test`
     │   ├── conftest.py           # env defaults set before any app import; Jinja fixtures
     │   ├── test_templates.py     # compile + polling-marker regressions (#1, #4, #14, #15)
     │   ├── test_llm_client.py    # JSON extraction, base-URL normalisation (#7, #10)
@@ -81,7 +82,7 @@ C:\legalshield\
         │   ├── rate_limit.py     # fixed-window limiter on Redis, fail-open to memory
         │   ├── reaper.py         # sweeps contracts stuck in uploaded/processing
         │   ├── seed_loader.py    # dataset1 → clause_patterns; datasetpasal1 → citations
-        │   ├── skill_store.py    # self-improving clause pattern store (RAG context)
+        │   ├── skill_store.py    # per-owner clause pattern store (RAG context)
         │   └── mailer.py         # stub "send" (log only)
         ├── templates/
         │   ├── base.html         # nav/footer, vendored HTMX + Alpine, remote fonts
@@ -203,6 +204,7 @@ erDiagram
     }
     CLAUSE_PATTERNS {
         uuid id PK
+        string owner_id "owner or global or legacy"
         string pattern_name "clause_type:severity"
         text description
         text example_text
@@ -223,7 +225,8 @@ erDiagram
 
 - Enums are native PostgreSQL types (`contract_status`, `agent_type`); the codebase is
   PostgreSQL-specific (`UUID`, `JSONB`).
-- `ClausePattern` has **no** `contract_id` — patterns are global, cross-tenant knowledge.
+- `ClausePattern` has **no** `contract_id` — patterns are knowledge, not per-contract data.
+  Superseded by phase 7: they are scoped by `owner_id`, not global. See the deltas section.
 - Cascade deletes are declared both at ORM level (`cascade="all, delete-orphan"`) and DB level
   (`ondelete="CASCADE"`).
 - There is **no uniqueness constraint** on `(contract_id, agent_type)` even though
@@ -241,6 +244,9 @@ erDiagram
 - `SIMILARITY_CHECK_FIELD` is declared but unused; matching is exact-string, not semantic.
 - Patterns are injected into agent A's prompt as bullet lines truncated to 120 chars of example
   text — the context grows unbounded as the store fills up.
+
+> Superseded by later phases: matching still is not semantic, but the context is capped at
+> `max_rag_patterns` (40) and reads/writes are scoped by `owner_id`. See the deltas section.
 
 ## 7. HTTP surface
 
@@ -391,7 +397,8 @@ rows instead of adding more.
 
 **Skill store.** Dedupe key is `fingerprint(clause_type, example_text)` — first 32 chars of
 sha256 over the clause type plus whitespace-normalised lowercased example — not
-`clause_type:severity`. `get_active_patterns()` takes a `limit` (default 40).
+`clause_type:severity`. `get_active_patterns()` takes a `limit` (default 40) and an
+`owner_id`; see the phase 7 note below for the scoping rules.
 
 **Upload.** `routes_upload.py` delegates to `services/upload_validation.py`: extension,
 declared content type, `Content-Length`, streaming read with a hard cap, `%PDF-` magic-byte
@@ -434,3 +441,24 @@ applies `add_middleware` in reverse, so the registration order is the inverse).
 `scripts/e2e_access_check.py` exercises all of this against a running stack (stdlib only,
 exits non-zero on failure). It is not in the pytest suite because the suite must stay
 runnable with `--no-deps`.
+
+**Per-tenant skill store (phase 7).** `clause_patterns.owner_id` (migration `0005`,
+`NOT NULL`, indexed) contains the poisoning half of #6. The unique key moved from
+`(fingerprint)` to `(owner_id, fingerprint)` — two owners observing the same clause each
+need their own row, or the second `INSERT` collides with a row it cannot see.
+
+- `GLOBAL_OWNER = "global"` — curated `seed/dataset1.json` data. Read by everyone, written
+  by nobody at runtime.
+- `LEGACY_OWNER = "legacy"` — learned before ownership existed. Retained for auditing,
+  never read: there is no way to know which rows came from a hostile upload. Migration
+  `0005` classifies existing rows by `times_matched = 0` (only seeding sets that).
+- Neither sentinel is reachable as a real owner: `new_owner_id()` always returns 32 hex
+  characters. `readable_owners()` also refuses to widen access when handed a sentinel.
+- `save_new_patterns(..., owner_id=...)` returns 0 rather than writing when the owner is
+  missing or reserved, and never bumps a matching `global` row's counter — that would be a
+  runtime write to shared state, letting one user reorder everyone's RAG ordering.
+- `get_active_patterns()` reads `own + global`, over-fetches `limit * 2`, and dedupes by
+  fingerprint preferring the private row, so a privately re-observed seeded clause does not
+  occupy two of the 40 prompt slots.
+- `orchestrator.run_analysis` reads `contract.owner_id` and threads it into both the risk
+  agent and `_persist_agent`. A test fails if that wiring disappears.

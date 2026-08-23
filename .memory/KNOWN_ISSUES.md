@@ -26,7 +26,7 @@ As of commit `49b537a`. Verified against a live Docker stack with a real LLM pro
 | 3 | Migrations bypassed by `create_all` | **fixed** | `2a0c0ac` |
 | 4 | Polling stops on the first poll | **fixed** | `e94aa87` |
 | 5 | No auth, rate limiting, or CORS | **fixed** | `PHASE6` |
-| 6 | Prompt injection via contract text | **mitigated** | `2a0c0ac` |
+| 6 | Prompt injection via contract text | **mitigated + contained** | `2a0c0ac`, `PHASE7` |
 | 7 | No LLM timeout/retry; strict JSON parsing | **fixed** | `2a0c0ac` |
 | 8 | No contract truncation | **fixed** | `2a0c0ac` |
 | 9 | Failed enqueue strands the contract | **fixed** | `89cbac6` |
@@ -51,12 +51,19 @@ As of commit `49b537a`. Verified against a live Docker stack with a real LLM pro
 
 ### Notes on the non-"fixed" rows
 
-**#6 — mitigated, not solved.** Contract text is fenced between
+**#6 — mitigated, and now contained.** Contract text is fenced between
 `===== UNTRUSTED CONTRACT TEXT =====` markers, the sentinel is stripped from the payload so
 a crafted contract cannot close the fence early, and all three system prompts state that
-fenced text is data. This raises the cost of an attack; it does not eliminate it. The
-secondary risk remains: `clause_patterns` is global, so a successful injection influences
-later analyses for every user. A per-tenant skill store would contain the blast radius.
+fenced text is data. This raises the cost of an attack; it does not eliminate it.
+
+The *persistence* half is now closed. `clause_patterns` used to be global, so one successful
+injection became permanent and cross-tenant: the crafted "finding" was stored and then
+injected as RAG context into every other user's later analysis. Patterns are now scoped by
+`owner_id` with two reserved sentinels — `global` (curated seed data, read by all, written by
+none at runtime) and `legacy` (learned before ownership existed, retained for auditing but
+never read). A reader sees own + global; a writer only ever writes under its own id, and
+never bumps a global row's counter, because that would be a runtime write to shared state.
+Blast radius of a successful injection is now one owner's own future analyses.
 
 **#26 — partly fixed.** The image is now multi-stage and ships without `gcc`/`libpq-dev`,
 and `backend/.dockerignore` exists (`.gitignore` had listed it as ignored, so the entire
@@ -90,6 +97,7 @@ New modules, all with tests:
 | `app/api/deps.py` | `load_owned_contract` — the single place the ownership rule lives |
 | `alembic/versions/0004_*.py` | `contracts.owner_id` + index, legacy rows backfilled to `legacy` |
 | `scripts/e2e_access_check.py` | Live-stack access-control check (needs a running stack) |
+| `alembic/versions/0005_*.py` | `clause_patterns.owner_id`; unique key moves to `(owner_id, fingerprint)` |
 
 One defect was found during repair rather than in the original audit, and is worth
 remembering because it is invisible until the *second* job runs:
@@ -445,19 +453,23 @@ it makes UI edits error-prone and inflates diffs.
 
 ## Remaining work
 
-The original repair order is complete. What is left, in the order it should be tackled:
+The original repair order is complete, as are the two security phases that followed it.
+What is left, in the order it should be tackled:
 
-1. **#5 — auth, rate limiting, CORS.** Blocking for any deployment beyond localhost. Needs a
-   product decision first (see the ledger note).
-2. **Per-tenant skill store**, once #5 lands — bounds the blast radius of #6.
-3. **Integration tests against a live database.** The suite is 237 unit tests plus static
-   guards; the migration chain and the orchestrator's upsert path were verified by hand
-   against Docker, not by CI. `docker compose run --rm test` already starts Postgres and
-   Redis, so the fixtures are the only missing piece.
-4. **Production compose file** without the `./backend:/app` bind mount and without
+1. **Integration tests against a live database.** The suite is 309 unit tests plus static
+   guards; the migration chain, the orchestrator's upsert path, and the owner-scoped reads
+   were verified by hand against Docker and by `scripts/e2e_access_check.py`, not by CI.
+   `docker compose run --rm test` already starts Postgres and Redis, so the fixtures are the
+   only missing piece.
+2. **Production compose file** without the `./backend:/app` bind mount and without
    `--reload` (#26).
-5. **Real SMTP** in `services/mailer.py` — still a logging stub, by design.
-6. **Retire remaining inline layout styles** (#27).
+3. **Real SMTP** in `services/mailer.py` — still a logging stub, by design.
+4. **Retire remaining inline layout styles** (#27).
+5. **A real account system**, if the product needs contracts to survive a cleared cookie.
+   The anonymous owner id is the right shape for it: replace `contracts.owner_id` with a FK
+   to a `users` table and `middleware.OwnerMiddleware` with a session lookup. Nothing else
+   needs to change, because `api/deps.py::load_owned_contract` is the only place the
+   ownership rule lives.
 
 ### Operational notes worth keeping
 

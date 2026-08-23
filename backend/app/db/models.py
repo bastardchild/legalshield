@@ -89,11 +89,19 @@ class AnalysisResult(Base):
 
 class ClausePattern(Base):
     __tablename__ = "clause_patterns"
+    # Scoped per owner: a pattern learned from one user's contract must not enter another
+    # user's RAG context (KNOWN_ISSUES #6). Two owners can legitimately observe the same
+    # clause, so uniqueness is per (owner, fingerprint) rather than per fingerprint.
     __table_args__ = (
-        UniqueConstraint("fingerprint", name="uq_clause_patterns_fingerprint"),
+        UniqueConstraint(
+            "owner_id", "fingerprint", name="uq_clause_patterns_owner_fingerprint"
+        ),
+        Index("ix_clause_patterns_owner_id", "owner_id"),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # Owner who observed the pattern, or the GLOBAL_OWNER sentinel for curated seed data.
+    owner_id = Column(String(64), nullable=False)
     pattern_name = Column(String(256), nullable=False)
     # Content hash of (clause_type, normalised example_text). Dedupes on substance rather
     # than on clause_type:severity, which collapsed unrelated clauses into one row.

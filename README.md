@@ -100,9 +100,10 @@ Worker juga menjalankan thread **reaper** yang menandai `failed` kontrak yang te
 `processing` tetapi kehilangan worker-nya (container mati, OOM, Redis di-flush).
 
 **Self-improving skill store**: setiap klausul berbahaya dengan confidence ≥ 0.75 disimpan
-ke `clause_patterns` dan dipakai sebagai konteks RAG pada analisis berikutnya. Deduplikasi
-memakai fingerprint konten (sha256 dari `clause_type` + teks contoh yang dinormalisasi),
-bukan `clause_type:severity`.
+ke `clause_patterns` **milik pengunggah** dan dipakai sebagai konteks RAG pada analisis
+berikutnya, bersama 100 pola kurasi bersama (`global`). Deduplikasi memakai fingerprint
+konten (sha256 dari `clause_type` + teks contoh yang dinormalisasi), bukan
+`clause_type:severity`.
 
 ---
 
@@ -120,7 +121,7 @@ legalshield/
 ├── backend/
 │   ├── Dockerfile
 │   ├── pyproject.toml             # dependency + config pytest/ruff
-│   ├── alembic/                   # migrasi database (0001–0003)
+│   ├── alembic/                   # migrasi database (0001–0005)
 │   ├── tests/                     # pytest suite
 │   └── app/
 │       ├── main.py
@@ -226,11 +227,22 @@ yang benar adalah browser menolak pembacaan cross-origin.
 
 ### Yang masih terbuka
 
-`clause_patterns` bersifat **global**. Prompt injection dimitigasi dengan fencing (teks
-kontrak dikurung penanda `UNTRUSTED CONTRACT TEXT` dan penanda itu di-strip dari payload),
-bukan dihilangkan — unggahan berbahaya yang berhasil masih bisa memengaruhi konteks RAG
-analisis pengguna lain. Skill store per-tenant akan membatasi dampaknya; lihat
-`.memory/KNOWN_ISSUES.md` #6.
+Prompt injection dimitigasi dengan fencing (teks kontrak dikurung penanda
+`UNTRUSTED CONTRACT TEXT` dan penanda itu di-strip dari payload), bukan dihilangkan — model
+masih bisa terpengaruh oleh teks di dalam pagar. Yang sudah tertutup adalah *dampak
+jangka panjangnya*: `clause_patterns` tidak lagi global.
+
+Setiap pola disimpan per `owner_id`, dengan dua sentinel yang tidak mungkin dihasilkan
+`new_owner_id()` (selalu 32 karakter hex):
+
+- `global` — 100 pola kurasi dari `seed/dataset1.json`. Dibaca semua orang, **tidak pernah
+  ditulis** saat runtime, jadi tidak bisa diracuni.
+- `legacy` — pola yang dipelajari sebelum kepemilikan ada. Disimpan untuk audit tapi tidak
+  pernah dibaca, karena tidak ada cara tahu mana yang berasal dari unggahan berbahaya.
+
+Pembaca melihat `pola sendiri + global`; penulis hanya menulis di bawah id-nya sendiri.
+Jadi injection yang berhasil paling jauh hanya memengaruhi analisis pemiliknya sendiri.
+Detail di `.memory/KNOWN_ISSUES.md` #6.
 
 Untuk mengekspos ke internet: isi `SECRET_KEY`, set `ACCESS_TOKEN`, dan set
 `COOKIE_SECURE=true` di belakang TLS.

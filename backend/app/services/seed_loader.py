@@ -19,7 +19,7 @@ from sqlalchemy import func, select
 from app.config import get_settings
 from app.db.models import ClausePattern
 from app.services.findings import normalize_confidence, normalize_severity
-from app.services.skill_store import fingerprint
+from app.services.skill_store import GLOBAL_OWNER, fingerprint
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +99,9 @@ def clause_patterns_from_dataset() -> list[dict]:
 
             rows.append(
                 {
+                    # Curated data goes to the shared global bucket, which every owner
+                    # reads and nothing writes at runtime, so it cannot be poisoned.
+                    "owner_id": GLOBAL_OWNER,
                     "pattern_name": f"{clause_type}:{severity}",
                     "fingerprint": fp,
                     "description": description[:500],
@@ -118,14 +121,24 @@ async def seed_clause_patterns(db) -> int:
     Insert any seed pattern not already present. Returns the number of rows added.
 
     Existing rows are left untouched: their `times_matched` and `confidence` reflect real
-    observations and must not be reset to seed defaults.
+    observations and must not be reset to seed defaults. Only the global bucket is
+    considered when deciding what is missing — a private copy of the same clause under some
+    owner's id must not suppress the curated row everyone else reads.
     """
     rows = clause_patterns_from_dataset()
     if not rows:
         return 0
 
     existing = set(
-        (await db.execute(select(ClausePattern.fingerprint))).scalars().all()
+        (
+            await db.execute(
+                select(ClausePattern.fingerprint).where(
+                    ClausePattern.owner_id == GLOBAL_OWNER
+                )
+            )
+        )
+        .scalars()
+        .all()
     )
     new_rows = [r for r in rows if r["fingerprint"] not in existing]
     if not new_rows:
