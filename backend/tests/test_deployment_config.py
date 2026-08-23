@@ -137,6 +137,13 @@ class TestProdRuntimeFlags:
         assert "restart: unless-stopped" not in _directives(prod(), "migrate")
 
 
+class TestProdDocsSwitch:
+    """The overlay must hide the API docs even if .env leaves DOCS_ENABLED unset."""
+
+    def test_docs_are_disabled_in_production(self):
+        assert 'DOCS_ENABLED: "false"' in _service_block(prod(), "api")
+
+
 class TestBaseFileStillSupportsDevelopment:
     def test_reload_is_on_in_the_base_file(self):
         assert "--reload" in _directives(base(), "api")
