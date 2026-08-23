@@ -56,6 +56,22 @@ class Settings(BaseSettings):
     # X-Forwarded-For and get a fresh rate-limit identity on every request.
     trust_proxy_headers: bool = False
 
+    # --- Email delivery -------------------------------------------------------------
+    # Empty host keeps services/mailer.py in stub mode (log only), which is what the MVP
+    # demo relies on. Set it to send for real.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    # STARTTLS on a plaintext port (587). Mutually exclusive with smtp_use_ssl.
+    smtp_use_tls: bool = True
+    # Implicit TLS from the first byte, usually port 465.
+    smtp_use_ssl: bool = False
+    smtp_from: str = ""
+    smtp_from_name: str = "LegalShield Agent"
+    # Must stay well under the request timeout: this send happens inline in a POST handler.
+    smtp_timeout_seconds: float = 15.0
+
     # A contract sits in `processing` only while a job holds it. RQ kills jobs at
     # job_timeout (600s), so anything older than this has lost its worker — a crashed
     # container, an OOM kill, or a flushed Redis — and must not stay there forever.

@@ -172,3 +172,84 @@ footer { text-align: center; padding: 1.75rem 1.5rem; font-size: 0.75rem; color:
 footer a { color: var(--text-2); text-decoration: none; }
 footer a:hover { color: var(--accent); }
 
+/* ════════════════════════════════════════════════════════════════
+   Layout classes replacing inline `style` attributes (KNOWN_ISSUES #27).
+   Inline styles cannot be overridden by a later rule, are invisible to
+   the theme variables when hardcoded, and made the templates unreadable.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Spacing utilities ───────────────────────────────────────── */
+.mt-sm { margin-top: 0.75rem; }
+.mt-xs { margin-top: 0.625rem; }
+.mb-xs { margin-bottom: 0.625rem; }
+.mb-sm { margin-bottom: 0.875rem; }
+.mb-md { margin-bottom: 1rem; }
+.mb-lg { margin-bottom: 1.25rem; }
+.mb-xl { margin-bottom: 2rem; }
+
+/* ── Small shared pieces ─────────────────────────────────────── */
+.hint { font-size: 0.825rem; color: var(--text-3); }
+.section-lbl { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-3); margin-bottom: 0.5rem; }
+.ct-risk { background: rgba(239,68,68,.1);  color: #f87171; border: 1px solid rgba(239,68,68,.2); }
+.ct-tax  { background: rgba(245,158,11,.1); color: #fbbf24; border: 1px solid rgba(245,158,11,.2); }
+.icon-risk    { background: rgba(239,68,68,.1); }
+.icon-tax     { background: rgba(245,158,11,.1); }
+.icon-draft   { background: rgba(139,92,246,.1); }
+.sb-time { margin-left: auto; font-size: 0.7rem; opacity: .6; }
+.sb-dots { margin-left: auto; }
+.icon-dim { opacity: .5; }
+
+/* ── Upload page ─────────────────────────────────────────────── */
+.narrow { max-width: 640px; margin: 0 auto; }
+.hero { text-align: center; margin-bottom: 2.5rem; padding-top: 0.5rem; }
+.hero-pill { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--accent-dim); border: 1px solid rgba(59,130,246,.2); border-radius: 9999px; padding: 0.3rem 0.875rem; margin-bottom: 1.25rem; }
+.hero-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; box-shadow: 0 0 6px var(--accent); animation: pdot 2s ease-in-out infinite; }
+.hero-pill .lbl { font-size: 0.7rem; font-weight: 700; color: var(--accent); letter-spacing: .07em; text-transform: uppercase; }
+.hero h1 { font-size: 1.875rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.2; margin-bottom: 0.875rem; }
+.hero .grad { background: linear-gradient(135deg,#3b82f6,#8b5cf6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--text-2); font-size: 0.875rem; max-width: 440px; margin: 0 auto; line-height: 1.65; }
+
+.dropzone { border: 2px dashed var(--border); border-radius: var(--r-lg); padding: 2.25rem 1.5rem; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; background: var(--bg-elevated); }
+/* Drag/selected feedback as classes, so app.js toggles state instead of
+   rewriting a style string (the old `:style` expression did both at once). */
+.dropzone.is-dragover { border-color: var(--accent); background: rgba(59,130,246,.05); }
+.dropzone.has-file { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.04); }
+.dz-icon { width: 48px; height: 48px; border-radius: var(--r-lg); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.875rem; font-size: 1.375rem; background: var(--accent-dim); border: 1px solid rgba(59,130,246,.2); }
+.dz-icon-ok { background: rgba(16,185,129,.1); border-color: rgba(16,185,129,.25); }
+.dz-title { font-weight: 600; color: var(--text-1); margin-bottom: 0.3rem; }
+.dz-title-ok { font-weight: 600; color: #34d399; margin-bottom: 0.2rem; }
+.dz-sub { font-size: 0.775rem; color: var(--text-3); }
+.visually-hidden-input { display: none; }
+
+.upload-actions { margin-top: 0.875rem; display: flex; gap: 0.625rem; }
+.upload-actions .btn-primary { flex: 1; justify-content: center; padding: 0.625rem; font-size: 0.875rem; }
+
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.625rem; margin-bottom: 2rem; }
+.feature { padding: 0.875rem; text-align: center; }
+.feature-icon { font-size: 1.25rem; margin-bottom: 0.4rem; }
+.feature-name { font-size: 0.75rem; font-weight: 600; color: var(--text-1); margin-bottom: 0.2rem; }
+.feature-desc { font-size: 0.68rem; color: var(--text-3); line-height: 1.4; }
+
+/* ── Result page ─────────────────────────────────────────────── */
+.page-hd { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.75rem; flex-wrap: wrap; }
+.page-hd .btn { flex-shrink: 0; }
+.page-hd-text { flex: 1; min-width: 0; }
+.page-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.page-sub { font-size: 0.72rem; color: var(--text-3); margin-top: 0.2rem; }
+
+.pending { text-align: center; padding: 3rem 1.5rem; color: var(--text-2); }
+.pending-spinner { width: 48px; height: 48px; border-radius: 50%; border: 3px solid rgba(59,130,246,.15); border-top-color: var(--accent); animation: spin .8s linear infinite; margin: 0 auto 1.125rem; }
+.pending-title { font-weight: 600; color: var(--text-1); margin-bottom: 0.3rem; }
+.pending-sub { font-size: 0.8rem; color: var(--text-3); }
+.pending-failed { text-align: center; padding: 3rem; color: #f87171; }
+.pending-failed .mark { font-size: 2.5rem; margin-bottom: 1rem; }
+.pending-failed p { font-weight: 600; }
+
+.changes { padding-left: 1.1rem; font-size: 0.8rem; color: var(--text-2); line-height: 1.65; }
+.changes li { margin-bottom: 0.25rem; }
+
+.send-row { display: flex; gap: 0.625rem; align-items: flex-end; flex-wrap: wrap; }
+.send-row .field { flex: 1; min-width: 180px; }
+.send-row .btn { flex-shrink: 0; }
+.draft-actions { display: flex; gap: 0.5rem; margin-top: 0.625rem; }
+

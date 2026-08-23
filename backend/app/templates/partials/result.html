@@ -4,15 +4,15 @@
 <span data-result-status="{{ status }}" hidden></span>
 {% if status != "done" %}
   {% if status == "processing" or status == "uploaded" %}
-  <div style="text-align:center;padding:3rem 1.5rem;color:var(--text-2);">
-    <div style="width:48px;height:48px;border-radius:50%;border:3px solid rgba(59,130,246,.15);border-top-color:var(--accent);animation:spin .8s linear infinite;margin:0 auto 1.125rem;"></div>
-    <p style="font-weight:600;color:var(--text-1);margin-bottom:0.3rem;">Agen sedang menganalisis kontrak</p>
-    <p style="font-size:0.8rem;color:var(--text-3);">Biasanya selesai 30–90 detik</p>
+  <div class="pending">
+    <div class="pending-spinner"></div>
+    <p class="pending-title">Agen sedang menganalisis kontrak</p>
+    <p class="pending-sub">Biasanya selesai 30–90 detik</p>
   </div>
   {% elif status == "failed" %}
-  <div style="text-align:center;padding:3rem;color:#f87171;">
-    <div style="font-size:2.5rem;margin-bottom:1rem;">❌</div>
-    <p style="font-weight:600;">Analisis gagal. Silakan upload ulang.</p>
+  <div class="pending-failed">
+    <div class="mark">❌</div>
+    <p>Analisis gagal. Silakan upload ulang.</p>
   </div>
   {% endif %}
 {% else %}
@@ -26,14 +26,12 @@
   {% set STRIPE = {'critical': 'c', 'high': 'h', 'medium': 'm', 'low': 'l'} %}
 
   <!-- Risk Clause -->
-  <div class="card fade-up" style="margin-bottom:1rem;">
+  <div class="card fade-up mb-md">
     <div class="card-hd">
-      <div class="card-hd-icon" style="background:rgba(239,68,68,.1);">🔍</div>
+      <div class="card-hd-icon icon-risk">🔍</div>
       <h2>Klausul Berisiko</h2>
       {% if risk and risk.result_json %}
-      <span class="ct" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);font-size:0.68rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:9999px;">
-        {{ risk.result_json.get('findings',[])|length }} temuan
-      </span>
+      <span class="ct ct-risk">{{ risk.result_json.get('findings',[])|length }} temuan</span>
       {% endif %}
     </div>
     {% if risk and risk.result_json and risk.result_json.get('findings') %}
@@ -57,19 +55,17 @@
     {% elif risk and risk.error %}
       <div class="alert alert-err">⚠ {{ risk.error }}</div>
     {% else %}
-      <p style="color:var(--text-3);font-size:0.825rem;">Tidak ada klausul berisiko terdeteksi.</p>
+      <p class="hint">Tidak ada klausul berisiko terdeteksi.</p>
     {% endif %}
   </div>
 
   <!-- Tax Compliance -->
-  <div class="card fade-up" style="margin-bottom:1rem;">
+  <div class="card fade-up mb-md">
     <div class="card-hd">
-      <div class="card-hd-icon" style="background:rgba(245,158,11,.1);">📊</div>
+      <div class="card-hd-icon icon-tax">📊</div>
       <h2>Kepatuhan Pajak &amp; Regulasi</h2>
       {% if tax and tax.result_json %}
-      <span class="ct" style="background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2);font-size:0.68rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:9999px;">
-        {{ tax.result_json.get('findings',[])|length }} isu
-      </span>
+      <span class="ct ct-tax">{{ tax.result_json.get('findings',[])|length }} isu</span>
       {% endif %}
     </div>
     {% if tax and tax.result_json and tax.result_json.get('findings') %}
@@ -92,61 +88,60 @@
     {% elif tax and tax.error %}
       <div class="alert alert-err">⚠ {{ tax.error }}</div>
     {% else %}
-      <p style="color:var(--text-3);font-size:0.825rem;">Tidak ada isu kepatuhan terdeteksi.</p>
+      <p class="hint">Tidak ada isu kepatuhan terdeteksi.</p>
     {% endif %}
   </div>
 
   <!-- Counter Draft -->
   <div class="card fade-up" x-data="sendApp('{{ contract_id }}')">
     <div class="card-hd">
-      <div class="card-hd-icon" style="background:rgba(139,92,246,.1);">✍️</div>
+      <div class="card-hd-icon icon-draft">✍️</div>
       <h2>Draft Kontrak Balasan</h2>
     </div>
     {% if counter and counter.result_json %}
       {% if counter.result_json.get('summary_of_changes') %}
-      <div style="margin-bottom:0.875rem;">
-        <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin-bottom:0.5rem;">Ringkasan Perubahan</div>
-        <ul style="padding-left:1.1rem;font-size:0.8rem;color:var(--text-2);line-height:1.65;">
+      <div class="mb-sm">
+        <div class="section-lbl">Ringkasan Perubahan</div>
+        <ul class="changes">
           {% for c in counter.result_json['summary_of_changes'] %}
-          <li style="margin-bottom:0.25rem;">{{ c }}</li>
+          <li>{{ c }}</li>
           {% endfor %}
         </ul>
       </div>
       {% endif %}
       {% if counter.result_json.get('negotiation_notes') %}
-      <div class="alert alert-tip" style="margin-bottom:0.875rem;">
+      <div class="alert alert-tip mb-sm">
         <span>💡</span><span>{{ counter.result_json['negotiation_notes'] }}</span>
       </div>
       {% endif %}
       <textarea id="counter-draft-text" spellcheck="false">{{ counter.result_json.get('counter_draft','') }}</textarea>
-      <div style="display:flex;gap:0.5rem;margin-top:0.625rem;">
+      <div class="draft-actions">
         <button class="btn btn-ghost"
           onclick="navigator.clipboard.writeText(document.getElementById('counter-draft-text').value);this.innerHTML='✅ Tersalin!';setTimeout(()=>this.innerHTML='📋 Salin Draft',2000)">
           📋 Salin Draft
         </button>
       </div>
       <hr class="div">
-      <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin-bottom:0.625rem;">Kirim ke Klien</div>
-      <div style="display:flex;gap:0.625rem;align-items:flex-end;flex-wrap:wrap;">
-        <div style="flex:1;min-width:180px;">
-          <label>Email klien (opsional)</label>
-          <input type="email" x-model="email" placeholder="klien@perusahaan.com" />
+      <div class="section-lbl mb-xs">Kirim ke Klien</div>
+      <div class="send-row">
+        <div class="field">
+          <label for="recipient-email">Email klien (opsional)</label>
+          <input id="recipient-email" type="email" x-model="email" placeholder="klien@perusahaan.com" />
         </div>
-        <button class="btn btn-success" @click="sendDraft()" :disabled="sending" style="flex-shrink:0;">
+        <button class="btn btn-success" @click="sendDraft()" :disabled="sending">
           <span x-show="sending"><span class="spinner"></span></span>
           <span x-show="!sending">🚀 Kirim Draft</span>
         </button>
       </div>
-      <div x-show="sent" x-cloak x-transition:enter="fade-up" class="alert alert-ok" style="margin-top:0.75rem;">
-        ✅ Draft dicatat — stub mode (tidak dikirim via SMTP nyata)
+      <div x-show="sent" x-cloak x-transition:enter="fade-up" class="alert alert-ok mt-sm">
+        <span x-show="sentStatus === 'sent'">✅ Draft terkirim ke email klien</span>
+        <span x-show="sentStatus !== 'sent'">✅ Draft dicatat — mode stub (SMTP belum dikonfigurasi)</span>
       </div>
-      <div x-show="sendError" x-cloak x-transition:enter="fade-up" class="alert alert-err" style="margin-top:0.75rem;" x-text="sendError"></div>
+      <div x-show="sendError" x-cloak x-transition:enter="fade-up" class="alert alert-err mt-sm" x-text="sendError"></div>
     {% elif counter and counter.error %}
       <div class="alert alert-err">⚠ {{ counter.error }}</div>
     {% else %}
-      <p style="color:var(--text-3);font-size:0.825rem;">Draft belum tersedia.</p>
+      <p class="hint">Draft belum tersedia.</p>
     {% endif %}
   </div>
 {% endif %}
-
-

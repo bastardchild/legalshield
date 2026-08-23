@@ -98,6 +98,7 @@ document.addEventListener('alpine:init', () => {
     email: '',
     sending: false,
     sent: false,
+    sentStatus: 'stub',
     sendError: '',
 
     async sendDraft() {
@@ -108,8 +109,14 @@ document.addEventListener('alpine:init', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recipient_email: this.email || null }),
         });
-        if (r.ok) { this.sent = true; }
-        else { const e = await r.json(); this.sendError = e.detail || 'Gagal mengirim draft.'; }
+        const body = await r.json().catch(() => ({}));
+        if (r.ok) {
+          this.sent = true;
+          // 'stub' when SMTP is unconfigured, 'sent' when the message actually left.
+          this.sentStatus = body.status || 'stub';
+        } else {
+          this.sendError = body.detail || 'Gagal mengirim draft.';
+        }
       } catch (e) {
         this.sendError = 'Network error: ' + e.message;
       } finally {

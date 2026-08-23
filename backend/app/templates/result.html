@@ -5,24 +5,25 @@
 <div x-data="resultApp('{{ contract_id }}')">
 
   <!-- Page header -->
-  <div style="display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.75rem;flex-wrap:wrap;">
-    <a href="/" class="btn btn-ghost" style="flex-shrink:0;">
+  <div class="page-hd">
+    <a href="/" class="btn btn-ghost">
       <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
       Upload Baru
     </a>
-    <div style="flex:1;min-width:0;">
-      <h1 style="font-size:1.25rem;font-weight:700;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ contract.filename }}</h1>
-      <p style="font-size:0.72rem;color:var(--text-3);margin-top:0.2rem;" class="mono">ID: {{ contract_id }}</p>
+    <div class="page-hd-text">
+      <h1 class="page-title">{{ contract.filename }}</h1>
+      <p class="page-sub mono">ID: {{ contract_id }}</p>
     </div>
   </div>
 
-  <!-- Status area (polls every 2s) -->
+  <!-- Status area (polls every 2s). Polling lives here only; the partials must not
+       re-declare hx-trigger or two timers race. -->
   <div id="status-area"
+    class="mb-lg"
     hx-get="/partials/{{ contract_id }}/status"
     hx-trigger="load, every 2s"
     hx-swap="innerHTML"
-    hx-target="#status-area"
-    style="margin-bottom:1.25rem;">
+    hx-target="#status-area">
   </div>
 
   <!-- Result area (polls every 3s) -->
@@ -41,4 +42,3 @@
   </div>
 </div>
 {% endblock %}
-

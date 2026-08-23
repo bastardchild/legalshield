@@ -34,7 +34,9 @@ async def send_negotiation(
     if ar and ar.result_json:
         counter_draft_text = ar.result_json.get("counter_draft", "")
 
-    outcome = send_counter_draft(str(contract.id), body.recipient_email, counter_draft_text)
+    outcome = await send_counter_draft(
+        str(contract.id), body.recipient_email, counter_draft_text
+    )
 
     send_record = NegotiationSend(
         contract_id=contract.id,

@@ -5,6 +5,7 @@ htmx and Alpine are functional dependencies: without them the results page never
 and nothing renders. Loading them from a CDN meant a blocked or slow unpkg took the app
 down, so both are vendored under `app/static/vendor/`.
 """
+import re
 from pathlib import Path
 
 import pytest
@@ -75,14 +76,89 @@ class TestFontFallbacks:
 
 
 class TestInlineStyles:
-    """Font stacks inline in templates bypass the CSS fallbacks entirely (#27)."""
+    """
+    Layout belongs in `app.css`, not in `style=` attributes (#27).
 
-    @pytest.mark.parametrize(
-        "name", ["base.html", "upload.html", "result.html", "partials/status.html", "partials/result.html"]
-    )
+    Inline styles cannot be overridden by a later rule, are invisible to the theme
+    variables when values are hardcoded, and made the templates unreadable. Font stacks
+    inline were the worst case: they bypassed the CSS fallbacks entirely.
+    """
+
+    TEMPLATES = [
+        "base.html",
+        "upload.html",
+        "result.html",
+        "partials/status.html",
+        "partials/result.html",
+    ]
+
+    @pytest.mark.parametrize("name", TEMPLATES)
     def test_no_inline_font_family(self, name):
         html = (TEMPLATE_DIR / name).read_text(encoding="utf-8")
         assert "font-family:" not in html, f"{name} declares a font inline; use a CSS class"
 
+    @pytest.mark.parametrize("name", TEMPLATES)
+    def test_no_inline_style_attributes(self, name):
+        html = (TEMPLATE_DIR / name).read_text(encoding="utf-8")
+        assert 'style="' not in html, f"{name} still carries inline styles; move them to app.css"
+
+    @pytest.mark.parametrize("name", TEMPLATES)
+    def test_no_alpine_style_bindings(self, name):
+        """`:style` rebuilds a style string in JS; toggling a class is overridable."""
+        html = (TEMPLATE_DIR / name).read_text(encoding="utf-8")
+        assert ':style="' not in html, f"{name} binds :style; bind :class instead"
+
     def test_mono_utility_class_exists(self):
-        assert ".mono" in (STATIC_DIR / "app.css").read_text(encoding="utf-8")
+        assert ".mono" in self._css()
+
+    def _css(self) -> str:
+        return (STATIC_DIR / "app.css").read_text(encoding="utf-8")
+
+    @pytest.mark.parametrize(
+        "selector",
+        [
+            ".narrow", ".hero", ".hero-pill", ".dropzone", ".dz-icon", ".feature-grid",
+            ".page-hd", ".page-title", ".pending", ".pending-spinner", ".changes",
+            ".send-row", ".draft-actions", ".section-lbl", ".hint",
+            ".mt-sm", ".mb-md", ".mb-lg",
+        ],
+    )
+    def test_replacement_classes_are_defined(self, selector):
+        """A class used by a template but missing from the CSS silently renders unstyled."""
+        assert selector in self._css(), f"{selector} is used by a template but not defined"
+
+    def test_dropzone_states_are_classes(self):
+        css = self._css()
+        assert ".dropzone.is-dragover" in css
+        assert ".dropzone.has-file" in css
+
+
+class TestTemplateClassesExist:
+    """
+    Every `class="..."` token used in a template must exist in `app.css`.
+
+    Catches the failure mode this refactor could introduce: a typo'd class name renders
+    with no styling at all and no error anywhere.
+    """
+
+    # Provided by htmx rather than by app.css.
+    EXTERNAL = {"htmx-indicator"}
+
+    def _declared(self) -> set[str]:
+        css = (STATIC_DIR / "app.css").read_text(encoding="utf-8")
+        return set(re.findall(r"\.([a-zA-Z][\w-]*)", css))
+
+    def _used(self, name: str) -> set[str]:
+        html = (TEMPLATE_DIR / name).read_text(encoding="utf-8")
+        tokens: set[str] = set()
+        for value in re.findall(r'\sclass="([^"]*)"', html):
+            # Skip Jinja expressions; their output is asserted by the template tests.
+            if "{{" in value or "{%" in value:
+                continue
+            tokens.update(value.split())
+        return tokens
+
+    @pytest.mark.parametrize("name", TestInlineStyles.TEMPLATES)
+    def test_all_classes_are_defined(self, name):
+        undefined = self._used(name) - self._declared() - self.EXTERNAL
+        assert not undefined, f"{name} uses undefined classes: {sorted(undefined)}"
