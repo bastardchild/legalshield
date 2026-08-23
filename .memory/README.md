@@ -21,9 +21,9 @@ contracts (PDF or TXT) with three LLM sub-agents and produces a counter-draft.
 - **LLM**: any OpenAI-compatible endpoint via `openai.AsyncOpenAI` (default: Hermes / Nous Research)
 - **Frontend**: Jinja2 + HTMX polling + Alpine.js, no build step, assets vendored locally
 - **Infra**: Docker Compose (`postgres`, `redis`, `migrate`, `api`, `worker`, `test` behind a profile)
-- **Repo state**: repaired through phases 1–10; **all 27 catalogued issues closed**; 486 tests
-  (423 unit + 63 integration); verified end-to-end against a live LLM provider. See
-  `KNOWN_ISSUES.md` for the status ledger.
+- **Repo state**: repaired through phases 1–10 plus the contract-filter gate; **all 27
+  catalogued issues closed**; 507 tests (444 unit + 63 integration); verified end-to-end
+  against a live LLM provider. See `KNOWN_ISSUES.md` for the status ledger.
 
 Entry points: `backend/app/main.py` (API) and `backend/app/worker.py` (RQ worker).
 
@@ -61,8 +61,8 @@ Entry points: `backend/app/main.py` (API) and `backend/app/worker.py` (RQ worker
 5. **Validation runs in Docker**, not on the host — host Python is 3.10 and lacks the
    dependencies:
    ```sh
-   docker compose run --rm --no-deps test              # pytest, 423 unit tests (~21s)
-   docker compose run --rm test                        # all 486, incl. integration
+   docker compose run --rm --no-deps test              # pytest, 444 unit tests (~21s)
+   docker compose run --rm test                        # all 507, incl. integration
    docker compose run --rm --no-deps test ruff check .  # lint
    docker compose run --rm test alembic upgrade head    # needs postgres, so no --no-deps
    ```
@@ -90,6 +90,7 @@ Entry points: `backend/app/main.py` (API) and `backend/app/worker.py` (RQ worker
 | Change the self-improving pattern store | `app/services/skill_store.py` |
 | Change how LLM output is cleaned up | `app/services/findings.py` |
 | Change what uploads are accepted | `app/services/upload_validation.py` |
+| Change which documents pass the contract gate | `app/services/contract_filter.py`, `seed/legal_lexicon.json`, `scripts/build_legal_lexicon.py` |
 | Change stuck-contract handling | `app/services/reaper.py`, `app/config.py` |
 | Change seeding or legal citations | `app/services/seed_loader.py`, `app/seed.py` |
 | Add/modify an API endpoint | `app/api/routes_*.py` + `app/schemas.py` |

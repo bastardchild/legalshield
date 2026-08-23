@@ -114,6 +114,9 @@ New modules, all with tests:
 | `alembic/versions/0005_*.py` | `clause_patterns.owner_id`; unique key moves to `(owner_id, fingerprint)` |
 | `app/services/mailer.py` | Real SMTP delivery of counter-drafts; stub mode when `SMTP_HOST` is empty |
 | `scripts/smtp_live_check.py` | Drives the mailer over a real socket against a throwaway one-session SMTP listener |
+| `app/services/contract_filter.py` | Upload gate: scores extracted text against the weighted legal lexicon + structural markers and rejects non-contracts (CVs, invoices, recipes) before any LLM spend |
+| `scripts/build_legal_lexicon.py` | Deterministic generator for `seed/legal_lexicon.json` (>= 5000 weighted positive entries, >= 300 negatives); `--check` verifies the on-disk file is current |
+| `seed/legal_lexicon.json` | The generated lexicon: 5112 positive entries (4563 terms + 549 phrases) + 622 negative n-grams |
 
 One defect was found during repair rather than in the original audit, and is worth
 remembering because it is invisible until the *second* job runs:
@@ -495,10 +498,40 @@ via `mailer.body_text()`, not `message.get_content()`.
 `scripts/smtp_live_check.py` verifies the whole thing over a real socket (throwaway listener
 on `127.0.0.1:2525`); the unit tests use a fake `smtplib.SMTP` and so never open one.
 
+### Contract filter contract, worth knowing before touching it
+
+The upload route calls `assess_contract(raw_text)` **after** text extraction and the
+empty-text check, and raises `422` before the Contract row is created when the document
+scores below `contract_filter_min_score` (`0.35`). The gate exists because every accepted
+upload runs three LLM agents: a CV, invoice, or recipe must be rejected cheaply, before
+any queueing happens.
+
+- **Fail open, never block on infrastructure.** If `seed/legal_lexicon.json` is missing or
+  unreadable, `assess_contract` accepts the document and logs a warning. A misconfigured
+  deployment should cost LLM budget, not strand a user's upload. `contract_filter_enabled`
+  is the kill switch; the other knobs are `contract_filter_min_score` and
+  `contract_filter_min_tokens` (default `60`).
+- **The score is three parts.** `0.6 * lex + 0.4 * structure - penalty`, each saturated by
+  `1 - exp(-k * x)` so the inputs are densities, not raw counts: `lex` is weighted
+  positive-hit rate over tokens (per-ngram contributions capped at 3 occurrences),
+  `structure` is a fixed-weight set of word-boundary regexes (`Pasal N`, "dengan ini",
+  "antara", numbered clause lines, date blocks, "nomor <digits>"), and `penalty` is
+  negative-hit density capped at `0.4` (negatives depress, never veto).
+- **Word-boundary matching matters.** The structure markers are compiled with `\b`, not
+  substring search: "PT Digital **Nusantara**" must not count as the word "antara". Keep
+  that invariant when adding markers.
+- **Weights are scored, not counted.** `wanprestasi` (5) outweighs `pihak` (2); the
+  lexicon's `weights_legend` documents the scale. The lexicon is generated, not hand
+  edited — change `scripts/build_legal_lexicon.py` and regenerate, then run
+  `python scripts/build_legal_lexicon.py --check` (fails if the file is out of date).
+- The classification is deliberately a **gate, not a grader**: a scored-but-rejected
+  document is simply refused with a Bahasa 422 (`NOT_CONTRACT_MESSAGE` /
+  `TOO_SHORT_MESSAGE` in `routes_upload.py`); the assessment is never stored.
+
 ### Operational notes worth keeping
 
-- Tests run **in Docker only**: `docker compose run --rm --no-deps test` for the 423 unit
-  tests (~21s), `docker compose run --rm test` for all 486 including `tests/integration/`,
+- Tests run **in Docker only**: `docker compose run --rm --no-deps test` for the 444 unit
+  tests (~11s), `docker compose run --rm test` for all 507 including `tests/integration/`,
   which needs PostgreSQL. The host Python is 3.10 and lacks the dependencies; the project
   needs 3.11+.
 - Integration tests create and drop a separate `legalshield_test` database. They **skip**

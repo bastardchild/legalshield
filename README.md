@@ -52,6 +52,13 @@ http://localhost:8000
 
 Pilih `seed/sample_contract.txt` (atau PDF kontrak apa pun) → klik **Analisis Kontrak**.
 
+Unggahan melewati **filter kontrak** terlebih dahulu: teks hasil ekstraksi di-skor terhadap
+leksikon hukum ber-pembobotan (`seed/legal_lexicon.json`, 5.112 entri positif + 622 negatif)
+plus penanda struktur dokumen (pasal, "dengan ini", "antara ... dengan", blok tanggal, dll.).
+File yang tidak menyerupai kontrak (CV, invoice, resep) ditolak `422` sebelum satu pun agen
+LLM dipanggil — setiap unggahan yang diterima menjalankan tiga agen, jadi sampah harus
+ditolak dengan murah. Kalibrasi default: kontrak nyata ~0.4–0.6, CV/invoice/resep < 0.35.
+
 Halaman hasil melakukan polling tiap 2 detik via HTMX dan berhenti otomatis saat analisis
 mencapai `done` atau `failed`.
 
@@ -100,7 +107,8 @@ Upload PDF/TXT
     │  validasi berbasis konten (magic bytes, bukan ekstensi)
     ▼
 FastAPI (POST /api/contracts/upload)
-    │  extract teks → simpan ke Postgres → enqueue ke Redis
+    │  extract teks → filter kontrak (leksikon + struktur, 422 bila bukan kontrak)
+    │  → simpan ke Postgres → enqueue ke Redis
     │  jika enqueue gagal → kontrak ditandai `failed` (bukan menggantung)
     ▼
 RQ Worker
@@ -116,6 +124,10 @@ Postgres (analysis_results) ← HTMX polling tiap 2s
     ▼
 UI (hasil + draft balasan)
 ```
+
+Filter kontrak **fail-open**: bila `seed/legal_lexicon.json` tidak terbaca, unggahan
+diterima dan peringatan dicatat — salah konfigurasi harus menghabiskan budget LLM, bukan
+menyandera dokumen pengguna. Matikan lewat `CONTRACT_FILTER_ENABLED=false` bila perlu.
 
 Worker juga menjalankan thread **reaper** yang menandai `failed` kontrak yang terlanjur
 `processing` tetapi kehilangan worker-nya (container mati, OOM, Redis di-flush).
@@ -139,13 +151,15 @@ legalshield/
 ├── seed/
 │   ├── sample_contract.txt        # contoh kontrak buruk untuk demo
 │   ├── dataset1.json              # 100 klausul berlabel → bootstrap clause_patterns
-│   └── datasetpasal1.json         # 50 regulasi Indonesia → sitasi agent pajak
+│   ├── datasetpasal1.json         # 50 regulasi Indonesia → sitasi agent pajak
+│   └── legal_lexicon.json         # leksikon hukum ber-pembobotan → filter unggahan
 ├── backend/
 │   ├── Dockerfile
 │   ├── pyproject.toml             # dependency + config pytest/ruff
 │   ├── alembic/                   # migrasi database (0001–0005)
 │   ├── tests/                     # pytest suite (unit + tests/integration/)
-│   ├── scripts/                   # e2e_access_check.py (butuh stack hidup)
+│   ├── scripts/                   # e2e_access_check.py (butuh stack hidup),
+│   │                              # build_legal_lexicon.py (generator leksikon)
 │   └── app/
 │       ├── main.py
 │       ├── config.py
@@ -156,7 +170,7 @@ legalshield/
 │       ├── agents/                # orchestrator + 3 sub-agents + prompts
 │       ├── services/              # llm_client, findings, pdf_extractor, queue,
 │       │                          # skill_store, seed_loader, reaper,
-│       │                          # upload_validation, mailer
+│       │                          # upload_validation, contract_filter, mailer
 │       ├── templates/             # Jinja2 HTML (HTMX + Alpine.js), tanpa inline style
 │       └── static/                # app.css (semua layout), app.js, vendor/ (htmx, alpine)
 └── README.md
@@ -199,6 +213,9 @@ legalshield/
 | `SMTP_FROM` | Alamat pengirim. Kosong = pakai `SMTP_USERNAME` | *(kosong)* |
 | `SMTP_FROM_NAME` | Nama tampilan pengirim | `LegalShield Agent` |
 | `SMTP_TIMEOUT_SECONDS` | Timeout koneksi SMTP. Pengiriman terjadi di dalam handler POST, jadi jangan besar | `15.0` |
+| `CONTRACT_FILTER_ENABLED` | Matikan filter kontrak saat unggah (`false` = semua dokumen diterima). Tidak disarankan — tiap unggahan menjalankan 3 agen LLM | `true` |
+| `CONTRACT_FILTER_MIN_SCORE` | Skor minimum agar dokumen dianggap kontrak. Di bawah ini ditolak `422` | `0.35` |
+| `CONTRACT_FILTER_MIN_TOKENS` | Di bawah jumlah token ini dokumen terlalu pendek untuk dinilai | `60` |
 
 > `HERMES_BASE_URL` boleh diisi dengan atau tanpa akhiran `/v1` — akhiran itu di-strip
 > lalu ditambahkan kembali, jadi `http://host.docker.internal:11434/v1` dan

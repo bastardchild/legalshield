@@ -9,6 +9,7 @@ from app.db.models import Contract, ContractStatus
 from app.db.session import get_db
 from app.middleware import client_key, current_owner
 from app.schemas import ContractUploadResponse
+from app.services.contract_filter import assess_contract
 from app.services.pdf_extractor import extract_text_from_pdf
 from app.services.queue import EnqueueError, enqueue_analysis
 from app.services.rate_limit import RateLimitExceeded, check
@@ -32,6 +33,11 @@ UPLOAD_LIMIT_MESSAGE = (
     "Batas unggahan tercapai. Setiap unggahan menjalankan tiga agen LLM, jadi jumlahnya "
     "dibatasi per jam. Coba lagi nanti."
 )
+NOT_CONTRACT_MESSAGE = (
+    "File ini tidak dikenali sebagai dokumen kontrak/hukum. Unggah kontrak PDF atau TXT "
+    "yang berisi perjanjian, pasal, dan klausul."
+)
+TOO_SHORT_MESSAGE = "Teks yang diekstrak terlalu pendek untuk dianalisis sebagai kontrak."
 
 
 def _enforce_upload_limit(request: Request) -> None:
@@ -60,6 +66,7 @@ async def upload_contract(
     db: AsyncSession = Depends(get_db),
 ):
     _enforce_upload_limit(request)
+    settings = get_settings()
 
     try:
         ext = validate_filename(file.filename)
@@ -85,6 +92,20 @@ async def upload_contract(
             status_code=422,
             detail="Tidak ada teks yang bisa diekstrak dari file. Apakah ini hasil scan gambar?",
         )
+
+    # Gate: is this actually a contract / legal paper? Every accepted upload runs three
+    # LLM agents, so junk (CVs, invoices, recipes) must be rejected before any queueing.
+    # The filter fails open when the lexicon is unavailable — see contract_filter.py.
+    assessment = assess_contract(raw_text)
+    if settings.contract_filter_enabled and not assessment.is_contract:
+        logger.info(
+            f"Rejected upload '{file.filename}': {assessment.reason} "
+            f"(score {assessment.score:.2f}, {assessment.token_count} tokens)"
+        )
+        detail = (
+            TOO_SHORT_MESSAGE if assessment.reason == "too_short" else NOT_CONTRACT_MESSAGE
+        )
+        raise HTTPException(status_code=422, detail=detail)
 
     contract = Contract(
         id=uuid.uuid4(),

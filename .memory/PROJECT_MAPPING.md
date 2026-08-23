@@ -20,7 +20,8 @@ C:\legalshield\
 ├── seed/                         # bind-mounted read-only into every service at /app/seed
 │   ├── sample_contract.txt       # 3.9 KB deliberately abusive freelance contract (demo input)
 │   ├── dataset1.json             # 100 labelled risky-clause records → bootstraps clause_patterns
-│   └── datasetpasal1.json        # 50 Indonesian legal-reference records → tax agent citations
+│   ├── datasetpasal1.json        # 50 Indonesian legal-reference records → tax agent citations
+│   └── legal_lexicon.json        # generated: 5112 weighted legal positives + 622 negatives (upload gate)
 └── backend/
     ├── .dockerignore             # keeps .git/.venv/__pycache__ out of the build context
     ├── Dockerfile                # multi-stage; runtime image has no gcc/libpq-dev
@@ -37,8 +38,9 @@ C:\legalshield\
     │       └── 0005_per_tenant_clause_patterns.py  # clause_patterns.owner_id + per-owner uq
     ├── scripts/
     │   ├── e2e_access_check.py    # live-stack access-control check (not in pytest)
-    │   └── smtp_live_check.py     # real socket SMTP check against a throwaway listener
-    ├── tests/                    # 486 tests (423 unit + 63 integration)
+    │   ├── smtp_live_check.py     # real socket SMTP check against a throwaway listener
+    │   └── build_legal_lexicon.py # deterministic generator for seed/legal_lexicon.json; --check
+    ├── tests/                    # 507 tests (444 unit + 63 integration)
     │   ├── conftest.py           # env defaults set before any app import; Jinja fixtures
     │   ├── test_templates.py     # compile + polling-marker regressions (#1, #4, #14, #15)
     │   ├── test_llm_client.py    # JSON extraction, base-URL normalisation (#7, #10)
@@ -51,6 +53,7 @@ C:\legalshield\
     │   ├── test_static_assets.py # vendored JS, font fallbacks, no inline styles (#20, #27)
     │   ├── test_mailer.py        # SMTP envelope, stub mode, failure contract, header injection
     │   ├── test_security.py      # cookie signing, access gate, limiter, ownership (#5)
+    │   ├── test_contract_filter.py # lexicon size/shape, accept contract, reject CV/recipe/invoice
     │   ├── test_deployment_config.py # compose guards: prod overlay, dev ergonomics (#26)
     │   └── integration/          # needs live Postgres; skipped under --no-deps
     │       ├── conftest.py       # creates/migrates/drops legalshield_test
@@ -91,6 +94,7 @@ C:\legalshield\
         │   ├── reaper.py         # sweeps contracts stuck in uploaded/processing
         │   ├── seed_loader.py    # dataset1 → clause_patterns; datasetpasal1 → citations
         │   ├── skill_store.py    # per-owner clause pattern store (RAG context)
+        │   ├── contract_filter.py # scores uploads vs weighted legal lexicon + structure markers
         │   └── mailer.py         # SMTP delivery; log-only stub when SMTP_HOST is empty
         ├── templates/
         │   ├── base.html         # nav/footer, vendored HTMX + Alpine, remote fonts
@@ -312,6 +316,9 @@ Severity → CSS coupling: `partials/result.html` builds the stripe class from
 | `hermes_api_key` | `HERMES_API_KEY` | `changeme` |
 | `llm_model` | `LLM_MODEL` | `NousResearch/Hermes-3-Llama-3.1-70B` |
 | `default_locale` | `DEFAULT_LOCALE` | `id-ID` |
+| `contract_filter_enabled` | `CONTRACT_FILTER_ENABLED` | `true` (kill switch for the upload gate) |
+| `contract_filter_min_score` | `CONTRACT_FILTER_MIN_SCORE` | `0.35` (below this → rejected as non-contract) |
+| `contract_filter_min_tokens` | `CONTRACT_FILTER_MIN_TOKENS` | `60` (below this → rejected as too short) |
 
 `llm_client.get_llm_client()` appends `/v1` to `hermes_base_url`, so the env value must **not**
 already include `/v1` (contradicts the README's Ollama tip — see `KNOWN_ISSUES.md` #6).
@@ -351,6 +358,7 @@ which does not exist.
 | `sample_contract.txt` | — | Indonesian freelance contract with intentionally abusive Pasal 1–N (non-compete 5y ASEAN-wide, total IP assignment, 60-day payment with unilateral withholding) | Manually uploaded in the demo |
 | `dataset1.json` | 100 | `{id, category, severity, industry, party, contract_snippet, risk_findings[], tax_findings[], counter_suggestion, source_reference, applicable_law, locale}` | **Yes** — `services/seed_loader.py` |
 | `datasetpasal1.json` | 50 | `{id, kode, nama_lengkap, jenis, pasal_relevan[], topik, relevansi_kontrak, url_resmi, url_pdf, instansi, status, catatan_pasal{}}` | **Yes** — `services/seed_loader.py` |
+| `legal_lexicon.json` | — | `{terms: {word: 1..5}, phrases: {phrase: 1..5}, negative_terms: {n-gram: 1..5}, metadata}` — 5112 positive + 622 negative | **Yes** — `services/contract_filter.py` (fail-open if unreadable) |
 
 `dataset1.json` maps almost 1:1 onto `clause_patterns` and bootstraps the skill store via
 `python -m app.seed`; `datasetpasal1.json` backs the citation list injected into
@@ -584,3 +592,34 @@ broader list silently masked genuinely undefined classes.
 > Visual confirmation of the CSS refactor is **unverified by the agent** — a screenshot was
 > taken but could not be interpreted. The two guard tests are the safety net; a human should
 > still eyeball `/` and a finished result page once.
+
+**Contract filter — the upload gate (phase 11/12).**
+
+`routes_upload.py` used to accept any PDF/TXT that decoded to text, so a CV, an invoice, or a
+recipe was queued for three LLM agent calls and billed. The route now scores the extracted
+text and rejects it with a Bahasa 422 before the `Contract` row exists. The scoring lives in
+`services/contract_filter.py`; the vocabulary lives in `seed/legal_lexicon.json`, generated by
+`scripts/build_legal_lexicon.py` (>= 5000 weighted positive entries, >= 300 negatives).
+
+- **Score = `0.6 * lex + 0.4 * structure - penalty`**, each piece a saturation curve on a
+  density (`1 - exp(-k * x)`), so long contracts are not auto-wins and a short CV with two
+  legal words is not auto-accepted. Per-ngram positive contributions are capped at 3
+  occurrences (a "PASAL PASAL PASAL" doc cannot game the score).
+- **Structure markers are word-boundary regexes**, not substrings: "PT Digital **Nusantara**"
+  must not count as the word "antara". The markers are `Pasal N`, `Ayat N`, "dengan ini",
+  "antara", "tanda tangan", "berlaku sejak", "nomor", "ditandatangani", "sepakat",
+  "materai", >= 3 numbered clause lines, date blocks and "nomor <digits>".
+- **Negatives depress, never veto.** Negative n-gram density is penalised with a `0.4` cap,
+  so a contract that mentions "faktur" once is not sunk by invoice vocabulary; words that are
+  genuinely both ("faktur", "akta") live on the positive side only — the generator drops
+  colliding negatives.
+- **Fail open.** A missing/unreadable lexicon accepts the upload and logs a warning; a
+  misconfigured deployment costs LLM budget rather than stranding a user's document.
+  `CONTRACT_FILTER_ENABLED=false` is the kill switch.
+- `scripts/build_legal_lexicon.py --check` regenerates in memory and fails if the on-disk
+  file differs — the file is generated, not hand-edited. `tests/test_contract_filter.py`
+  loads the real lexicon and pins the behaviour: the demo contract and a realistic fixture
+  pass, a CV/recipe/invoice fail, short/empty texts get their own reasons.
+
+Calibration (real lexicon, threshold `0.35`): `sample_contract.txt` 0.61, contract fixture
+0.43, CV 0.20, invoice 0.24, recipe 0.14, "pasal" spam 0.31.

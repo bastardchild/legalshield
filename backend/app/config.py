@@ -34,6 +34,16 @@ class Settings(BaseSettings):
     # Cap on legal references injected into the tax agent's prompt.
     max_legal_references: int = 25
 
+    # --- Upload contract filter (gate before any LLM spend) -------------------------
+    # The upload route rejects documents that do not score like a contract/legal paper
+    # against the weighted lexicon in seed/legal_lexicon.json. Set false to disable the
+    # gate entirely (not recommended — every accepted upload costs three LLM agent calls).
+    contract_filter_enabled: bool = True
+    # Documents scoring below this are rejected as non-contracts.
+    contract_filter_min_score: float = 0.35
+    # Below this token count the document is too short to judge fairly.
+    contract_filter_min_tokens: int = 60
+
     # --- Security (KNOWN_ISSUES #5) ------------------------------------------------
     # HMAC key for the owner cookie. Generated per-process when empty, which invalidates
     # cookies on restart and does not validate across replicas — set it in production.
