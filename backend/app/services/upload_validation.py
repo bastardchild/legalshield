@@ -15,6 +15,7 @@ the bytes actually are.
 import logging
 
 from app.config import get_settings
+from app.services.pdf_extractor import pdf_page_count
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +156,26 @@ def validate_payload(ext: str, data: bytes) -> str:
             status_code=422,
         )
     return ".txt"
+
+
+def validate_pdf_page_count(file_bytes: bytes, max_pages: int) -> int:
+    """
+    Reject a PDF that is longer than the page cap, before any text extraction.
+
+    Extraction cost and LLM token spend grow with page count, so the check runs early.
+    Returns the page count; a `max_pages` of 0 or less lifts the cap.
+    """
+    try:
+        count = pdf_page_count(file_bytes)
+    except ValueError as e:
+        raise UploadValidationError(str(e), status_code=422) from e
+    if max_pages > 0 and count > max_pages:
+        raise UploadValidationError(
+            f"File PDF memiliki {count} halaman. Maksimal {max_pages} halaman "
+            "untuk dianalisis.",
+            status_code=422,
+        )
+    return count
 
 
 async def read_limited(file, limit: int = MAX_UPLOAD_BYTES) -> bytes:

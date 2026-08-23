@@ -4,7 +4,10 @@ Upload validation tests (KNOWN_ISSUES #16).
 The original route trusted the filename extension and used a latin-1 fallback that can
 never fail, so any binary renamed to `.txt` was accepted as contract text.
 """
+import io
+
 import pytest
+from pypdf import PdfWriter
 
 from app.services.upload_validation import (
     MAX_UPLOAD_BYTES,
@@ -19,9 +22,19 @@ from app.services.upload_validation import (
     validate_declared_size,
     validate_filename,
     validate_payload,
+    validate_pdf_page_count,
 )
 
 MINIMAL_PDF = PDF_MAGIC + b"1.4\n%%EOF\n"
+
+
+def _blank_pdf(num_pages: int) -> bytes:
+    writer = PdfWriter()
+    for _ in range(num_pages):
+        writer.add_blank_page(width=612, height=792)
+    buf = io.BytesIO()
+    writer.write(buf)
+    return buf.getvalue()
 
 
 class TestExtensionOf:
@@ -167,6 +180,27 @@ class TestValidatePayload:
     def test_non_pdf_claiming_pdf_extension_rejected(self):
         with pytest.raises(UploadValidationError) as exc:
             validate_payload(".pdf", b"ini bukan pdf")
+        assert exc.value.status_code == 422
+
+
+class TestValidatePdfPageCount:
+    def test_accepts_within_limit(self):
+        assert validate_pdf_page_count(_blank_pdf(5), 10) == 5
+
+    def test_accepts_exactly_at_limit(self):
+        assert validate_pdf_page_count(_blank_pdf(10), 10) == 10
+
+    def test_rejects_over_limit(self):
+        with pytest.raises(UploadValidationError) as exc:
+            validate_pdf_page_count(_blank_pdf(11), 10)
+        assert exc.value.status_code == 422
+
+    def test_zero_lifts_the_cap(self):
+        assert validate_pdf_page_count(_blank_pdf(50), 0) == 50
+
+    def test_unreadable_pdf_is_422(self):
+        with pytest.raises(UploadValidationError) as exc:
+            validate_pdf_page_count(b"bukan pdf", 10)
         assert exc.value.status_code == 422
 
 

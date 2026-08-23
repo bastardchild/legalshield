@@ -21,6 +21,7 @@ from app.services.upload_validation import (
     validate_declared_size,
     validate_filename,
     validate_payload,
+    validate_pdf_page_count,
 )
 
 logger = logging.getLogger(__name__)
@@ -77,6 +78,8 @@ async def upload_contract(
         ext = validate_payload(ext, file_bytes)
 
         if ext == ".pdf":
+            # Page cap before extraction: extraction and the LLM spend grow with pages.
+            validate_pdf_page_count(file_bytes, settings.max_pdf_pages)
             try:
                 raw_text = extract_text_from_pdf(file_bytes)
             except ValueError as e:
