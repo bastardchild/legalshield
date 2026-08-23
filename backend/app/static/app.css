@@ -40,7 +40,7 @@ html { scroll-behavior: smooth; }
 
 /* ── Base ──────────────────────────────────────────────────── */
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background: var(--bg-base);
   color: var(--text-1);
   min-height: 100vh;
@@ -114,12 +114,12 @@ main { padding: 2.5rem 0 5rem; }
 .fc:hover { border-color: #253550; }
 .fc-meta { display: flex; align-items: center; gap: 0.45rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
 .fc-type { font-size: 0.8rem; font-weight: 600; }
-.fc-conf { margin-left: auto; font-size: 0.68rem; color: var(--text-3); font-family: 'JetBrains Mono', monospace; }
-.fc-quote { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-2); background: rgba(0,0,0,.2); border: 1px solid var(--border-sub); padding: 0.5rem 0.7rem; border-radius: var(--r-sm); margin-bottom: 0.5rem; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.fc-conf { margin-left: auto; font-size: 0.68rem; color: var(--text-3); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.fc-quote { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size: 0.7rem; color: var(--text-2); background: rgba(0,0,0,.2); border: 1px solid var(--border-sub); padding: 0.5rem 0.7rem; border-radius: var(--r-sm); margin-bottom: 0.5rem; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .fc-lbl { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin-bottom: 0.15rem; }
 .fc-txt { font-size: 0.8rem; color: var(--text-2); line-height: 1.55; }
 .fc-row { margin-bottom: 0.4rem; }
-.reg-chip { display: inline-flex; font-size: 0.65rem; color: var(--purple); background: var(--purple-dim); border: 1px solid rgba(139,92,246,.2); padding: 0.12rem 0.45rem; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
+.reg-chip { display: inline-flex; font-size: 0.65rem; color: var(--purple); background: var(--purple-dim); border: 1px solid rgba(139,92,246,.2); padding: 0.12rem 0.45rem; border-radius: 9999px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
 
 /* ── Status Banners ──────────────────────────────────────────── */
 .sb { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.1rem; border-radius: var(--r-lg); border: 1px solid; font-size: 0.85rem; font-weight: 500; }
@@ -139,11 +139,11 @@ main { padding: 2.5rem 0 5rem; }
 .fade-up { animation: fadeUp .25s ease; }
 
 /* ── Forms ───────────────────────────────────────────────────── */
-input[type="email"], textarea { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-1); border-radius: var(--r); font-family: 'Inter', sans-serif; font-size: 0.875rem; outline: none; width: 100%; transition: border-color .15s, box-shadow .15s; }
+input[type="email"], textarea { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-1); border-radius: var(--r); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 0.875rem; outline: none; width: 100%; transition: border-color .15s, box-shadow .15s; }
 input[type="email"] { padding: 0.5rem 0.8rem; }
 input[type="email"]:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
 input::placeholder { color: var(--text-3); }
-textarea { padding: 0.875rem 1rem; min-height: 300px; resize: vertical; font-family: 'JetBrains Mono', monospace; font-size: 0.73rem; line-height: 1.6; }
+textarea { padding: 0.875rem 1rem; min-height: 300px; resize: vertical; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size: 0.73rem; line-height: 1.6; }
 label { font-size: 0.77rem; font-weight: 500; color: var(--text-2); display: block; margin-bottom: 0.3rem; }
 
 /* ── Alerts ──────────────────────────────────────────────────── */
@@ -159,7 +159,7 @@ label { font-size: 0.77rem; font-weight: 500; color: var(--text-2); display: blo
 
 /* ── Misc ────────────────────────────────────────────────────── */
 hr.div { border: none; border-top: 1px solid var(--border-sub); margin: 1.125rem 0; }
-.mono { font-family: 'JetBrains Mono', monospace; }
+.mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
 [x-cloak] { display: none !important; }
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg-base); }

@@ -4,8 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}LegalShield Agent{% endblock %}</title>
-  <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2uH8H7ou8iZpTao12EMtxpi0yF9RtBMFGhb" crossorigin="anonymous"></script>
-  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  {# htmx and Alpine are functional dependencies, not enhancements: without them the page
+     never polls and nothing renders. Served locally so a blocked or slow CDN cannot break
+     the app. Fonts stay remote because the CSS declares a full fallback stack. #}
+  <script src="/static/vendor/htmx-1.9.12.min.js"></script>
+  <script defer src="/static/vendor/alpine-3.14.1.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/app.css" />

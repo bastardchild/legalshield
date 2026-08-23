@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from app.agents.agent_risk_clause import AgentRun
@@ -31,7 +31,7 @@ def _legal_references() -> str:
 
 async def run_tax_compliance_agent(contract_text: str) -> AgentRun:
     """Sub-agent B: Tax / Local Compliance Checker. Returns normalised {'findings': [...]}."""
-    started_at = datetime.now(timezone.utc)
+    started_at = datetime.now(UTC)
     logger.info(f"[{AGENT_LABEL}] Starting at {started_at.isoformat()}")
 
     text, truncated = truncate_contract(contract_text)
@@ -64,7 +64,7 @@ async def run_tax_compliance_agent(contract_text: str) -> AgentRun:
     if truncated:
         result["truncated"] = True
 
-    finished_at = datetime.now(timezone.utc)
+    finished_at = datetime.now(UTC)
     logger.info(
         f"[{AGENT_LABEL}] Done at {finished_at.isoformat()}. "
         f"Findings: {len(result['findings'])}"

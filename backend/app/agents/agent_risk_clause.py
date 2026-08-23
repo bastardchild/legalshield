@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import NamedTuple
 
@@ -48,7 +48,7 @@ async def _known_patterns_text() -> str:
 
 async def run_risk_clause_agent(contract_text: str) -> AgentRun:
     """Sub-agent A: Risk Clause Detector. Returns normalised {'findings': [...]}."""
-    started_at = datetime.now(timezone.utc)
+    started_at = datetime.now(UTC)
     logger.info(f"[{AGENT_LABEL}] Starting at {started_at.isoformat()}")
 
     text, truncated = truncate_contract(contract_text)
@@ -81,7 +81,7 @@ async def run_risk_clause_agent(contract_text: str) -> AgentRun:
     if truncated:
         result["truncated"] = True
 
-    finished_at = datetime.now(timezone.utc)
+    finished_at = datetime.now(UTC)
     logger.info(
         f"[{AGENT_LABEL}] Done at {finished_at.isoformat()}. "
         f"Findings: {len(result['findings'])}"

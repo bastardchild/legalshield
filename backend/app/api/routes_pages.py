@@ -1,12 +1,13 @@
 import logging
-from fastapi import APIRouter, Request, Depends, HTTPException
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.models import AnalysisResult, Contract
 from app.db.session import get_db
-from app.db.models import Contract, AnalysisResult
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

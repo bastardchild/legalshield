@@ -1,13 +1,16 @@
+import os
+import sys
 from logging.config import fileConfig
+
 from sqlalchemy import engine_from_config, pool
+
 from alembic import context
-import os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.config import get_settings
-from app.db.session import Base
 from app.db import models  # noqa: F401 — ensure all models are imported
+from app.db.session import Base
 
 config = context.config
 settings = get_settings()

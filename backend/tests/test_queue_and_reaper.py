@@ -9,7 +9,7 @@ import pytest
 from redis.exceptions import ConnectionError as RedisConnectionError
 
 from app.services import queue as queue_mod
-from app.services.queue import EnqueueError, JOB_TIMEOUT, enqueue_analysis, queue_is_reachable
+from app.services.queue import JOB_TIMEOUT, EnqueueError, enqueue_analysis, queue_is_reachable
 
 
 class _FakeJob:

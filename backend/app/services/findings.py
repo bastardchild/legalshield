@@ -49,7 +49,7 @@ def normalize_confidence(value: object) -> float:
     """
     if isinstance(value, bool):
         return 0.0
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         num = float(value)
     elif isinstance(value, str):
         text = value.strip().rstrip("%")

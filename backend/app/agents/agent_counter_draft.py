@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from app.agents.agent_risk_clause import AgentRun
@@ -33,7 +33,7 @@ async def run_counter_draft_agent(
 
     Returns {'counter_draft', 'summary_of_changes', 'negotiation_notes'}.
     """
-    started_at = datetime.now(timezone.utc)
+    started_at = datetime.now(UTC)
     logger.info(f"[{AGENT_LABEL}] Starting at {started_at.isoformat()}")
 
     risk_str = json.dumps(risk_findings.get("findings", []), ensure_ascii=False, indent=2)
@@ -66,7 +66,7 @@ async def run_counter_draft_agent(
     if truncated:
         result["truncated"] = True
 
-    finished_at = datetime.now(timezone.utc)
+    finished_at = datetime.now(UTC)
     logger.info(
         f"[{AGENT_LABEL}] Done at {finished_at.isoformat()}. "
         f"Draft: {len(result['counter_draft'])} chars, "

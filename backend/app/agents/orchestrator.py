@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -60,7 +60,7 @@ async def _set_status(contract_id: str, status: ContractStatus) -> None:
         await db.execute(
             update(Contract)
             .where(Contract.id == contract_id)
-            .values(status=status, updated_at=datetime.now(timezone.utc))
+            .values(status=status, updated_at=datetime.now(UTC))
         )
         await db.commit()
 
@@ -131,14 +131,14 @@ async def run_analysis(contract_id: str) -> None:
             return
 
         # Phase 1 — A and B in parallel.
-        t0 = datetime.now(timezone.utc)
+        t0 = datetime.now(UTC)
         logger.info("[Orchestrator] Agents A & B starting in parallel")
         risk_outcome, tax_outcome = await asyncio.gather(
             run_risk_clause_agent(raw_text),
             run_tax_compliance_agent(raw_text),
             return_exceptions=True,
         )
-        elapsed = (datetime.now(timezone.utc) - t0).total_seconds()
+        elapsed = (datetime.now(UTC) - t0).total_seconds()
         logger.info(f"[Orchestrator] Agents A & B finished in {elapsed:.2f}s (parallel)")
 
         risk_result = await _persist_agent(

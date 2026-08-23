@@ -1,13 +1,23 @@
-import uuid
 import enum
-from datetime import datetime
+import uuid
+
 from sqlalchemy import (
-    Column, String, Text, DateTime, Enum, Float, Integer,
-    ForeignKey, Boolean, UniqueConstraint, Index
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from app.db.session import Base
 
 

@@ -12,7 +12,7 @@ os.environ.setdefault("HERMES_BASE_URL", "http://llm.invalid")
 os.environ.setdefault("HERMES_API_KEY", "test-key")
 os.environ.setdefault("LLM_MODEL", "test-model")
 
-from datetime import datetime, timezone  # noqa: E402
+from datetime import UTC, datetime  # noqa: E402
 from types import SimpleNamespace  # noqa: E402
 
 import pytest  # noqa: E402
@@ -52,7 +52,7 @@ def strict_jinja_env() -> Environment:
 
 def make_contract(status: str, filename: str = "kontrak.pdf") -> SimpleNamespace:
     """Minimal stand-in for a Contract ORM row (templates only read .status/.filename/.updated_at)."""
-    now = datetime(2026, 8, 22, 14, 30, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 8, 22, 14, 30, 0, tzinfo=UTC)
     return SimpleNamespace(
         status=SimpleNamespace(value=status),
         filename=filename,

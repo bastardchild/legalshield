@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ def send_counter_draft(
     Stub email sender — logs the intent and returns a record dict.
     Replace with real SMTP / SendGrid call if needed.
     """
-    timestamp = datetime.utcnow().isoformat()
+    timestamp = datetime.now(UTC).isoformat()
     logger.info(
         f"[MAILER STUB] Contract {contract_id} → recipient={recipient_email} "
         f"at {timestamp}. Draft length: {len(counter_draft_text)} chars."

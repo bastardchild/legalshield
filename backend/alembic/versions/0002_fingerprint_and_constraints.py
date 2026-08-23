@@ -11,8 +11,9 @@ Three changes, all of which need existing rows cleaned up first:
 2. `uq_analysis_results_contract_agent` — backs the orchestrator's ON CONFLICT upsert.
 3. `uq_clause_patterns_fingerprint` — makes the dedupe authoritative at the DB level.
 """
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 revision = '0002'
 down_revision = '0001'

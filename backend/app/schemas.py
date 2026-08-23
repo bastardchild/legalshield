@@ -1,7 +1,6 @@
-import uuid
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr
 from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class ContractUploadResponse(BaseModel):
@@ -12,10 +11,10 @@ class ContractUploadResponse(BaseModel):
 
 class AnalysisResultOut(BaseModel):
     agent_type: str
-    result_json: Optional[dict] = None
-    error: Optional[str] = None
-    started_at: Optional[datetime] = None
-    finished_at: Optional[datetime] = None
+    result_json: dict | None = None
+    error: str | None = None
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
 
 
 class ContractStatusResponse(BaseModel):
@@ -30,16 +29,16 @@ class ContractResultResponse(BaseModel):
     id: str
     filename: str
     status: str
-    analysis_results: List[AnalysisResultOut] = []
+    analysis_results: list[AnalysisResultOut] = []
 
 
 class NegotiationSendRequest(BaseModel):
-    recipient_email: Optional[str] = None
+    recipient_email: str | None = None
 
 
 class NegotiationSendResponse(BaseModel):
     id: str
     contract_id: str
-    recipient_email: Optional[str]
+    recipient_email: str | None
     status: str
     sent_at: datetime

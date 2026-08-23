@@ -109,7 +109,7 @@ class TestMagicBytes:
         assert not looks_like_pdf(b"x" * 2000 + PDF_MAGIC)
 
     def test_plain_text_is_not_pdf(self):
-        assert not looks_like_pdf("Perjanjian Kerja Sama".encode())
+        assert not looks_like_pdf(b"Perjanjian Kerja Sama")
 
 
 class TestIsProbablyBinary:
@@ -162,11 +162,11 @@ class TestValidatePayload:
         assert validate_payload(".txt", MINIMAL_PDF) == ".pdf"
 
     def test_txt_stays_txt(self):
-        assert validate_payload(".txt", "Perjanjian".encode()) == ".txt"
+        assert validate_payload(".txt", b"Perjanjian") == ".txt"
 
     def test_non_pdf_claiming_pdf_extension_rejected(self):
         with pytest.raises(UploadValidationError) as exc:
-            validate_payload(".pdf", "ini bukan pdf".encode())
+            validate_payload(".pdf", b"ini bukan pdf")
         assert exc.value.status_code == 422
 
 

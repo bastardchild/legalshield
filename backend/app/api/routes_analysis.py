@@ -1,11 +1,12 @@
 import logging
-from fastapi import APIRouter, HTTPException, Depends
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.models import AnalysisResult, Contract
 from app.db.session import get_db
-from app.db.models import Contract, AnalysisResult
-from app.schemas import ContractStatusResponse, ContractResultResponse, AnalysisResultOut
+from app.schemas import AnalysisResultOut, ContractResultResponse, ContractStatusResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

@@ -1,7 +1,8 @@
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from contextlib import asynccontextmanager
-import logging
 
 from app.api.routes_analysis import router as analysis_router
 from app.api.routes_health import router as health_router

@@ -1,7 +1,7 @@
 import hashlib
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +26,7 @@ def fingerprint(clause_type: str, example_text: str) -> str:
     recognising the same clause across uploads.
     """
     normalized = re.sub(r"\s+", " ", example_text or "").strip().lower()
-    digest = hashlib.sha256(f"{clause_type}|{normalized}".encode("utf-8")).hexdigest()
+    digest = hashlib.sha256(f"{clause_type}|{normalized}".encode()).hexdigest()
     return digest[:32]
 
 
@@ -103,7 +103,7 @@ async def save_new_patterns(db: AsyncSession, findings: list[dict]) -> int:
         if existing:
             existing.times_matched += 1
             existing.confidence = max(existing.confidence, confidence)
-            existing.updated_at = datetime.now(timezone.utc)
+            existing.updated_at = datetime.now(UTC)
             logger.info(
                 f"[SkillStore] Pattern '{existing.pattern_name}' matched again "
                 f"(times_matched={existing.times_matched})"

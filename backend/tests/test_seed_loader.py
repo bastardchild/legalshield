@@ -6,6 +6,7 @@ started with an empty RAG context and the tax agent had no citation list.
 """
 import pytest
 
+from app.services.findings import VALID_SEVERITIES
 from app.services.seed_loader import (
     CLAUSE_DATASET,
     LEGAL_DATASET,
@@ -15,7 +16,6 @@ from app.services.seed_loader import (
     legal_references,
     legal_references_text,
 )
-from app.services.findings import VALID_SEVERITIES
 from app.services.skill_store import fingerprint
 
 

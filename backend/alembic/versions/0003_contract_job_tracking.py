@@ -8,8 +8,9 @@ Create Date: 2026-08-23
 worker died, and `contracts.error` surfaces the reason a contract failed (a dead Redis at
 upload time, or a sweep by the reaper) instead of leaving the UI with a bare status.
 """
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 revision = '0003'
 down_revision = '0002'

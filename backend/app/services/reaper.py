@@ -16,7 +16,7 @@ but healthy job is never reaped.
 import asyncio
 import logging
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import or_, select, update
 
@@ -40,7 +40,7 @@ async def reap_stuck_contracts() -> int:
     Runs as a single UPDATE so two workers sweeping concurrently cannot double-report.
     """
     settings = get_settings()
-    cutoff = datetime.now(timezone.utc) - timedelta(seconds=settings.stuck_contract_timeout_seconds)
+    cutoff = datetime.now(UTC) - timedelta(seconds=settings.stuck_contract_timeout_seconds)
 
     async with AsyncSessionLocal() as db:
         stmt = (
@@ -56,7 +56,7 @@ async def reap_stuck_contracts() -> int:
             .values(
                 status=ContractStatus.failed,
                 error=REAPED_MESSAGE,
-                updated_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(UTC),
             )
             .returning(Contract.id)
         )
@@ -75,7 +75,7 @@ async def reap_stuck_contracts() -> int:
 async def list_stuck_contracts() -> list[str]:
     """Ids the reaper would sweep right now. Diagnostics only; does not mutate."""
     settings = get_settings()
-    cutoff = datetime.now(timezone.utc) - timedelta(seconds=settings.stuck_contract_timeout_seconds)
+    cutoff = datetime.now(UTC) - timedelta(seconds=settings.stuck_contract_timeout_seconds)
     async with AsyncSessionLocal() as db:
         rows = await db.execute(
             select(Contract.id).where(
