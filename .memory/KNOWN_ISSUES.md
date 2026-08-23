@@ -39,7 +39,7 @@ As of commit `49b537a`. Verified against a live Docker stack with a real LLM pro
 | 16 | Upload trusts the filename extension | **fixed** | `89cbac6` |
 | 17 | Exact-string matching; unbounded RAG context | **fixed** | `2a0c0ac` |
 | 18 | Seed data never loaded | **fixed** | `15cc37b` |
-| 19 | No tests | **fixed** | all commits |
+| 19 | No tests | **fixed** | all commits; integration suite in `PHASE8` |
 | 20 | CDN assets with no fallback | **fixed** | `9ec0723` |
 | 21 | `README.md` does not match the repository | **fixed** | `9ec0723` |
 | 22 | `worker_async.py` is dead code | **fixed** (deleted) | `9ec0723` |
@@ -456,16 +456,11 @@ it makes UI edits error-prone and inflates diffs.
 The original repair order is complete, as are the two security phases that followed it.
 What is left, in the order it should be tackled:
 
-1. **Integration tests against a live database.** The suite is 309 unit tests plus static
-   guards; the migration chain, the orchestrator's upsert path, and the owner-scoped reads
-   were verified by hand against Docker and by `scripts/e2e_access_check.py`, not by CI.
-   `docker compose run --rm test` already starts Postgres and Redis, so the fixtures are the
-   only missing piece.
-2. **Production compose file** without the `./backend:/app` bind mount and without
+1. **Production compose file** without the `./backend:/app` bind mount and without
    `--reload` (#26).
-3. **Real SMTP** in `services/mailer.py` — still a logging stub, by design.
-4. **Retire remaining inline layout styles** (#27).
-5. **A real account system**, if the product needs contracts to survive a cleared cookie.
+2. **Real SMTP** in `services/mailer.py` — still a logging stub, by design.
+3. **Retire remaining inline layout styles** (#27).
+4. **A real account system**, if the product needs contracts to survive a cleared cookie.
    The anonymous owner id is the right shape for it: replace `contracts.owner_id` with a FK
    to a `users` table and `middleware.OwnerMiddleware` with a session lookup. Nothing else
    needs to change, because `api/deps.py::load_owned_contract` is the only place the
@@ -473,8 +468,12 @@ What is left, in the order it should be tackled:
 
 ### Operational notes worth keeping
 
-- Tests run **in Docker only**: `docker compose run --rm --no-deps test`. The host Python is
-  3.10 and lacks the dependencies; the project needs 3.11+.
+- Tests run **in Docker only**: `docker compose run --rm --no-deps test` for the 309 unit
+  tests (~9s), `docker compose run --rm test` for all 372 including `tests/integration/`,
+  which needs PostgreSQL. The host Python is 3.10 and lacks the dependencies; the project
+  needs 3.11+.
+- Integration tests create and drop a separate `legalshield_test` database. They **skip**
+  rather than fail when PostgreSQL is unreachable, so the `--no-deps` path stays green.
 - The `test` service sets `HERMES_BASE_URL=http://llm.invalid` inline, so no test can reach
   a real provider even if `.env` is populated.
 - A full end-to-end analysis takes 150–200s against a hosted 70B model. `job_timeout` is

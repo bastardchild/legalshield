@@ -62,13 +62,20 @@ Klik **Kirim Draft** untuk mencatat pengiriman (stub, tidak ada SMTP nyata di MV
 Test berjalan di dalam Docker; host Python tidak dipakai.
 
 ```bash
-docker compose run --rm --no-deps test              # pytest
+docker compose run --rm --no-deps test              # unit test saja (cepat, ~9s)
+docker compose run --rm test                       # unit + integration (butuh Postgres)
 docker compose run --rm --no-deps test ruff check . # lint
 ```
 
 Service `test` memakai konfigurasi inline (`HERMES_BASE_URL=http://llm.invalid`), sehingga
-test tidak pernah menghubungi provider LLM sungguhan. `--no-deps` cukup karena seluruh
-test saat ini adalah unit test.
+test tidak pernah menghubungi provider LLM sungguhan.
+
+`tests/integration/` membutuhkan PostgreSQL sungguhan: fixture membuat database
+`legalshield_test` terpisah, menjalankan `alembic upgrade head` di atasnya, lalu
+menghapusnya. Bila Postgres tidak terjangkau (`--no-deps`) test tersebut **di-skip**, bukan
+gagal — jadi jalur cepat tetap hijau. Yang diuji di sana adalah hal-hal yang bug-nya hidup
+di SQL: rantai migrasi, paritas backfill fingerprint SQL vs Python, upsert `ON CONFLICT`,
+scoping `owner_id`, sweep reaper, dan engine per-event-loop.
 
 ---
 
@@ -122,7 +129,8 @@ legalshield/
 │   ├── Dockerfile
 │   ├── pyproject.toml             # dependency + config pytest/ruff
 │   ├── alembic/                   # migrasi database (0001–0005)
-│   ├── tests/                     # pytest suite
+│   ├── tests/                     # pytest suite (unit + tests/integration/)
+│   ├── scripts/                   # e2e_access_check.py (butuh stack hidup)
 │   └── app/
 │       ├── main.py
 │       ├── config.py

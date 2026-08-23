@@ -36,7 +36,7 @@ C:\legalshield\
     │       └── 0005_per_tenant_clause_patterns.py  # clause_patterns.owner_id + per-owner uq
     ├── scripts/
     │   └── e2e_access_check.py    # live-stack access-control check (not in pytest)
-    ├── tests/                    # 309 tests; `docker compose run --rm --no-deps test`
+    ├── tests/                    # 372 tests (309 unit + 63 integration)
     │   ├── conftest.py           # env defaults set before any app import; Jinja fixtures
     │   ├── test_templates.py     # compile + polling-marker regressions (#1, #4, #14, #15)
     │   ├── test_llm_client.py    # JSON extraction, base-URL normalisation (#7, #10)
@@ -47,7 +47,11 @@ C:\legalshield\
     │   ├── test_queue_and_reaper.py   # enqueue failure, per-loop engine (#9)
     │   ├── test_seed_loader.py   # dataset shape and prompt wiring (#18)
     │   ├── test_static_assets.py # vendored JS, font fallbacks (#20, #27)
-    │   └── test_security.py      # cookie signing, access gate, limiter, ownership (#5)
+    │   ├── test_security.py      # cookie signing, access gate, limiter, ownership (#5)
+    │   └── integration/          # needs live Postgres; skipped under --no-deps
+    │       ├── conftest.py       # creates/migrates/drops legalshield_test
+    │       ├── test_db_schema.py # migration chain, model drift, fingerprint SQL parity
+    │       └── test_app_behaviour.py # upsert, owner scoping, reaper, per-loop engine
     └── app/
         ├── __init__.py
         ├── main.py               # FastAPI app, lifespan, static mount, router wiring
@@ -462,3 +466,24 @@ need their own row, or the second `INSERT` collides with a row it cannot see.
   occupy two of the 40 prompt slots.
 - `orchestrator.run_analysis` reads `contract.owner_id` and threads it into both the risk
   agent and `_persist_agent`. A test fails if that wiring disappears.
+
+**Integration tests (phase 8).** `tests/integration/` runs against a real PostgreSQL, so the
+things whose bugs live in SQL are no longer verified only by hand.
+
+- The fixture creates `<dbname>_test`, runs `alembic upgrade head` on it, and drops it at
+  session end. `DATABASE_URL` is swapped for the session and `get_settings.cache_clear()` is
+  called on both sides, so the app's own settings follow.
+- **Skipped, not failed, when PostgreSQL is unreachable.** `--no-deps` is the documented fast
+  path (309 unit tests in ~9s) and must stay green; `docker compose run --rm test` without
+  `--no-deps` runs all 372.
+- `clean_tables` truncates *before* each test, so a failure leaves its rows for inspection,
+  and calls `dispose_engine()` after — pytest-asyncio gives each test a new loop and
+  `db/session.py` keys engines by loop id, so skipping it leaks a pool per test.
+- `test_db_schema.py` compares model columns against `information_schema` (catching drift a
+  migration forgot), asserts every named index and constraint really exists, and round-trips
+  `downgrade`/`upgrade` for the two newest revisions.
+- `TestFingerprintBackfillParity` executes migration `0002`'s backfill SQL and compares it to
+  `skill_store.fingerprint()` for seven inputs including whitespace, unicode and NULL. A
+  divergence there is silent and permanent: backfilled rows would never match again.
+- `TestPerLoopEngine` proves a *second* `asyncio.run` can actually query, which is the
+  production failure the unit test only approximates by comparing engine identities.
