@@ -1,0 +1,31 @@
+# Keep the build context small and deterministic. Without this the whole host tree
+# (including .git, .venv, and __pycache__) is uploaded to the daemon on every build.
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+.venv/
+venv/
+env/
+ENV/
+
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+.git/
+.gitignore
+.idea/
+.vscode/
+*.swp
+
+.env
+*.env.local
+
+*.log
+tmp/

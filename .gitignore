@@ -28,7 +28,7 @@ ENV/
 *.db
 
 # Docker
-.dockerignore
+# (.dockerignore is tracked deliberately — it controls the build context.)
 
 # IDE / Editor
 .vscode/
