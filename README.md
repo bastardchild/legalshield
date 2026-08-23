@@ -204,6 +204,7 @@ legalshield/
 | `RATE_LIMIT_UPLOADS_PER_HOUR` | Batas unggahan per IP per jam (`0` = nonaktif) | `20` |
 | `COOKIE_SECURE` | Set `true` bila dilayani via HTTPS | `false` |
 | `TRUST_PROXY_HEADERS` | Percayai `X-Forwarded-For` untuk rate limit. Hanya di belakang proxy sendiri | `false` |
+| `DOCS_ENABLED` | Tampilkan dokumentasi API interaktif (`/docs`, `/redoc`, `/openapi.json`). `false` = ketiganya 404. Prod overlay memaksa `false` | `true` |
 | `STUCK_CONTRACT_TIMEOUT_SECONDS` | Umur maksimum status non-terminal sebelum di-reap | `900` |
 | `REAPER_INTERVAL_SECONDS` | Interval sweep reaper (`0` = nonaktif) | `300` |
 | `SMTP_HOST` | Host relay SMTP. **Kosong = mode stub** (hanya dicatat di log) | *(kosong)* |

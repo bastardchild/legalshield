@@ -326,6 +326,7 @@ Severity → CSS coupling: `partials/result.html` builds the stripe class from
 | `contract_filter_min_tokens` | `CONTRACT_FILTER_MIN_TOKENS` | `60` (below this → rejected as too short) |
 | `max_upload_mb` | `MAX_UPLOAD_MB` | `5` (PDF byte cap; 0 lifts it) |
 | `max_pdf_pages` | `MAX_PDF_PAGES` | `10` (PDF page cap; 0 lifts it) |
+| `docs_enabled` | `DOCS_ENABLED` | `true` (false → `/docs`, `/redoc`, `/openapi.json` 404) |
 
 `llm_client.get_llm_client()` appends `/v1` to `hermes_base_url`, so the env value must **not**
 already include `/v1` (contradicts the README's Ollama tip — see `KNOWN_ISSUES.md` #6).
@@ -642,3 +643,14 @@ the page cap before any extraction work. New settings `max_upload_mb` (5) and `m
 (10); a value of 0 lifts a cap. The e2e script builds its fixture PDF by hand (pypdf 4.x has
 no add-text API) and uploads it as `cek.pdf`. `tests/test_pdf_extractor.py` is new;
 `upload.html` says "PDF — maks. 5 MB, 10 halaman". 511 tests pass; live e2e 13/13.
+
+**DOCS_ENABLED switch (phase 16).**
+
+`/docs`, `/redoc` and `/openapi.json` used to be unconditionally registered by FastAPI, so an
+unauthenticated deployment leaked the full API surface. `Settings.docs_urls()` now returns
+`None` for all three when `docs_enabled` is false, and `main.py` passes them into the
+`FastAPI(...)` constructor — an unregistered route answers the same 404 as any unknown path.
+`docker-compose.prod.yml` forces `DOCS_ENABLED: "false"` on `api` (environment wins over
+`env_file`), so production is fail-closed even if `.env` leaves it unset; `ACCESS_TOKEN` stays
+the second layer for everything else. `tests/test_docs_switch.py` pins the mapping and the
+200/404 behaviour; `test_deployment_config.py` guards the prod overlay.

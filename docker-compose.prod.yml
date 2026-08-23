@@ -17,6 +17,8 @@
 #    host with the credentials legalshield:legalshield and no Redis password. On a server
 #    that is a direct path into the database. Services reach each other over the compose
 #    network, so nothing needs publishing.
+# 4. **No interactive API docs.** /docs, /redoc and /openapi.json expose the whole API
+#    surface; the overlay forces DOCS_ENABLED=false even if .env leaves it unset.
 #
 # Set at minimum SECRET_KEY, ACCESS_TOKEN and COOKIE_SECURE=true in .env before using this.
 services:
@@ -40,6 +42,9 @@ services:
     # limiter keys on: with a wildcard, any caller can spoof a fresh identity per request and
     # the limiter stops working. Behind a reverse proxy, set TRUST_PROXY_HEADERS=true and add
     # `--proxy-headers --forwarded-allow-ips=<proxy ip>` here, naming the proxy explicitly.
+    environment:
+      # Overrides env_file (environment wins over .env), so production stays fail-closed.
+      DOCS_ENABLED: "false"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     volumes: !override
       - ./seed:/app/seed:ro
