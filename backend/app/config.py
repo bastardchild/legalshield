@@ -34,6 +34,12 @@ class Settings(BaseSettings):
     # Cap on legal references injected into the tax agent's prompt.
     max_legal_references: int = 25
 
+    # --- Upload limits (PDF-only MVP) ------------------------------------------------
+    # PDF uploads are capped at 5 MB and 10 pages: extraction cost and LLM token spend
+    # grow with both, and the MVP is a single-page demo. Set to 0 to lift a cap.
+    max_upload_mb: int = 5
+    max_pdf_pages: int = 10
+
     # --- Upload contract filter (gate before any LLM spend) -------------------------
     # The upload route rejects documents that do not score like a contract/legal paper
     # against the weighted lexicon in seed/legal_lexicon.json. Set false to disable the

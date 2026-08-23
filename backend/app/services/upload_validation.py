@@ -14,9 +14,13 @@ the bytes actually are.
 """
 import logging
 
+from app.config import get_settings
+
 logger = logging.getLogger(__name__)
 
-MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
+# Capped at 5 MB by default (config `max_upload_mb`); the limit is read once at import
+# so the three enforcement points below share one value.
+MAX_UPLOAD_BYTES = get_settings().max_upload_mb * 1024 * 1024
 MAX_UPLOAD_MB = MAX_UPLOAD_BYTES // (1024 * 1024)
 
 ALLOWED_EXTENSIONS = {".pdf", ".txt"}
@@ -157,8 +161,8 @@ async def read_limited(file, limit: int = MAX_UPLOAD_BYTES) -> bytes:
     """
     Read at most `limit` bytes, then one more to detect overflow.
 
-    Streaming in chunks means an oversized upload is rejected after ~20 MB rather than
-    after the client finishes sending however much it wanted to.
+    Streaming in chunks means an oversized upload is rejected after the size cap is
+    buffered rather than after the client finishes sending however much it wanted to.
     """
     buf = bytearray()
     while True:
