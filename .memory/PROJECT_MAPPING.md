@@ -1,6 +1,6 @@
 # PROJECT MAPPING — LegalShield Agent
 
-Structural map of the repository as it exists at commit `49b537a`.
+Structural map of the repository as it exists at commit `8233840`.
 Line references are approximate anchors, not guarantees.
 
 > Sections 2–13 were written at commit `d8e310b` and describe the architecture, which is
@@ -37,7 +37,7 @@ C:\legalshield\
     │       └── 0005_per_tenant_clause_patterns.py  # clause_patterns.owner_id + per-owner uq
     ├── scripts/
     │   └── e2e_access_check.py    # live-stack access-control check (not in pytest)
-    ├── tests/                    # 372 tests (309 unit + 63 integration)
+    ├── tests/                    # 480 tests (417 unit + 63 integration)
     │   ├── conftest.py           # env defaults set before any app import; Jinja fixtures
     │   ├── test_templates.py     # compile + polling-marker regressions (#1, #4, #14, #15)
     │   ├── test_llm_client.py    # JSON extraction, base-URL normalisation (#7, #10)
@@ -47,7 +47,8 @@ C:\legalshield\
     │   ├── test_upload_validation.py  # magic bytes, binary detection, size (#16)
     │   ├── test_queue_and_reaper.py   # enqueue failure, per-loop engine (#9)
     │   ├── test_seed_loader.py   # dataset shape and prompt wiring (#18)
-    │   ├── test_static_assets.py # vendored JS, font fallbacks (#20, #27)
+    │   ├── test_static_assets.py # vendored JS, font fallbacks, no inline styles (#20, #27)
+    │   ├── test_mailer.py        # SMTP envelope, stub mode, failure contract, header injection
     │   ├── test_security.py      # cookie signing, access gate, limiter, ownership (#5)
     │   ├── test_deployment_config.py # compose guards: prod overlay, dev ergonomics (#26)
     │   └── integration/          # needs live Postgres; skipped under --no-deps
@@ -89,14 +90,15 @@ C:\legalshield\
         │   ├── reaper.py         # sweeps contracts stuck in uploaded/processing
         │   ├── seed_loader.py    # dataset1 → clause_patterns; datasetpasal1 → citations
         │   ├── skill_store.py    # per-owner clause pattern store (RAG context)
-        │   └── mailer.py         # stub "send" (log only)
+        │   └── mailer.py         # SMTP delivery; log-only stub when SMTP_HOST is empty
         ├── templates/
         │   ├── base.html         # nav/footer, vendored HTMX + Alpine, remote fonts
         │   ├── upload.html       # drag & drop upload, HTMX POST
         │   ├── result.html       # shell with two polling containers
         │   └── partials/{status.html,result.html}
+        │                         # no template carries style= or :style=
         └── static/
-            ├── app.css, app.js
+            ├── app.css, app.js   # app.css owns all layout; ~60 classes added in phase 10
             └── vendor/{htmx-1.9.12.min.js,alpine-3.14.1.min.js}
 ```
 
@@ -476,8 +478,8 @@ things whose bugs live in SQL are no longer verified only by hand.
   session end. `DATABASE_URL` is swapped for the session and `get_settings.cache_clear()` is
   called on both sides, so the app's own settings follow.
 - **Skipped, not failed, when PostgreSQL is unreachable.** `--no-deps` is the documented fast
-  path (309 unit tests in ~9s) and must stay green; `docker compose run --rm test` without
-  `--no-deps` runs all 372.
+  path (417 unit tests in ~18s) and must stay green; `docker compose run --rm test` without
+  `--no-deps` runs all 480.
 - `clean_tables` truncates *before* each test, so a failure leaves its rows for inspection,
   and calls `dispose_engine()` after — pytest-asyncio gives each test a new loop and
   `db/session.py` keys engines by loop id, so skipping it leaks a pool per test.
@@ -521,3 +523,48 @@ explain the flags they forbid.
 > mounts them at **`/deploy`**, not under `/app`. A file mount nested inside the
 > `./backend:/app` mount makes Docker create empty placeholder files on the host — that
 > produced a stray `backend/deploy/` directory with two zero-byte files on the first attempt.
+
+**Real SMTP and the end of inline styles (phase 10).**
+
+`services/mailer.py` was a logging stub, so the "Kirim Draft" button reported success while
+nothing left the process. It now speaks SMTP, with two shapes:
+
+- **Stub mode remains the default.** An empty `SMTP_HOST` logs the envelope and returns
+  success, so a checkout with no mail credentials behaves exactly as before and the test
+  suite never opens a socket.
+- **Live mode** builds a `EmailMessage` (plain-text body, the counter-draft as a `.txt`
+  attachment) and hands it to `smtplib.SMTP` or `SMTP_SSL` depending on `SMTP_USE_SSL`,
+  upgrading with `starttls()` when `SMTP_USE_TLS` is set.
+
+Three constraints shape the interface, and each is load-bearing:
+
+- **Failures are returned, never raised.** `routes_negotiate.py` persists a
+  `negotiation_sends` row built from the outcome *before* it selects the HTTP status (502 on a
+  delivery failure). An exception propagating out of the mailer would take the audit row with
+  it, which is the one record that says a send was attempted.
+- **`send_counter_draft` is `async` and wraps the blocking work in `asyncio.to_thread`.**
+  `smtplib` blocks for the entire handshake — DNS, TCP, STARTTLS, AUTH — and the route runs on
+  the event loop, so a slow relay would stall every other request in the process.
+- **The SMTP error text is logged but withheld from the response.** `smtplib` messages quote
+  the relay hostname and the authenticating username; the client gets a generic failure.
+
+`valid_email()` additionally rejects CR and LF, which is what stops a crafted recipient from
+injecting extra headers into the envelope. `config.py` gained `SMTP_HOST`, `SMTP_PORT`,
+`SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_USE_TLS`, `SMTP_USE_SSL`, `SMTP_FROM`,
+`SMTP_FROM_NAME` and `SMTP_TIMEOUT_SECONDS`.
+
+The same phase closed #27. Every `style=` and `:style=` attribute is gone from all five
+templates, replaced by roughly 60 classes in `app.css`; the dropzone's drag and selected
+states use Alpine's `:class="{ 'is-dragover': ..., 'has-file': ... }"` object syntax rather
+than interpolated CSS text. The reason is behavioural, not aesthetic: an inline attribute
+cannot be overridden by any stylesheet rule and never consults the theme variables, so
+spacing and colour changes could not reach the elements that carried the most styling.
+
+Two guards in `tests/test_static_assets.py` prevent a relapse — no template may contain
+`style=` or `:style=`, and every class a template references must be defined in `app.css`.
+The second guard's `EXTERNAL` allow-list is deliberately just `{"htmx-indicator"}`; an early
+broader list silently masked genuinely undefined classes.
+
+> Visual confirmation of the CSS refactor is **unverified by the agent** — a screenshot was
+> taken but could not be interpreted. The two guard tests are the safety net; a human should
+> still eyeball `/` and a finished result page once.

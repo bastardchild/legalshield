@@ -21,8 +21,9 @@ contracts (PDF or TXT) with three LLM sub-agents and produces a counter-draft.
 - **LLM**: any OpenAI-compatible endpoint via `openai.AsyncOpenAI` (default: Hermes / Nous Research)
 - **Frontend**: Jinja2 + HTMX polling + Alpine.js, no build step, assets vendored locally
 - **Infra**: Docker Compose (`postgres`, `redis`, `migrate`, `api`, `worker`, `test` behind a profile)
-- **Repo state**: repaired through phases 1–5; 237 tests; verified end-to-end against a live
-  LLM provider. See `KNOWN_ISSUES.md` for the status ledger.
+- **Repo state**: repaired through phases 1–10; **all 27 catalogued issues closed**; 480 tests
+  (417 unit + 63 integration); verified end-to-end against a live LLM provider. See
+  `KNOWN_ISSUES.md` for the status ledger.
 
 Entry points: `backend/app/main.py` (API) and `backend/app/worker.py` (RQ worker).
 
@@ -38,9 +39,11 @@ Entry points: `backend/app/main.py` (API) and `backend/app/worker.py` (RQ worker
   tokens replaced by `str.replace` (deliberately *not* Jinja).
 - User-visible strings (UI, `explanation`, `recommendation`) are Bahasa Indonesia.
   Code, comments, and prompts are English.
-- Frontend styling: shared classes in `app/static/app.css`, plus layout-related inline
-  `style="..."` in templates. Inline `font-family` is banned (a test enforces this) — use the
-  `.mono` class. Alpine components are registered in `app/static/app.js` under `alpine:init`.
+- Frontend styling: **all** layout lives in `app/static/app.css`. Templates carry classes
+  only — `style=` and `:style=` are banned outright, as is inline `font-family` (three tests
+  in `test_static_assets.py` enforce this, including one asserting every class a template
+  uses is actually defined in `app.css`). Use `:class="{ 'is-x': cond }"` for Alpine state.
+  Alpine components are registered in `app/static/app.js` under `alpine:init`.
 - Tests live in `backend/tests/`, one module per concern, named after the subject rather than
   the issue number. Classes group related cases; each test asserts one thing. Where a fix is
   structural rather than behavioural (a migration, a template wiring), the test is a static
@@ -58,7 +61,8 @@ Entry points: `backend/app/main.py` (API) and `backend/app/worker.py` (RQ worker
 5. **Validation runs in Docker**, not on the host — host Python is 3.10 and lacks the
    dependencies:
    ```sh
-   docker compose run --rm --no-deps test              # pytest (237 tests)
+   docker compose run --rm --no-deps test              # pytest, 417 unit tests (~18s)
+   docker compose run --rm test                        # all 480, incl. integration
    docker compose run --rm --no-deps test ruff check .  # lint
    docker compose run --rm test alembic upgrade head    # needs postgres, so no --no-deps
    ```
@@ -89,3 +93,4 @@ Entry points: `backend/app/main.py` (API) and `backend/app/worker.py` (RQ worker
 | Swap LLM provider | `.env` (`HERMES_BASE_URL`), `app/services/llm_client.py` |
 | Add a table/column | `app/db/models.py` + `alembic/versions/` |
 | Upgrade htmx or Alpine | `app/static/vendor/`, `app/templates/base.html`, `tests/test_static_assets.py` |
+| Change email delivery | `app/services/mailer.py`, `app/config.py` (`SMTP_*`), `app/api/routes_negotiate.py` |

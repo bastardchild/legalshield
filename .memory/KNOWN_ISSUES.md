@@ -15,9 +15,11 @@ but not executed against a live stack — the LLM provider and Docker services w
 
 ## Status ledger
 
-As of commit `49b537a`. Verified against a live Docker stack with a real LLM provider
+As of commit `8233840`. Verified against a live Docker stack with a real LLM provider
 (end-to-end analysis completed in ~175s, three agents, 11 risk + 26 tax findings,
-24 KB counter-draft) and 237 passing tests.
+24 KB counter-draft), 480 passing tests, and `scripts/e2e_access_check.py` at 13/13.
+
+**All 27 catalogued issues are now closed.**
 
 | # | Issue | Status | Landed in |
 |---|---|---|---|
@@ -25,8 +27,8 @@ As of commit `49b537a`. Verified against a live Docker stack with a real LLM pro
 | 2 | `CREATE TYPE IF NOT EXISTS` is invalid PostgreSQL | **fixed** | `2a0c0ac` |
 | 3 | Migrations bypassed by `create_all` | **fixed** | `2a0c0ac` |
 | 4 | Polling stops on the first poll | **fixed** | `e94aa87` |
-| 5 | No auth, rate limiting, or CORS | **fixed** | `PHASE6` |
-| 6 | Prompt injection via contract text | **mitigated + contained** | `2a0c0ac`, `PHASE7` |
+| 5 | No auth, rate limiting, or CORS | **fixed** | `f5b1241` |
+| 6 | Prompt injection via contract text | **mitigated + contained** | `2a0c0ac`, `85f2ea6` |
 | 7 | No LLM timeout/retry; strict JSON parsing | **fixed** | `2a0c0ac` |
 | 8 | No contract truncation | **fixed** | `2a0c0ac` |
 | 9 | Failed enqueue strands the contract | **fixed** | `89cbac6` |
@@ -39,15 +41,15 @@ As of commit `49b537a`. Verified against a live Docker stack with a real LLM pro
 | 16 | Upload trusts the filename extension | **fixed** | `89cbac6` |
 | 17 | Exact-string matching; unbounded RAG context | **fixed** | `2a0c0ac` |
 | 18 | Seed data never loaded | **fixed** | `15cc37b` |
-| 19 | No tests | **fixed** | all commits; integration suite in `PHASE8` |
+| 19 | No tests | **fixed** | all commits; integration suite in `caf8e47` |
 | 20 | CDN assets with no fallback | **fixed** | `9ec0723` |
 | 21 | `README.md` does not match the repository | **fixed** | `9ec0723` |
 | 22 | `worker_async.py` is dead code | **fixed** (deleted) | `9ec0723` |
 | 23 | `langchain` declared but unused | **fixed** (removed) | `9ec0723` |
 | 24 | Unused / misleading declarations | **fixed** | `9ec0723` |
 | 25 | No health endpoint | **fixed** | `89cbac6` |
-| 26 | Image build discarded by the bind mount | **fixed** | `49b537a`, `PHASE9` |
-| 27 | Styling split between CSS and inline attributes | **partly fixed** | `9ec0723` |
+| 26 | Image build discarded by the bind mount | **fixed** | `49b537a`, `76bdf7d` |
+| 27 | Styling split between CSS and inline attributes | **fixed** | `9ec0723`, `8233840` |
 
 ### Notes on the non-"fixed" rows
 
@@ -73,9 +75,18 @@ the host; the base file keeps all three because `--reload` depends on the mount 
 development wants direct database access. `tests/test_deployment_config.py` fails if the
 overlay regains the mount or the base file loses `--reload`.
 
-**#27 — partly fixed.** Inline `font-family` declarations are gone from every template, so
-the CSS fallback stacks actually apply, and `tests/test_static_assets.py` fails if one
-returns. Layout-related inline `style` attributes remain; they are cosmetic debt, not a bug.
+**#27 — fixed.** Inline `font-family` declarations went first (`9ec0723`), so the CSS
+fallback stacks actually apply. The remaining layout attributes went in `8233840`: all five
+templates are now free of `style=` and `:style=`, replaced by ~60 classes in `app.css`, and
+the dropzone's drag/selected states use Alpine's `:class` object syntax instead of
+interpolated inline CSS. Two guards in `tests/test_static_assets.py` hold the line — no
+template may contain `style=`/`:style=`, and every class a template references must be
+defined in `app.css` (the allow-list for externally-defined classes is deliberately kept to
+`htmx-indicator` alone; a broader list masked real gaps when it was first written).
+
+The motivation was not tidiness. An inline attribute cannot be overridden by any stylesheet
+rule and never reads the theme variables, so a spacing or dark-mode change had no way to
+reach the elements that mattered most.
 
 ---
 
@@ -100,6 +111,7 @@ New modules, all with tests:
 | `alembic/versions/0004_*.py` | `contracts.owner_id` + index, legacy rows backfilled to `legacy` |
 | `scripts/e2e_access_check.py` | Live-stack access-control check (needs a running stack) |
 | `alembic/versions/0005_*.py` | `clause_patterns.owner_id`; unique key moves to `(owner_id, fingerprint)` |
+| `app/services/mailer.py` | Real SMTP delivery of counter-drafts; stub mode when `SMTP_HOST` is empty |
 
 One defect was found during repair rather than in the original audit, and is worth
 remembering because it is invisible until the *second* job runs:
@@ -455,21 +467,31 @@ it makes UI edits error-prone and inflates diffs.
 
 ## Remaining work
 
-The original repair order is complete, as are the two security phases that followed it.
-What is left, in the order it should be tackled:
+Every catalogued issue is closed. What is left is product scope rather than repair:
 
-1. **Real SMTP** in `services/mailer.py` — still a logging stub, by design.
-2. **Retire remaining inline layout styles** (#27).
-3. **A real account system**, if the product needs contracts to survive a cleared cookie.
+1. **A real account system**, if the product needs contracts to survive a cleared cookie.
    The anonymous owner id is the right shape for it: replace `contracts.owner_id` with a FK
    to a `users` table and `middleware.OwnerMiddleware` with a session lookup. Nothing else
    needs to change, because `api/deps.py::load_owned_contract` is the only place the
    ownership rule lives.
+2. **Two open questions for the maintainer**, neither of which the agent should decide:
+   whether to push `master` to `origin` (13 local commits, none pushed), and whether to run
+   the Docker test suite in CI per commit.
+
+### Mailer contract, worth knowing before touching it
+
+`send_counter_draft` **returns** failures and never raises. `routes_negotiate.py` writes a
+`negotiation_sends` audit row from the outcome *before* it chooses the HTTP status (502 on a
+delivery failure); an exception would destroy that row. The function is `async` and wraps
+`smtplib` in `asyncio.to_thread`, because `smtplib` blocks for the whole SMTP handshake and
+the route is on the event loop. The SMTP error string is logged but deliberately **not**
+returned to the client — it names the relay host and the authenticating user. `valid_email()`
+rejects CR and LF so a crafted recipient cannot inject extra headers.
 
 ### Operational notes worth keeping
 
-- Tests run **in Docker only**: `docker compose run --rm --no-deps test` for the 309 unit
-  tests (~9s), `docker compose run --rm test` for all 372 including `tests/integration/`,
+- Tests run **in Docker only**: `docker compose run --rm --no-deps test` for the 417 unit
+  tests (~18s), `docker compose run --rm test` for all 480 including `tests/integration/`,
   which needs PostgreSQL. The host Python is 3.10 and lacks the dependencies; the project
   needs 3.11+.
 - Integration tests create and drop a separate `legalshield_test` database. They **skip**

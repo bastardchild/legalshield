@@ -64,7 +64,10 @@ Setelah analisis selesai (30–90 detik), halaman menampilkan:
   dari `seed/datasetpasal1.json`
 - **Draft Kontrak Balasan** — counter-proposal lengkap siap diedit/disalin
 
-Klik **Kirim Draft** untuk mencatat pengiriman (stub, tidak ada SMTP nyata di MVP).
+Klik **Kirim Draft** untuk mengirim draft ke email klien. Tanpa `SMTP_HOST` app berjalan
+dalam **mode stub**: pengiriman dicatat di `negotiation_sends` dan di log, tetapi tidak ada
+email yang keluar — cukup untuk demo. Isi variabel `SMTP_*` (lihat
+[Environment Variables](#environment-variables)) untuk mengirim sungguhan.
 
 ---
 
@@ -73,7 +76,7 @@ Klik **Kirim Draft** untuk mencatat pengiriman (stub, tidak ada SMTP nyata di MV
 Test berjalan di dalam Docker; host Python tidak dipakai.
 
 ```bash
-docker compose run --rm --no-deps test              # unit test saja (cepat, ~9s)
+docker compose run --rm --no-deps test              # unit test saja (cepat, ~18s)
 docker compose run --rm test                       # unit + integration (butuh Postgres)
 docker compose run --rm --no-deps test ruff check . # lint
 ```
@@ -154,8 +157,8 @@ legalshield/
 │       ├── services/              # llm_client, findings, pdf_extractor, queue,
 │       │                          # skill_store, seed_loader, reaper,
 │       │                          # upload_validation, mailer
-│       ├── templates/             # Jinja2 HTML (HTMX + Alpine.js)
-│       └── static/                # app.css, app.js, vendor/ (htmx, alpine)
+│       ├── templates/             # Jinja2 HTML (HTMX + Alpine.js), tanpa inline style
+│       └── static/                # app.css (semua layout), app.js, vendor/ (htmx, alpine)
 └── README.md
 ```
 
@@ -187,6 +190,15 @@ legalshield/
 | `TRUST_PROXY_HEADERS` | Percayai `X-Forwarded-For` untuk rate limit. Hanya di belakang proxy sendiri | `false` |
 | `STUCK_CONTRACT_TIMEOUT_SECONDS` | Umur maksimum status non-terminal sebelum di-reap | `900` |
 | `REAPER_INTERVAL_SECONDS` | Interval sweep reaper (`0` = nonaktif) | `300` |
+| `SMTP_HOST` | Host relay SMTP. **Kosong = mode stub** (hanya dicatat di log) | *(kosong)* |
+| `SMTP_PORT` | Port SMTP | `587` |
+| `SMTP_USERNAME` | User untuk AUTH. Kosong = kirim tanpa autentikasi | *(kosong)* |
+| `SMTP_PASSWORD` | Password untuk AUTH | *(kosong)* |
+| `SMTP_USE_TLS` | STARTTLS di port plaintext (587) | `true` |
+| `SMTP_USE_SSL` | TLS implisit dari byte pertama (biasanya port 465). Jangan gabung dengan `SMTP_USE_TLS` | `false` |
+| `SMTP_FROM` | Alamat pengirim. Kosong = pakai `SMTP_USERNAME` | *(kosong)* |
+| `SMTP_FROM_NAME` | Nama tampilan pengirim | `LegalShield Agent` |
+| `SMTP_TIMEOUT_SECONDS` | Timeout koneksi SMTP. Pengiriman terjadi di dalam handler POST, jadi jangan besar | `15.0` |
 
 > `HERMES_BASE_URL` boleh diisi dengan atau tanpa akhiran `/v1` — akhiran itu di-strip
 > lalu ditambahkan kembali, jadi `http://host.docker.internal:11434/v1` dan
@@ -207,10 +219,30 @@ legalshield/
 | `POST` | `/api/contracts/upload` | Upload PDF/TXT, mulai analisis |
 | `GET` | `/api/contracts/{id}/status` | Cek status analisis |
 | `GET` | `/api/contracts/{id}/result` | Ambil hasil lengkap (JSON) |
-| `POST` | `/api/contracts/{id}/send` | Kirim draft ke klien (stub) |
+| `POST` | `/api/contracts/{id}/send` | Kirim draft ke email klien (`502` bila pengiriman gagal) |
 | `GET` | `/contracts/{id}` | Halaman hasil (HTML) |
 | `GET` | `/partials/{id}/status` | Fragment status untuk HTMX |
 | `GET` | `/partials/{id}/result` | Fragment hasil untuk HTMX |
+
+---
+
+## Pengiriman Email
+
+`POST /api/contracts/{id}/send` mengirim draft balasan sebagai email dengan draft
+terlampir sebagai `.txt`.
+
+- **Mode stub adalah default.** `SMTP_HOST` kosong → envelope dicatat di log dan endpoint
+  membalas sukses. Tidak ada socket yang dibuka, jadi demo dan test tidak butuh kredensial.
+- **Mode nyata** memakai `smtplib`. `SMTP_USE_SSL=true` untuk TLS implisit (port 465);
+  selain itu `SMTP_USE_TLS=true` melakukan `STARTTLS` (port 587). AUTH dilewati bila
+  `SMTP_USERNAME` kosong.
+- Record `negotiation_sends` **selalu** ditulis, berhasil maupun gagal, lalu status HTTP
+  dipilih dari hasilnya (`502` bila pengiriman gagal). Jejak audit itu justru paling
+  dibutuhkan saat pengiriman gagal.
+- Pesan error SMTP hanya masuk log, tidak dikembalikan ke klien — isinya menyebut host relay
+  dan user autentikasi.
+- Alamat tujuan yang memuat CR/LF ditolak, supaya tidak ada header tambahan yang bisa
+  diselipkan ke envelope.
 
 ---
 
@@ -276,5 +308,6 @@ Untuk mengekspos ke internet: isi `SECRET_KEY`, set `ACCESS_TOKEN`, dan set
 - [x] Analisis 3 agent berjalan paralel (A & B) lalu C
 - [x] UI menampilkan klausul berisiko, isu pajak/lokal, dan draft kontrak tandingan
 - [x] Pattern klausul berbahaya baru tersimpan ke `clause_patterns` (self-improving RAG)
-- [x] Tombol "Kirim ke Klien" membuat record `negotiation_sends` (stub)
+- [x] Tombol "Kirim ke Klien" membuat record `negotiation_sends` dan mengirim via SMTP
+      (mode stub bila `SMTP_HOST` kosong)
 - [x] README menjelaskan cara demo end-to-end
