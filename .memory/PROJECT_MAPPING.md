@@ -1,7 +1,11 @@
 # PROJECT MAPPING — LegalShield Agent
 
-Structural map of the repository as it exists at commit `d8e310b`.
+Structural map of the repository as it exists at commit `49b537a`.
 Line references are approximate anchors, not guarantees.
+
+> Sections 2–13 were written at commit `d8e310b` and describe the architecture, which is
+> unchanged. Where the repair altered behaviour, section 1 and the "Since `d8e310b`" section
+> at the end are authoritative. `KNOWN_ISSUES.md` carries the full status ledger.
 
 ## 1. Repository tree (actual)
 
@@ -9,58 +13,77 @@ Line references are approximate anchors, not guarantees.
 C:\legalshield\
 ├── .env.example                  # env template (git-tracked; .env is ignored)
 ├── .gitignore
-├── docker-compose.yml            # postgres, redis, api, worker
+├── docker-compose.yml            # postgres, redis, api, worker, test (profile)
 ├── README.md                     # user-facing docs (Bahasa Indonesia)
 ├── .memory/                      # ← agent memory (this directory)
-├── seed/
+├── seed/                         # bind-mounted read-only into every service at /app/seed
 │   ├── sample_contract.txt       # 3.9 KB deliberately abusive freelance contract (demo input)
-│   ├── dataset1.json             # 100 labelled risky-clause records (NOT wired into code)
-│   └── datasetpasal1.json        # 50 Indonesian legal-reference records (NOT wired into code)
+│   ├── dataset1.json             # 100 labelled risky-clause records → bootstraps clause_patterns
+│   └── datasetpasal1.json        # 50 Indonesian legal-reference records → tax agent citations
 └── backend/
-    ├── Dockerfile                # python:3.11-slim, installs project from pyproject.toml
+    ├── .dockerignore             # keeps .git/.venv/__pycache__ out of the build context
+    ├── Dockerfile                # multi-stage; runtime image has no gcc/libpq-dev
     ├── pyproject.toml            # hatchling; deps + ruff + pytest config
     ├── alembic.ini
     ├── alembic/
     │   ├── env.py                # rewrites asyncpg URL → psycopg2 for migrations
     │   ├── script.py.mako
-    │   └── versions/0001_initial_schema.py
+    │   └── versions/
+    │       ├── 0001_initial_schema.py              # enums guarded by DO/duplicate_object
+    │       ├── 0002_fingerprint_and_constraints.py # fingerprint + unique constraints
+    │       └── 0003_contract_job_tracking.py       # job_id, error, (status, updated_at)
+    ├── tests/                    # 237 tests; `docker compose run --rm --no-deps test`
+    │   ├── conftest.py           # env defaults set before any app import; Jinja fixtures
+    │   ├── test_templates.py     # compile + polling-marker regressions (#1, #4, #14, #15)
+    │   ├── test_llm_client.py    # JSON extraction, base-URL normalisation (#7, #10)
+    │   ├── test_findings.py      # severity/confidence coercion, fencing (#6, #8, #14)
+    │   ├── test_skill_store.py   # fingerprint stability (#17)
+    │   ├── test_migrations.py    # static guards on the migration chain (#2, #3, #11)
+    │   ├── test_upload_validation.py  # magic bytes, binary detection, size (#16)
+    │   ├── test_queue_and_reaper.py   # enqueue failure, per-loop engine (#9)
+    │   ├── test_seed_loader.py   # dataset shape and prompt wiring (#18)
+    │   └── test_static_assets.py # vendored JS, font fallbacks (#20, #27)
     └── app/
         ├── __init__.py
         ├── main.py               # FastAPI app, lifespan, static mount, router wiring
         ├── config.py             # pydantic-settings Settings + cached get_settings()
         ├── schemas.py            # Pydantic request/response models
-        ├── worker.py             # RQ worker entrypoint (`python -m app.worker`)
-        ├── worker_async.py       # unused helper (dead code)
+        ├── worker.py             # RQ worker entrypoint + reaper thread
+        ├── seed.py               # idempotent `python -m app.seed` CLI
         ├── db/
-        │   ├── session.py        # async engine, AsyncSessionLocal, Base, get_db()
+        │   ├── session.py        # per-event-loop engine registry, AsyncSessionLocal, Base, get_db()
         │   └── models.py         # Contract, AnalysisResult, ClausePattern, NegotiationSend
         ├── api/
         │   ├── routes_pages.py   # HTML pages + HTMX partials
         │   ├── routes_upload.py  # POST /api/contracts/upload
         │   ├── routes_analysis.py# status + result JSON
-        │   └── routes_negotiate.py# POST /api/contracts/{id}/send
+        │   ├── routes_negotiate.py# POST /api/contracts/{id}/send
+        │   └── routes_health.py  # GET /health, /health/ready
         ├── agents/
-        │   ├── orchestrator.py   # A+B parallel → C sequential, persistence, status
-        │   ├── agent_risk_clause.py
+        │   ├── orchestrator.py   # A+B parallel → C sequential, upsert, status
+        │   ├── agent_risk_clause.py      # also defines the shared AgentRun NamedTuple
         │   ├── agent_tax_compliance.py
         │   ├── agent_counter_draft.py
         │   └── prompts/{risk_clause,tax_compliance,counter_draft}.txt
         ├── services/
-        │   ├── llm_client.py     # AsyncOpenAI factory + chat_completion()
+        │   ├── llm_client.py     # AsyncOpenAI factory, chat_completion_json, JSON extraction
+        │   ├── findings.py       # normalise LLM output; fence untrusted contract text
+        │   ├── upload_validation.py  # content-first upload checks
         │   ├── pdf_extractor.py  # pypdf text extraction
-        │   ├── queue.py          # Redis/RQ enqueue + sync wrapper
+        │   ├── queue.py          # Redis/RQ enqueue (raises EnqueueError) + sync wrapper
+        │   ├── reaper.py         # sweeps contracts stuck in uploaded/processing
+        │   ├── seed_loader.py    # dataset1 → clause_patterns; datasetpasal1 → citations
         │   ├── skill_store.py    # self-improving clause pattern store (RAG context)
         │   └── mailer.py         # stub "send" (log only)
         ├── templates/
-        │   ├── base.html         # nav/footer, HTMX + Alpine CDN, fonts
+        │   ├── base.html         # nav/footer, vendored HTMX + Alpine, remote fonts
         │   ├── upload.html       # drag & drop upload, HTMX POST
         │   ├── result.html       # shell with two polling containers
         │   └── partials/{status.html,result.html}
-        └── static/{app.css,app.js}
+        └── static/
+            ├── app.css, app.js
+            └── vendor/{htmx-1.9.12.min.js,alpine-3.14.1.min.js}
 ```
-
-> `README.md` documents `backend/requirements.txt` — that file does not exist; dependencies
-> live in `pyproject.toml`. It also omits `seed/dataset1.json` and `seed/datasetpasal1.json`.
 
 ## 2. Runtime topology
 
@@ -299,20 +322,70 @@ which does not exist.
 | File | Records | Shape | Wired in? |
 |---|---|---|---|
 | `sample_contract.txt` | — | Indonesian freelance contract with intentionally abusive Pasal 1–N (non-compete 5y ASEAN-wide, total IP assignment, 60-day payment with unilateral withholding) | Manually uploaded in the demo |
-| `dataset1.json` | 100 | `{id, category, severity, industry, party, contract_snippet, risk_findings[], tax_findings[], counter_suggestion, source_reference, applicable_law, locale}` | **No** — no loader exists |
-| `datasetpasal1.json` | 50 | `{id, kode, nama_lengkap, jenis, pasal_relevan[], topik, relevansi_kontrak, url_resmi, url_pdf, instansi, status, catatan_pasal{}}` | **No** — no loader exists |
+| `dataset1.json` | 100 | `{id, category, severity, industry, party, contract_snippet, risk_findings[], tax_findings[], counter_suggestion, source_reference, applicable_law, locale}` | **Yes** — `services/seed_loader.py` |
+| `datasetpasal1.json` | 50 | `{id, kode, nama_lengkap, jenis, pasal_relevan[], topik, relevansi_kontrak, url_resmi, url_pdf, instansi, status, catatan_pasal{}}` | **Yes** — `services/seed_loader.py` |
 
-`dataset1.json` maps almost 1:1 onto `clause_patterns` and would be the natural bootstrap for the
-skill store; `datasetpasal1.json` would back a legal-citation RAG for agent B.
+`dataset1.json` maps almost 1:1 onto `clause_patterns` and bootstraps the skill store via
+`python -m app.seed`; `datasetpasal1.json` backs the citation list injected into
+`prompts/tax_compliance.txt`.
 
 ## 13. Extension points
 
 | Goal | Where to hook |
 |---|---|
-| Bootstrap the skill store from `seed/dataset1.json` | new `services/seed_loader.py`, call from `main.py` lifespan or a CLI |
-| Add legal-citation RAG for tax agent | load `datasetpasal1.json`, inject into `prompts/tax_compliance.txt` |
+| Bootstrap the skill store from `seed/dataset1.json` | done — `services/seed_loader.py`, CLI in `app/seed.py` |
+| Add legal-citation RAG for tax agent | done — `legal_references_text()` → `{{ legal_references }}` |
 | Real email delivery | replace `services/mailer.py` body, set `NegotiationSend.status="sent"` |
 | Multi-tenancy / auth | new `users` table + FK on `contracts`, dependency in every router |
 | Add a 4th agent | new `agents/agent_*.py`, new `AgentType` enum member + migration, wire into `orchestrator.run_analysis`, render in `partials/result.html` |
 | Replace polling with push | SSE/WebSocket endpoint in `routes_pages.py`, drop `hx-trigger="every ..."` |
-| Retry failed agents | wrap `chat_completion` in `llm_client.py` or re-enqueue in `queue.py` |
+| Retry failed agents | `llm_client.chat_completion_json` already retries JSON failures; re-enqueue in `queue.py` for whole-job retries |
+
+---
+
+## Since `d8e310b` — behavioural deltas
+
+What changed relative to sections 2–12 above:
+
+**Schema ownership.** `main.py` no longer calls `Base.metadata.create_all`. Both the `api`
+and `worker` container commands run `alembic upgrade head` first; `api` then runs
+`python -m app.seed`. A broken migration now fails at boot instead of being masked.
+
+**Sessions.** `db/session.py` no longer exposes a module-level `engine`. Engines and
+sessionmakers are keyed by `id(asyncio.get_running_loop())`, because RQ runs each job in a
+fresh `asyncio.run` and asyncpg connections cannot cross loops. Call `dispose_engine()` when
+a loop is about to end. `AsyncSessionLocal()` still works as before at every call site.
+
+**LLM calls.** Agents call `chat_completion_json(...)`, not `chat_completion` +
+`json.loads`. It requests native JSON mode, falls back when the provider rejects
+`response_format`, tolerates fences and surrounding prose, and re-prompts on parse failure.
+`hermes_base_url` may include or omit `/v1`.
+
+**Agent contract.** All three agents return `AgentRun(result, started_at, finished_at)` — a
+NamedTuple defined in `agent_risk_clause.py` — rather than stuffing `_started_at` into the
+payload. Agent C runs even when A or B failed, receiving `EMPTY_FINDINGS` in place of the
+missing input. The contract ends `done` if any agent produced output.
+
+**Persistence.** `_save_result` is a real `ON CONFLICT` upsert against
+`uq_analysis_results_contract_agent`, so re-running an analysis updates the three existing
+rows instead of adding more.
+
+**Skill store.** Dedupe key is `fingerprint(clause_type, example_text)` — first 32 chars of
+sha256 over the clause type plus whitespace-normalised lowercased example — not
+`clause_type:severity`. `get_active_patterns()` takes a `limit` (default 40).
+
+**Upload.** `routes_upload.py` delegates to `services/upload_validation.py`: extension,
+declared content type, `Content-Length`, streaming read with a hard cap, `%PDF-` magic-byte
+sniffing, and binary detection before the latin-1 fallback. A PDF named `.txt` is routed to
+the PDF extractor rather than rejected. Enqueue failure marks the contract `failed` and
+returns 503.
+
+**New columns.** `contracts.job_id`, `contracts.error` (surfaced in `partials/status.html`
+when status is `failed`), and an `ix_contracts_status_updated_at` index for the reaper.
+
+**Front-end.** htmx and Alpine load from `/static/vendor/`, not unpkg. Font stacks in
+`app.css` have system fallbacks and no template declares `font-family` inline.
+
+**Configuration.** Ten new settings; see the table in `README.md`. `Settings` uses
+`SettingsConfigDict` with `extra="ignore"`, so an unrecognised `.env` key no longer crashes
+startup.

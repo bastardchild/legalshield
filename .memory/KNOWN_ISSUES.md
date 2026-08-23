@@ -1,12 +1,105 @@
 # KNOWN ISSUES — LegalShield Agent
 
-State: commit `d8e310b` ("init commit"). No tests, no CI.
+Originally catalogued at commit `d8e310b` ("init commit"). **The status ledger below is
+authoritative** — the detailed entries that follow it are preserved as-written from the
+original audit, so they describe the code *before* repair. Read an entry for the diagnosis
+and evidence, read the ledger for whether it still applies.
 
 Severity legend: **P0** breaks the documented happy path · **P1** likely failure or security
 exposure · **P2** correctness/robustness debt · **P3** cosmetic, dead code, docs.
 
 Each entry records how it was verified. Items marked *(inferred)* were reasoned from the code
 but not executed against a live stack — the LLM provider and Docker services were not exercised.
+
+---
+
+## Status ledger
+
+As of commit `49b537a`. Verified against a live Docker stack with a real LLM provider
+(end-to-end analysis completed in ~175s, three agents, 11 risk + 26 tax findings,
+24 KB counter-draft) and 237 passing tests.
+
+| # | Issue | Status | Landed in |
+|---|---|---|---|
+| 1 | `partials/result.html` does not compile | **fixed** | `e94aa87` |
+| 2 | `CREATE TYPE IF NOT EXISTS` is invalid PostgreSQL | **fixed** | `2a0c0ac` |
+| 3 | Migrations bypassed by `create_all` | **fixed** | `2a0c0ac` |
+| 4 | Polling stops on the first poll | **fixed** | `e94aa87` |
+| 5 | No auth, rate limiting, or CORS | **open — deferred** | documented in `README.md` |
+| 6 | Prompt injection via contract text | **mitigated** | `2a0c0ac` |
+| 7 | No LLM timeout/retry; strict JSON parsing | **fixed** | `2a0c0ac` |
+| 8 | No contract truncation | **fixed** | `2a0c0ac` |
+| 9 | Failed enqueue strands the contract | **fixed** | `89cbac6` |
+| 10 | Doubled `/v1` in provider URL | **fixed** | `2a0c0ac` |
+| 11 | Missing unique constraint behind the upsert | **fixed** | `2a0c0ac` |
+| 12 | Naive/aware datetime mixing | **fixed** | `2a0c0ac`, `9ec0723` |
+| 13 | `_started_at` leaks into stored JSON | **fixed** | `2a0c0ac` |
+| 14 | Template assumes every finding key exists | **fixed** | `e94aa87` |
+| 15 | Duplicated polling of the status partial | **fixed** | `e94aa87` |
+| 16 | Upload trusts the filename extension | **fixed** | `89cbac6` |
+| 17 | Exact-string matching; unbounded RAG context | **fixed** | `2a0c0ac` |
+| 18 | Seed data never loaded | **fixed** | `15cc37b` |
+| 19 | No tests | **fixed** | all commits |
+| 20 | CDN assets with no fallback | **fixed** | `9ec0723` |
+| 21 | `README.md` does not match the repository | **fixed** | `9ec0723` |
+| 22 | `worker_async.py` is dead code | **fixed** (deleted) | `9ec0723` |
+| 23 | `langchain` declared but unused | **fixed** (removed) | `9ec0723` |
+| 24 | Unused / misleading declarations | **fixed** | `9ec0723` |
+| 25 | No health endpoint | **fixed** | `89cbac6` |
+| 26 | Image build discarded by the bind mount | **partly fixed** | `49b537a` |
+| 27 | Styling split between CSS and inline attributes | **partly fixed** | `9ec0723` |
+
+### Notes on the non-"fixed" rows
+
+**#5 — deliberately not fixed.** Adding auth is a product decision, not a bug fix: it
+determines whether this is a single-tenant demo or a multi-tenant service, and the wrong
+choice is expensive to unwind. Anyone who can reach port 8000 can upload contracts, read
+other contracts by UUID, and spend your LLM budget. `README.md` now says so explicitly.
+Decide the model (session cookie + owner column, or an API key per tenant) before deploying.
+
+**#6 — mitigated, not solved.** Contract text is fenced between
+`===== UNTRUSTED CONTRACT TEXT =====` markers, the sentinel is stripped from the payload so
+a crafted contract cannot close the fence early, and all three system prompts state that
+fenced text is data. This raises the cost of an attack; it does not eliminate it. The
+secondary risk remains: `clause_patterns` is global, so a successful injection influences
+later analyses for every user. A per-tenant skill store would contain the blast radius.
+
+**#26 — partly fixed.** The image is now multi-stage and ships without `gcc`/`libpq-dev`,
+and `backend/.dockerignore` exists (`.gitignore` had listed it as ignored, so the entire
+host tree including `.git` was uploaded to the daemon on every build). The `./backend:/app`
+bind mount is still there because `--reload` depends on it; a production compose file
+should drop it. The Dockerfile carries a comment saying so.
+
+**#27 — partly fixed.** Inline `font-family` declarations are gone from every template, so
+the CSS fallback stacks actually apply, and `tests/test_static_assets.py` fails if one
+returns. Layout-related inline `style` attributes remain; they are cosmetic debt, not a bug.
+
+---
+
+## What the repair added
+
+New modules, all with tests:
+
+| File | Purpose |
+|---|---|
+| `app/services/findings.py` | Normalise LLM output (severity aliases incl. Bahasa, confidence coercion, text caps); fence untrusted text |
+| `app/services/upload_validation.py` | Content-first upload checks: magic bytes, binary detection, streaming size limit |
+| `app/services/reaper.py` | Fail contracts stuck in `uploaded`/`processing` past `stuck_contract_timeout_seconds` |
+| `app/services/seed_loader.py` | Bootstrap `clause_patterns` from `dataset1.json`; regulation list for the tax agent |
+| `app/seed.py` | Idempotent `python -m app.seed` CLI, run before uvicorn |
+| `app/api/routes_health.py` | `/health` (liveness) and `/health/ready` (Postgres + Redis, 503 when degraded) |
+| `alembic/versions/0002_*.py` | `clause_patterns.fingerprint` + both unique constraints, with dedupe and SQL backfill |
+| `alembic/versions/0003_*.py` | `contracts.job_id`, `contracts.error`, `(status, updated_at)` index |
+
+One defect was found during repair rather than in the original audit, and is worth
+remembering because it is invisible until the *second* job runs:
+
+> **Per-loop engine scoping.** `db/session.py` created one process-wide `AsyncEngine`. RQ is
+> synchronous and runs every job in a fresh `asyncio.run`, so the second job received an
+> asyncpg connection created on the first job's now-closed loop and failed with
+> `got Future attached to a different loop`. Engines and sessionmakers are now keyed by
+> `id(asyncio.get_running_loop())`, and `dispose_engine()` runs at the end of each job, each
+> reaper sweep, and API shutdown. See `tests/test_queue_and_reaper.py::TestSessionScoping`.
 
 ---
 
@@ -350,12 +443,32 @@ it makes UI edits error-prone and inflates diffs.
 
 ---
 
-## Suggested repair order
+## Remaining work
 
-1. #1 (template compile) — nothing works until this is fixed.
-2. #4 (polling guard) — the next thing to break once #1 is fixed.
-3. #10 (doubled `/v1`) — blocks the cheapest local LLM setup.
-4. #7 (timeouts + JSON resilience) and #9 (stranded `uploaded`) — remove the "spins forever" class of failure.
-5. #2 → #3 (repair migration, then run Alembic instead of `create_all`) and #11 (unique constraint).
-6. #5 and #6 before anything is exposed beyond localhost.
-7. #19 (tests) alongside each fix above; #18 to make the skill store useful; then the P3 cleanup.
+The original repair order is complete. What is left, in the order it should be tackled:
+
+1. **#5 — auth, rate limiting, CORS.** Blocking for any deployment beyond localhost. Needs a
+   product decision first (see the ledger note).
+2. **Per-tenant skill store**, once #5 lands — bounds the blast radius of #6.
+3. **Integration tests against a live database.** The suite is 237 unit tests plus static
+   guards; the migration chain and the orchestrator's upsert path were verified by hand
+   against Docker, not by CI. `docker compose run --rm test` already starts Postgres and
+   Redis, so the fixtures are the only missing piece.
+4. **Production compose file** without the `./backend:/app` bind mount and without
+   `--reload` (#26).
+5. **Real SMTP** in `services/mailer.py` — still a logging stub, by design.
+6. **Retire remaining inline layout styles** (#27).
+
+### Operational notes worth keeping
+
+- Tests run **in Docker only**: `docker compose run --rm --no-deps test`. The host Python is
+  3.10 and lacks the dependencies; the project needs 3.11+.
+- The `test` service sets `HERMES_BASE_URL=http://llm.invalid` inline, so no test can reach
+  a real provider even if `.env` is populated.
+- A full end-to-end analysis takes 150–200s against a hosted 70B model. `job_timeout` is
+  600s and `stuck_contract_timeout_seconds` is 900s; keep that ordering if either changes.
+- Re-running an analysis for the same contract is safe — the upsert updates the three
+  existing `analysis_results` rows rather than adding more (verified).
+- Docker Desktop's WSL engine crashed once mid-session during a rebuild. `docker desktop
+  restart` recovered it with no data loss; the symptom is a `500 Internal Server Error` from
+  the `/networks` API route.
