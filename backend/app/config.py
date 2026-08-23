@@ -72,6 +72,13 @@ class Settings(BaseSettings):
     # X-Forwarded-For and get a fresh rate-limit identity on every request.
     trust_proxy_headers: bool = False
 
+    # --- API docs ------------------------------------------------------------------
+    # The interactive docs (/docs, /redoc, /openapi.json) are convenient in development
+    # but expose the whole API surface to anyone who can reach the app. Set false to turn
+    # them off entirely (the routes are not registered, so they 404). The production
+    # overlay forces this off even if .env leaves it unset.
+    docs_enabled: bool = True
+
     # --- Email delivery -------------------------------------------------------------
     # Empty host keeps services/mailer.py in stub mode (log only), which is what the MVP
     # demo relies on. Set it to send for real.
@@ -97,6 +104,12 @@ class Settings(BaseSettings):
 
     def cors_origins(self) -> list[str]:
         return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
+
+    def docs_urls(self) -> tuple[str | None, str | None, str | None]:
+        """(docs_url, redoc_url, openapi_url); None disables the route entirely (404)."""
+        if not self.docs_enabled:
+            return (None, None, None)
+        return ("/docs", "/redoc", "/openapi.json")
 
 
 @lru_cache
