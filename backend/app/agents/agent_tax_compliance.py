@@ -5,6 +5,7 @@ from pathlib import Path
 from app.agents.agent_risk_clause import AgentRun
 from app.services.findings import normalize_findings, truncate_contract, wrap_untrusted
 from app.services.llm_client import chat_completion_json
+from app.services.seed_loader import legal_references_text
 
 logger = logging.getLogger(__name__)
 
@@ -12,9 +13,20 @@ AGENT_LABEL = "TaxComplianceAgent"
 PROMPT_PATH = Path(__file__).parent / "prompts" / "tax_compliance.txt"
 
 
-def _load_prompt(contract_text: str) -> str:
+def _load_prompt(contract_text: str, legal_references: str) -> str:
     template = PROMPT_PATH.read_text(encoding="utf-8")
-    return template.replace("{{ contract_text }}", contract_text)
+    return template.replace("{{ contract_text }}", contract_text).replace(
+        "{{ legal_references }}", legal_references
+    )
+
+
+def _legal_references() -> str:
+    """Citation list from seed/datasetpasal1.json; a bad file must not fail the agent."""
+    try:
+        return legal_references_text()
+    except Exception as e:
+        logger.warning(f"[{AGENT_LABEL}] Could not load legal references: {e}")
+        return "Tidak ada daftar referensi hukum yang dimuat."
 
 
 async def run_tax_compliance_agent(contract_text: str) -> AgentRun:
@@ -23,7 +35,7 @@ async def run_tax_compliance_agent(contract_text: str) -> AgentRun:
     logger.info(f"[{AGENT_LABEL}] Starting at {started_at.isoformat()}")
 
     text, truncated = truncate_contract(contract_text)
-    prompt = _load_prompt(wrap_untrusted(text))
+    prompt = _load_prompt(wrap_untrusted(text), _legal_references())
     if truncated:
         prompt += "\n\nNote: the contract text above was truncated for length."
 

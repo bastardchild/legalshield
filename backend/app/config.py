@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     max_contract_chars: int = 60_000
     # Cap on skill-store patterns injected as RAG context, newest-most-matched first.
     max_rag_patterns: int = 40
+    # Directory holding the shipped seed data, relative to the working directory.
+    seed_dir: str = "seed"
+    # Cap on legal references injected into the tax agent's prompt.
+    max_legal_references: int = 25
 
     # A contract sits in `processing` only while a job holds it. RQ kills jobs at
     # job_timeout (600s), so anything older than this has lost its worker — a crashed

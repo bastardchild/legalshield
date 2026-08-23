@@ -30,10 +30,14 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     # Migrations run here rather than in the app lifespan, so a broken migration fails
-    # loudly at boot instead of being papered over by metadata.create_all.
-    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    # loudly at boot instead of being papered over by metadata.create_all. Seeding is
+    # idempotent and non-fatal, so it can run on every start.
+    command: sh -c "alembic upgrade head && python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
+      # The bind mount shadows the image's own copy of the source, which is what makes
+      # --reload work. A production deployment should drop it and use the built image.
       - ./backend:/app
+      - ./seed:/app/seed:ro
     ports:
       - "8000:8000"
     env_file:
@@ -57,6 +61,7 @@ services:
     command: sh -c "alembic upgrade head && python -m app.worker"
     volumes:
       - ./backend:/app
+      - ./seed:/app/seed:ro
     env_file:
       - .env
     depends_on:
@@ -78,6 +83,7 @@ services:
     command: pytest
     volumes:
       - ./backend:/app
+      - ./seed:/app/seed:ro
     environment:
       DATABASE_URL: postgresql+asyncpg://legalshield:legalshield@postgres:5432/legalshield
       REDIS_URL: redis://redis:6379/0
