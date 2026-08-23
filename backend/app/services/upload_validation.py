@@ -9,8 +9,10 @@ before looking at its size. Three consequences:
 * A PDF renamed to `.txt` skipped extraction entirely.
 * A 2 GB upload was fully read into memory before the size check ran.
 
-Validation here is content-first: the declared type and extension must agree with what
-the bytes actually are.
+The MVP accepts PDFs only. Validation here is content-first: the declared type and
+extension must agree with what the bytes actually are, the body is capped at 5 MB
+(`MAX_UPLOAD_BYTES`), and the page count is capped separately in
+`validate_pdf_page_count`.
 """
 import logging
 
@@ -24,20 +26,18 @@ logger = logging.getLogger(__name__)
 MAX_UPLOAD_BYTES = get_settings().max_upload_mb * 1024 * 1024
 MAX_UPLOAD_MB = MAX_UPLOAD_BYTES // (1024 * 1024)
 
-ALLOWED_EXTENSIONS = {".pdf", ".txt"}
-# Browsers are inconsistent: Windows reports text/plain for .txt, some report
-# application/octet-stream for both, and a few send nothing at all.
+ALLOWED_EXTENSIONS = {".pdf"}
+# Browsers are inconsistent: most report application/pdf, some application/octet-stream,
+# and a few send nothing at all.
 ALLOWED_MIMETYPES = {
     "application/pdf",
     "application/x-pdf",
-    "text/plain",
-    "text/markdown",
     "application/octet-stream",
     "",
 }
 
 PDF_MAGIC = b"%PDF-"
-# Chunk read while streaming, sized so a small text file needs one pass.
+# Chunk read while streaming, sized so a small file needs one pass.
 READ_CHUNK = 64 * 1024
 
 
@@ -61,7 +61,7 @@ def validate_filename(filename: str | None) -> str:
         raise UploadValidationError("Nama file tidak ada.")
     ext = extension_of(filename)
     if ext not in ALLOWED_EXTENSIONS:
-        raise UploadValidationError("Hanya file PDF atau TXT yang diterima.")
+        raise UploadValidationError("Hanya file PDF yang diterima.")
     return ext
 
 
@@ -96,47 +96,12 @@ def looks_like_pdf(data: bytes) -> bool:
     return PDF_MAGIC in data[:1024]
 
 
-def is_probably_binary(data: bytes) -> bool:
+def validate_payload(data: bytes) -> None:
     """
-    Heuristic for "this is not text".
+    Reject an empty or oversized body and anything that is not really a PDF.
 
-    A NUL byte is decisive: no valid UTF-8 or latin-1 document contains one. Beyond that,
-    a high ratio of non-printable bytes means the latin-1 fallback would produce garbage
-    that we would then bill an LLM to read.
-    """
-    sample = data[:8192]
-    if not sample:
-        return False
-    if b"\x00" in sample:
-        return True
-    printable = sum(1 for b in sample if b in (9, 10, 13) or 32 <= b <= 126 or b >= 160)
-    return (printable / len(sample)) < 0.85
-
-
-def decode_text(data: bytes) -> str:
-    """
-    Decode a .txt upload, rejecting binary masquerading as text.
-
-    UTF-8 first, then latin-1 for legacy Indonesian documents. latin-1 cannot fail, so the
-    binary check must happen before it, not as an except branch.
-    """
-    if is_probably_binary(data):
-        raise UploadValidationError(
-            "File ini terlihat seperti data biner, bukan teks.", status_code=422
-        )
-    try:
-        return data.decode("utf-8")
-    except UnicodeDecodeError:
-        logger.info("Upload is not valid UTF-8; falling back to latin-1.")
-        return data.decode("latin-1")
-
-
-def validate_payload(ext: str, data: bytes) -> str:
-    """
-    Cross-check the bytes against the declared extension. Returns the effective extension.
-
-    A PDF uploaded as `.txt` is accepted and routed to the PDF extractor rather than
-    rejected — the content is what matters, and the alternative is a page of binary noise.
+    The magic-byte check is the final arbiter: a non-PDF renamed to `.pdf` is refused
+    here rather than reaching pypdf.
     """
     if not data:
         raise UploadValidationError("File kosong.", status_code=422)
@@ -144,18 +109,11 @@ def validate_payload(ext: str, data: bytes) -> str:
         raise UploadValidationError(
             f"File terlalu besar. Maksimal {MAX_UPLOAD_MB} MB.", status_code=413
         )
-
-    if looks_like_pdf(data):
-        if ext != ".pdf":
-            logger.info("Upload declared %s but has a PDF header; treating it as PDF.", ext)
-        return ".pdf"
-
-    if ext == ".pdf":
+    if not looks_like_pdf(data):
         raise UploadValidationError(
             "File tidak dikenali sebagai PDF yang valid (header %PDF- tidak ditemukan).",
             status_code=422,
         )
-    return ".txt"
 
 
 def validate_pdf_page_count(file_bytes: bytes, max_pages: int) -> int:

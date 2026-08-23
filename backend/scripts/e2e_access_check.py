@@ -7,12 +7,16 @@ runnable with `--no-deps`. Run it against a running compose stack:
     docker compose exec -T api python scripts/e2e_access_check.py
 
 Exits non-zero if any check fails, so it can be dropped into CI once a stack is available
-there. Uses only the standard library so it needs nothing beyond the runtime image.
+there. Uses only the standard library plus pypdf, both present in the api image.
 """
+import io
 import json
 import sys
 import urllib.error
 import urllib.request
+
+from pypdf import PdfWriter
+from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
 BASE = "http://localhost:8000"
 CONTRACT_TEXT = (
@@ -57,15 +61,54 @@ def request(path, method="GET", cookie=None, headers=None):
         return e.code, e.read().decode("utf-8", "replace"), e.headers
 
 
+def build_contract_pdf(text: str) -> bytes:
+    """
+    A one-page PDF whose only content stream is the contract text.
+
+    pypdf can write blank pages but has no high-level "add text" API, so the content
+    stream is built by hand with a Type1 font. Parentheses and backslashes are escaped
+    for the PDF string syntax.
+    """
+
+    def esc(s: str) -> str:
+        return s.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+    lines = [f"({esc(line)}) Tj T*" for line in text.splitlines()]
+    content = "\n".join(["BT /F1 9 Tf 72 720 Td 12 TL", *lines, "ET"])
+
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+    stream = DecodedStreamObject()
+    stream.set_data(content.encode())
+    page[NameObject("/Contents")] = stream
+    page[NameObject("/Resources")] = DictionaryObject(
+        {
+            NameObject("/Font"): DictionaryObject(
+                {
+                    NameObject("/F1"): DictionaryObject(
+                        {
+                            NameObject("/Type"): NameObject("/Font"),
+                            NameObject("/Subtype"): NameObject("/Type1"),
+                            NameObject("/BaseFont"): NameObject("/Helvetica"),
+                        }
+                    )
+                }
+            )
+        }
+    )
+    buf = io.BytesIO()
+    writer.write(buf)
+    return buf.getvalue()
+
+
 def upload(cookie=None):
     boundary = "----legalshieldcheck"
+    pdf_bytes = build_contract_pdf(CONTRACT_TEXT)
     payload = (
         f"--{boundary}\r\n"
-        'Content-Disposition: form-data; name="file"; filename="cek.txt"\r\n'
-        "Content-Type: text/plain\r\n\r\n"
-        f"{CONTRACT_TEXT}\r\n"
-        f"--{boundary}--\r\n"
-    ).encode()
+        'Content-Disposition: form-data; name="file"; filename="cek.pdf"\r\n'
+        "Content-Type: application/pdf\r\n\r\n"
+    ).encode() + pdf_bytes + f"\r\n--{boundary}--\r\n".encode()
     req = urllib.request.Request(BASE + "/api/contracts/upload", method="POST", data=payload)
     req.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
     if cookie:

@@ -15,7 +15,6 @@ from app.services.queue import EnqueueError, enqueue_analysis
 from app.services.rate_limit import RateLimitExceeded, check
 from app.services.upload_validation import (
     UploadValidationError,
-    decode_text,
     read_limited,
     validate_content_type,
     validate_declared_size,
@@ -35,7 +34,7 @@ UPLOAD_LIMIT_MESSAGE = (
     "dibatasi per jam. Coba lagi nanti."
 )
 NOT_CONTRACT_MESSAGE = (
-    "File ini tidak dikenali sebagai dokumen kontrak/hukum. Unggah kontrak PDF atau TXT "
+    "File ini tidak dikenali sebagai dokumen kontrak/hukum. Unggah kontrak PDF "
     "yang berisi perjanjian, pasal, dan klausul."
 )
 TOO_SHORT_MESSAGE = "Teks yang diekstrak terlalu pendek untuk dianalisis sebagai kontrak."
@@ -75,17 +74,13 @@ async def upload_contract(
         # Checked from the header first so an oversized body is refused before buffering.
         validate_declared_size(request.headers.get("content-length"))
         file_bytes = await read_limited(file)
-        ext = validate_payload(ext, file_bytes)
-
-        if ext == ".pdf":
-            # Page cap before extraction: extraction and the LLM spend grow with pages.
-            validate_pdf_page_count(file_bytes, settings.max_pdf_pages)
-            try:
-                raw_text = extract_text_from_pdf(file_bytes)
-            except ValueError as e:
-                raise UploadValidationError(str(e), status_code=422) from e
-        else:
-            raw_text = decode_text(file_bytes)
+        validate_payload(file_bytes)
+        # Page cap before extraction: extraction and the LLM spend grow with pages.
+        validate_pdf_page_count(file_bytes, settings.max_pdf_pages)
+        try:
+            raw_text = extract_text_from_pdf(file_bytes)
+        except ValueError as e:
+            raise UploadValidationError(str(e), status_code=422) from e
     except UploadValidationError as e:
         logger.info(f"Rejected upload '{file.filename}': {e.detail}")
         raise HTTPException(status_code=e.status_code, detail=e.detail) from e

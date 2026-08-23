@@ -40,14 +40,14 @@
         <div x-show="!fileName">
           <div class="dz-icon">📄</div>
           <p class="dz-title">Klik atau drag &amp; drop</p>
-          <p class="dz-sub">PDF atau TXT &mdash; maks. 20 MB</p>
+          <p class="dz-sub">PDF &mdash; maks. 5 MB, 10 halaman</p>
         </div>
         <div x-show="fileName" x-cloak>
           <div class="dz-icon dz-icon-ok">✅</div>
           <p class="dz-title-ok" x-text="fileName"></p>
           <p class="dz-sub">Klik untuk ganti file</p>
         </div>
-        <input type="file" name="file" accept=".pdf,.txt" x-ref="fileInput"
+        <input type="file" name="file" accept=".pdf" x-ref="fileInput"
           class="visually-hidden-input" @change="onFileChange($event)" />
       </div>
 
