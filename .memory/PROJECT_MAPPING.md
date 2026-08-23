@@ -132,11 +132,16 @@ graph TD
 ## 3. End-to-end request flow
 
 1. **Upload** — `routes_upload.upload_contract`
-   - Validates filename extension against `ALLOWED_EXTENSIONS = {.pdf, .txt}` (extension only;
-     `ALLOWED_MIMETYPES` is defined but never used).
-   - Reads whole body into memory, rejects `> 20 MB` with 413.
-   - `.pdf` → `pdf_extractor.extract_text_from_pdf` (pypdf); `.txt` → UTF-8 then latin-1 fallback.
-   - Empty text → 422 ("Is it a scanned image?").
+   - Filename extension must be `.pdf` (`ALLOWED_EXTENSIONS = {".pdf"}`) and the declared
+     content type must be a PDF type (`validate_content_type`).
+   - `Content-Length` header checked first, then a streaming read capped at 5 MB
+     (`MAX_UPLOAD_BYTES`, from config `max_upload_mb`) — 413 on overflow.
+   - `validate_payload` requires the `%PDF-` magic header: a non-PDF renamed to `.pdf` is
+     refused with 422.
+   - `validate_pdf_page_count` counts pages via pypdf (no text extraction) and refuses
+     > 10 pages (`max_pdf_pages`) with a Bahasa 422.
+   - `pdf_extractor.extract_text_from_pdf` (pypdf). Empty text → 422 ("Is it a scanned
+     image?").
    - Inserts `Contract(status=uploaded)`, commits, then `enqueue_analysis(str(id))`.
    - Returns `ContractUploadResponse{id, filename, status}` as JSON.
 2. **Client redirect** — `app.js › uploadApp.onUploadDone` parses the JSON body from the
@@ -319,6 +324,8 @@ Severity → CSS coupling: `partials/result.html` builds the stripe class from
 | `contract_filter_enabled` | `CONTRACT_FILTER_ENABLED` | `true` (kill switch for the upload gate) |
 | `contract_filter_min_score` | `CONTRACT_FILTER_MIN_SCORE` | `0.35` (below this → rejected as non-contract) |
 | `contract_filter_min_tokens` | `CONTRACT_FILTER_MIN_TOKENS` | `60` (below this → rejected as too short) |
+| `max_upload_mb` | `MAX_UPLOAD_MB` | `5` (PDF byte cap; 0 lifts it) |
+| `max_pdf_pages` | `MAX_PDF_PAGES` | `10` (PDF page cap; 0 lifts it) |
 
 `llm_client.get_llm_client()` appends `/v1` to `hermes_base_url`, so the env value must **not**
 already include `/v1` (contradicts the README's Ollama tip — see `KNOWN_ISSUES.md` #6).
@@ -623,3 +630,15 @@ text and rejects it with a Bahasa 422 before the `Contract` row exists. The scor
 
 Calibration (real lexicon, threshold `0.35`): `sample_contract.txt` 0.61, contract fixture
 0.43, CV 0.20, invoice 0.24, recipe 0.14, "pasal" spam 0.31.
+
+**PDF-only uploads (phases 13-15).**
+
+The MVP now accepts **PDFs only**, capped at **5 MB** and **10 pages**. TXT support was
+removed: it kept the latin-1 decode path that never fails (the original #16 hole: any binary
+renamed to `.txt` became "contract text"), two decode routes, and UI copy the demo did not
+honour. `decode_text` / `is_probably_binary` are deleted; `validate_payload` now just
+requires the `%PDF-` magic header, and `pdf_page_count` (pypdf, no text extraction) enforces
+the page cap before any extraction work. New settings `max_upload_mb` (5) and `max_pdf_pages`
+(10); a value of 0 lifts a cap. The e2e script builds its fixture PDF by hand (pypdf 4.x has
+no add-text API) and uploads it as `cek.pdf`. `tests/test_pdf_extractor.py` is new;
+`upload.html` says "PDF — maks. 5 MB, 10 halaman". 511 tests pass; live e2e 13/13.

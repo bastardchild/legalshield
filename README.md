@@ -50,7 +50,7 @@ http://localhost:8000
 
 ### 4. Upload kontrak
 
-Pilih `seed/sample_contract.txt` (atau PDF kontrak apa pun) → klik **Analisis Kontrak**.
+Pilih PDF kontrak apa pun (maks. 5 MB, 10 halaman) → klik **Analisis Kontrak**.
 
 Unggahan melewati **filter kontrak** terlebih dahulu: teks hasil ekstraksi di-skor terhadap
 leksikon hukum ber-pembobotan (`seed/legal_lexicon.json`, 5.112 entri positif + 622 negatif)
@@ -103,7 +103,7 @@ scoping `owner_id`, sweep reaper, dan engine per-event-loop.
 ## Arsitektur Agent
 
 ```
-Upload PDF/TXT
+Upload PDF (maks. 5 MB, 10 halaman)
     │  validasi berbasis konten (magic bytes, bukan ekstensi)
     ▼
 FastAPI (POST /api/contracts/upload)
@@ -195,6 +195,8 @@ legalshield/
 | `MAX_RAG_PATTERNS` | Batas pola skill store dalam prompt | `40` |
 | `MAX_LEGAL_REFERENCES` | Batas regulasi dalam prompt agent pajak | `25` |
 | `SEED_DIR` | Lokasi data seed | `seed` |
+| `MAX_UPLOAD_MB` | Batas ukuran file unggahan PDF | `5` |
+| `MAX_PDF_PAGES` | Batas jumlah halaman PDF (`0` = tanpa batas) | `10` |
 | `SECRET_KEY` | Kunci HMAC untuk tanda tangan cookie pemilik. **Wajib diisi di produksi** | *(acak per proses)* |
 | `ACCESS_TOKEN` | Token bersama untuk seluruh app. Kosong = app terbuka | *(kosong)* |
 | `ALLOWED_ORIGINS` | Daftar origin CORS dipisah koma. Kosong = CORS nonaktif | *(kosong)* |
@@ -233,7 +235,7 @@ legalshield/
 | `GET` | `/` | Halaman upload |
 | `GET` | `/health` | Liveness — tidak menyentuh dependency |
 | `GET` | `/health/ready` | Readiness — cek Postgres + Redis, `503` bila salah satu mati |
-| `POST` | `/api/contracts/upload` | Upload PDF/TXT, mulai analisis |
+| `POST` | `/api/contracts/upload` | Upload PDF (maks. 5 MB, 10 halaman), mulai analisis |
 | `GET` | `/api/contracts/{id}/status` | Cek status analisis |
 | `GET` | `/api/contracts/{id}/result` | Ambil hasil lengkap (JSON) |
 | `POST` | `/api/contracts/{id}/send` | Kirim draft ke email klien (`502` bila pengiriman gagal) |
@@ -332,7 +334,7 @@ Untuk mengekspos ke internet: isi `SECRET_KEY`, set `ACCESS_TOKEN`, dan set
 ## Acceptance Criteria MVP
 
 - [x] `docker compose up` menjalankan seluruh stack tanpa error
-- [x] User bisa upload PDF/TXT kontrak dari browser
+- [x] User bisa upload PDF kontrak dari browser (maks. 5 MB, 10 halaman)
 - [x] Analisis 3 agent berjalan paralel (A & B) lalu C
 - [x] UI menampilkan klausul berisiko, isu pajak/lokal, dan draft kontrak tandingan
 - [x] Pattern klausul berbahaya baru tersimpan ke `clause_patterns` (self-improving RAG)

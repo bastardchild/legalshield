@@ -14,16 +14,17 @@ Read these before touching code; update them after landing meaningful changes.
 ## Project at a glance
 
 LegalShield Agent is a Bahasa-Indonesia-first SaaS MVP that analyses freelance/service
-contracts (PDF or TXT) with three LLM sub-agents and produces a counter-draft.
+contracts as PDF uploads (max 5 MB, 10 pages) with three LLM sub-agents and produces a
+counter-draft.
 
 - **Backend**: FastAPI (async) + SQLAlchemy 2.0 asyncio + PostgreSQL 16
 - **Queue**: Redis 7 + RQ (sync worker bridging into `asyncio.run`)
 - **LLM**: any OpenAI-compatible endpoint via `openai.AsyncOpenAI` (default: Hermes / Nous Research)
 - **Frontend**: Jinja2 + HTMX polling + Alpine.js, no build step, assets vendored locally
 - **Infra**: Docker Compose (`postgres`, `redis`, `migrate`, `api`, `worker`, `test` behind a profile)
-- **Repo state**: repaired through phases 1–10 plus the contract-filter gate; **all 27
-  catalogued issues closed**; 507 tests (444 unit + 63 integration); verified end-to-end
-  against a live LLM provider. See `KNOWN_ISSUES.md` for the status ledger.
+- **Repo state**: repaired through phases 1–10, the contract-filter gate, and the PDF-only
+  upload policy; **all 27 catalogued issues closed**; 511 tests (448 unit + 63 integration);
+  verified end-to-end against a live LLM provider. See `KNOWN_ISSUES.md` for the status ledger.
 
 Entry points: `backend/app/main.py` (API) and `backend/app/worker.py` (RQ worker).
 

@@ -19,6 +19,8 @@ As of commit `9034cab` plus the SMTP attachment follow-up. Verified against a li
 stack with a real LLM provider (end-to-end analysis completed in ~175s, three agents, 11 risk
 + 26 tax findings, 24 KB counter-draft), 486 passing tests,
 `scripts/e2e_access_check.py` at 13/13, and `scripts/smtp_live_check.py` at 8/8.
+Later phases: the contract-filter gate landed in `907364c` (507 tests), and the PDF-only
+upload policy in `f4ad5cc` + `0726682` + `3910421` (511 tests).
 
 **All 27 catalogued issues are now closed.**
 
@@ -528,10 +530,31 @@ any queueing happens.
   document is simply refused with a Bahasa 422 (`NOT_CONTRACT_MESSAGE` /
   `TOO_SHORT_MESSAGE` in `routes_upload.py`); the assessment is never stored.
 
+### Upload policy contract, worth knowing before touching it
+
+The upload endpoint is PDF-only: `accept=".pdf"` on the dropzone, extension + MIME checks,
+and a `%PDF-` magic-header check in `validate_payload`. The byte cap is enforced **three
+times** — the `Content-Length` header, the streaming `read_limited` read, and
+`validate_payload` — all three reject `413` via the shared `MAX_UPLOAD_BYTES`
+(`get_settings().max_upload_mb * 1024 * 1024`, read once at import). The page cap is
+enforced **before** extraction via `validate_pdf_page_count` / `pdf_page_count` (pypdf page
+metadata only, no text extraction), rejected with a Bahasa `422` that states the count.
+
+- `max_upload_mb` / `max_pdf_pages` of `0` lifts the respective cap; the defaults are 5 MB
+  and 10 pages. Bumping them changes `MAX_UPLOAD_BYTES` automatically because the tests
+  import the constant, so boundary tests track the setting.
+- `UploadValidationError` is a `ValueError` subclass. `routes_upload.py` converts
+  `extract_text_from_pdf`'s `ValueError` inside its **own inner** `try/except` so the outer
+  `except UploadValidationError` handles it — do not flatten it into a sibling `except
+  ValueError` or a real PDF corruption would `500` instead of `422`.
+- The e2e fixture PDF is hand-built: pypdf 4.x has no `add_text` API, and every content-stream
+  line must carry a `Tj` operator or pypdf extracts `''` and the upload is refused as having
+  no extractable text.
+
 ### Operational notes worth keeping
 
-- Tests run **in Docker only**: `docker compose run --rm --no-deps test` for the 444 unit
-  tests (~11s), `docker compose run --rm test` for all 507 including `tests/integration/`,
+- Tests run **in Docker only**: `docker compose run --rm --no-deps test` for the 448 unit
+  tests (~11s), `docker compose run --rm test` for all 511 including `tests/integration/`,
   which needs PostgreSQL. The host Python is 3.10 and lacks the dependencies; the project
   needs 3.11+.
 - Integration tests create and drop a separate `legalshield_test` database. They **skip**
