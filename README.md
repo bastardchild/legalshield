@@ -236,6 +236,9 @@ terlampir sebagai `.txt`.
 - **Mode nyata** memakai `smtplib`. `SMTP_USE_SSL=true` untuk TLS implisit (port 465);
   selain itu `SMTP_USE_TLS=true` melakukan `STARTTLS` (port 587). AUTH dilewati bila
   `SMTP_USERNAME` kosong.
+- Draft dikirim dua kali dalam satu pesan: inline di body supaya langsung terbaca, dan
+  sebagai lampiran `draft-kontrak-<id>.txt` — draft biasanya ~20 KB dan penerimanya akan
+  mengeditnya, bukan sekadar membacanya.
 - Record `negotiation_sends` **selalu** ditulis, berhasil maupun gagal, lalu status HTTP
   dipilih dari hasilnya (`502` bila pengiriman gagal). Jejak audit itu justru paling
   dibutuhkan saat pengiriman gagal.
@@ -243,6 +246,14 @@ terlampir sebagai `.txt`.
   dan user autentikasi.
 - Alamat tujuan yang memuat CR/LF ditolak, supaya tidak ada header tambahan yang bisa
   diselipkan ke envelope.
+
+Untuk memverifikasi konfigurasi SMTP tanpa mengirim ke orang sungguhan, jalankan pemeriksa
+SMTP bawaan di dalam container `api`. Ia menyalakan listener SMTP sekali-pakai di
+`127.0.0.1:2525`, mengarahkan mailer ke sana, dan memeriksa isi DATA yang benar-benar tiba:
+
+```bash
+docker compose exec -T api python scripts/smtp_live_check.py
+```
 
 ---
 

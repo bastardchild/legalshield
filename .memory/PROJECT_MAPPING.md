@@ -1,6 +1,6 @@
 # PROJECT MAPPING — LegalShield Agent
 
-Structural map of the repository as it exists at commit `8233840`.
+Structural map of the repository as it exists at commit `9034cab`.
 Line references are approximate anchors, not guarantees.
 
 > Sections 2–13 were written at commit `d8e310b` and describe the architecture, which is
@@ -36,8 +36,9 @@ C:\legalshield\
     │       ├── 0004_contract_ownership.py          # owner_id (NOT NULL, indexed)
     │       └── 0005_per_tenant_clause_patterns.py  # clause_patterns.owner_id + per-owner uq
     ├── scripts/
-    │   └── e2e_access_check.py    # live-stack access-control check (not in pytest)
-    ├── tests/                    # 480 tests (417 unit + 63 integration)
+    │   ├── e2e_access_check.py    # live-stack access-control check (not in pytest)
+    │   └── smtp_live_check.py     # real socket SMTP check against a throwaway listener
+    ├── tests/                    # 486 tests (423 unit + 63 integration)
     │   ├── conftest.py           # env defaults set before any app import; Jinja fixtures
     │   ├── test_templates.py     # compile + polling-marker regressions (#1, #4, #14, #15)
     │   ├── test_llm_client.py    # JSON extraction, base-URL normalisation (#7, #10)
@@ -478,8 +479,8 @@ things whose bugs live in SQL are no longer verified only by hand.
   session end. `DATABASE_URL` is swapped for the session and `get_settings.cache_clear()` is
   called on both sides, so the app's own settings follow.
 - **Skipped, not failed, when PostgreSQL is unreachable.** `--no-deps` is the documented fast
-  path (417 unit tests in ~18s) and must stay green; `docker compose run --rm test` without
-  `--no-deps` runs all 480.
+  path (423 unit tests in ~21s) and must stay green; `docker compose run --rm test` without
+  `--no-deps` runs all 486.
 - `clean_tables` truncates *before* each test, so a failure leaves its rows for inspection,
   and calls `dispose_engine()` after — pytest-asyncio gives each test a new loop and
   `db/session.py` keys engines by loop id, so skipping it leaks a pool per test.
@@ -536,6 +537,13 @@ nothing left the process. It now speaks SMTP, with two shapes:
   attachment) and hands it to `smtplib.SMTP` or `SMTP_SSL` depending on `SMTP_USE_SSL`,
   upgrading with `starttls()` when `SMTP_USE_TLS` is set.
 
+The draft appears twice in one message — inline so it is readable without opening anything,
+and attached as `draft-kontrak-<contract_id>.txt` because a 20 KB draft is something the
+recipient edits. `add_attachment` makes the message `multipart/mixed`, so the readable part
+must be reached through `mailer.body_text()` (a `get_body(("plain",))` wrapper) rather than
+`message.get_content()`; a test asserts the message is still multipart so that accessor does
+not silently become wrong.
+
 Three constraints shape the interface, and each is load-bearing:
 
 - **Failures are returned, never raised.** `routes_negotiate.py` persists a
@@ -552,6 +560,14 @@ Three constraints shape the interface, and each is load-bearing:
 injecting extra headers into the envelope. `config.py` gained `SMTP_HOST`, `SMTP_PORT`,
 `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_USE_TLS`, `SMTP_USE_SSL`, `SMTP_FROM`,
 `SMTP_FROM_NAME` and `SMTP_TIMEOUT_SECONDS`.
+
+`scripts/smtp_live_check.py` closes the gap the unit tests cannot: they drive a fake
+`smtplib.SMTP`, which proves call ordering but never opens a socket. The script runs a
+single-session SMTP listener on `127.0.0.1:2525` in a thread, points the mailer at it, and
+asserts on the DATA payload that actually arrived (recipient, sender, contract id, draft
+text, attachment). It is deliberately outside pytest — it binds a port. Note it needs
+`sys.path` extended to the app root, because running a file from `scripts/` puts `scripts/`
+rather than `/app` at `sys.path[0]`.
 
 The same phase closed #27. Every `style=` and `:style=` attribute is gone from all five
 templates, replaced by roughly 60 classes in `app.css`; the dropzone's drag and selected

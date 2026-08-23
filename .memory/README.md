@@ -21,8 +21,8 @@ contracts (PDF or TXT) with three LLM sub-agents and produces a counter-draft.
 - **LLM**: any OpenAI-compatible endpoint via `openai.AsyncOpenAI` (default: Hermes / Nous Research)
 - **Frontend**: Jinja2 + HTMX polling + Alpine.js, no build step, assets vendored locally
 - **Infra**: Docker Compose (`postgres`, `redis`, `migrate`, `api`, `worker`, `test` behind a profile)
-- **Repo state**: repaired through phases 1–10; **all 27 catalogued issues closed**; 480 tests
-  (417 unit + 63 integration); verified end-to-end against a live LLM provider. See
+- **Repo state**: repaired through phases 1–10; **all 27 catalogued issues closed**; 486 tests
+  (423 unit + 63 integration); verified end-to-end against a live LLM provider. See
   `KNOWN_ISSUES.md` for the status ledger.
 
 Entry points: `backend/app/main.py` (API) and `backend/app/worker.py` (RQ worker).
@@ -61,10 +61,15 @@ Entry points: `backend/app/main.py` (API) and `backend/app/worker.py` (RQ worker
 5. **Validation runs in Docker**, not on the host — host Python is 3.10 and lacks the
    dependencies:
    ```sh
-   docker compose run --rm --no-deps test              # pytest, 417 unit tests (~18s)
-   docker compose run --rm test                        # all 480, incl. integration
+   docker compose run --rm --no-deps test              # pytest, 423 unit tests (~21s)
+   docker compose run --rm test                        # all 486, incl. integration
    docker compose run --rm --no-deps test ruff check .  # lint
    docker compose run --rm test alembic upgrade head    # needs postgres, so no --no-deps
+   ```
+   Two live checks sit outside pytest because they need a running stack or a bound port:
+   ```sh
+   docker compose exec -T api python scripts/e2e_access_check.py   # access control, 13 checks
+   docker compose exec -T api python scripts/smtp_live_check.py    # real SMTP socket, 8 checks
    ```
    The `test` service pins `HERMES_BASE_URL=http://llm.invalid` inline, so no test can reach
    a real provider. Full end-to-end needs `docker compose up --build` and a working

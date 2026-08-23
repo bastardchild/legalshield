@@ -16,6 +16,10 @@ Three decisions worth stating, because each has a failure mode attached:
 * **The recipient address is validated before use.** It arrives from a JSON body, and an
   address containing CR/LF would let a caller inject extra SMTP headers (a bcc, a forged
   From) into the message.
+
+The draft is sent twice on purpose: inline in the body so it is readable without opening
+anything, and as a `.txt` attachment because the drafts run to 20 KB and the recipient's
+next step is to edit one.
 """
 import asyncio
 import logging
@@ -50,6 +54,9 @@ dikirim ke pihak lain.
 {draft}
 --------------------------------------------------------------------------------
 """
+
+
+ATTACHMENT_TEMPLATE = "draft-kontrak-{contract_id}.txt"
 
 
 def smtp_configured() -> bool:
@@ -88,7 +95,21 @@ def build_message(contract_id: str, recipient: str, draft: str) -> EmailMessage:
             draft=draft or "(draft kosong)",
         )
     )
+    # Also attached, because a 20 KB draft is something the recipient edits rather than
+    # reads once. add_attachment turns the message into multipart/mixed, so the plain part
+    # has to be reached via get_body() from here on.
+    message.add_attachment(
+        draft or "(draft kosong)",
+        subtype="plain",
+        filename=ATTACHMENT_TEMPLATE.format(contract_id=contract_id),
+    )
     return message
+
+
+def body_text(message: EmailMessage) -> str:
+    """The human-readable part of a built message. The message is multipart."""
+    part = message.get_body(("plain",))
+    return part.get_content() if part else ""
 
 
 def _deliver(message: EmailMessage) -> None:

@@ -21,6 +21,7 @@ from app.services.mailer import (
     STATUS_FAILED,
     STATUS_SENT,
     STATUS_STUB,
+    body_text,
     build_message,
     send_counter_draft,
     smtp_configured,
@@ -272,19 +273,19 @@ class TestMessageConstruction:
         assert message["To"] == "klien@example.com"
         assert "bot@example.test" in message["From"]
         assert message["Subject"]
-        assert DRAFT in message.get_content()
+        assert DRAFT in body_text(message)
 
     def test_contract_id_is_included_for_traceability(self, smtp_env):
         message = build_message("contract-42", "klien@example.com", DRAFT)
-        assert "contract-42" in message.get_content()
+        assert "contract-42" in body_text(message)
 
     def test_carries_the_not_legal_advice_disclaimer(self, smtp_env):
         message = build_message("c-1", "klien@example.com", DRAFT)
-        assert "bukan nasihat hukum" in message.get_content().lower()
+        assert "bukan nasihat hukum" in body_text(message).lower()
 
     def test_empty_draft_still_produces_a_body(self, smtp_env):
         message = build_message("c-1", "klien@example.com", "")
-        assert message.get_content().strip()
+        assert body_text(message).strip()
 
     def test_header_injection_is_refused_at_the_header_layer(self, smtp_env):
         """Defence in depth: valid_email already rejects this, EmailMessage also would."""
@@ -292,6 +293,40 @@ class TestMessageConstruction:
 
         with pytest.raises((ValueError, email.errors.HeaderParseError)):
             build_message("c-1", "victim@example.com\nBcc: attacker@evil.test", DRAFT)
+
+
+class TestAttachment:
+    """The draft is also attached: 20 KB of contract text is edited, not read inline."""
+
+    def _attachments(self, message):
+        return list(message.iter_attachments())
+
+    def test_exactly_one_attachment(self, smtp_env):
+        message = build_message("c-1", "klien@example.com", DRAFT)
+        assert len(self._attachments(message)) == 1
+
+    def test_attachment_carries_the_draft(self, smtp_env):
+        message = build_message("c-1", "klien@example.com", DRAFT)
+        assert DRAFT in self._attachments(message)[0].get_content()
+
+    def test_filename_names_the_contract(self, smtp_env):
+        message = build_message("contract-42", "klien@example.com", DRAFT)
+        assert self._attachments(message)[0].get_filename() == "draft-kontrak-contract-42.txt"
+
+    def test_attachment_is_plain_text(self, smtp_env):
+        message = build_message("c-1", "klien@example.com", DRAFT)
+        assert self._attachments(message)[0].get_content_type() == "text/plain"
+
+    def test_non_ascii_survives_the_round_trip(self, smtp_env):
+        """Indonesian drafts use typographic dashes; a latin-1 default would mangle them."""
+        draft = "PASAL 1 — Ketentuan Pembayaran ditinjau ulang."
+        message = build_message("c-1", "klien@example.com", draft)
+        assert draft in self._attachments(message)[0].get_content()
+
+    def test_message_is_multipart(self, smtp_env):
+        """Guards the get_body() accessor: a regression to set_content alone breaks callers."""
+        message = build_message("c-1", "klien@example.com", DRAFT)
+        assert message.is_multipart()
 
 
 class TestRouteWiring:

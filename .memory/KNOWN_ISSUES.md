@@ -15,9 +15,10 @@ but not executed against a live stack — the LLM provider and Docker services w
 
 ## Status ledger
 
-As of commit `8233840`. Verified against a live Docker stack with a real LLM provider
-(end-to-end analysis completed in ~175s, three agents, 11 risk + 26 tax findings,
-24 KB counter-draft), 480 passing tests, and `scripts/e2e_access_check.py` at 13/13.
+As of commit `9034cab` plus the SMTP attachment follow-up. Verified against a live Docker
+stack with a real LLM provider (end-to-end analysis completed in ~175s, three agents, 11 risk
++ 26 tax findings, 24 KB counter-draft), 486 passing tests,
+`scripts/e2e_access_check.py` at 13/13, and `scripts/smtp_live_check.py` at 8/8.
 
 **All 27 catalogued issues are now closed.**
 
@@ -112,6 +113,7 @@ New modules, all with tests:
 | `scripts/e2e_access_check.py` | Live-stack access-control check (needs a running stack) |
 | `alembic/versions/0005_*.py` | `clause_patterns.owner_id`; unique key moves to `(owner_id, fingerprint)` |
 | `app/services/mailer.py` | Real SMTP delivery of counter-drafts; stub mode when `SMTP_HOST` is empty |
+| `scripts/smtp_live_check.py` | Drives the mailer over a real socket against a throwaway one-session SMTP listener |
 
 One defect was found during repair rather than in the original audit, and is worth
 remembering because it is invisible until the *second* job runs:
@@ -485,13 +487,18 @@ Every catalogued issue is closed. What is left is product scope rather than repa
 delivery failure); an exception would destroy that row. The function is `async` and wraps
 `smtplib` in `asyncio.to_thread`, because `smtplib` blocks for the whole SMTP handshake and
 the route is on the event loop. The SMTP error string is logged but deliberately **not**
-returned to the client — it names the relay host and the authenticating user. `valid_email()`
-rejects CR and LF so a crafted recipient cannot inject extra headers.
+returned to the client — it names the relay host and the authenticating user. `valid_email()` rejects CR and LF so a crafted recipient
+cannot inject extra headers. The draft is both inline in the body and attached as
+`draft-kontrak-<id>.txt`, which makes the message `multipart/mixed` — read the readable part
+via `mailer.body_text()`, not `message.get_content()`.
+
+`scripts/smtp_live_check.py` verifies the whole thing over a real socket (throwaway listener
+on `127.0.0.1:2525`); the unit tests use a fake `smtplib.SMTP` and so never open one.
 
 ### Operational notes worth keeping
 
-- Tests run **in Docker only**: `docker compose run --rm --no-deps test` for the 417 unit
-  tests (~18s), `docker compose run --rm test` for all 480 including `tests/integration/`,
+- Tests run **in Docker only**: `docker compose run --rm --no-deps test` for the 423 unit
+  tests (~21s), `docker compose run --rm test` for all 486 including `tests/integration/`,
   which needs PostgreSQL. The host Python is 3.10 and lacks the dependencies; the project
   needs 3.11+.
 - Integration tests create and drop a separate `legalshield_test` database. They **skip**
