@@ -40,7 +40,8 @@ async def run_counter_draft_agent(
     tax_str = json.dumps(tax_findings.get("findings", []), ensure_ascii=False, indent=2)
 
     # This agent carries the largest payload: contract text plus both findings sets.
-    text, truncated = truncate_contract(contract_text)
+    # Use a tighter limit (35k) so the combined prompt stays inside the context window.
+    text, truncated = truncate_contract(contract_text, limit=35_000)
     prompt = _load_prompt(wrap_untrusted(text), risk_str, tax_str)
     if truncated:
         prompt += "\n\nNote: the original contract text above was truncated for length."
@@ -59,7 +60,7 @@ async def run_counter_draft_agent(
         ],
         agent_label=AGENT_LABEL,
         temperature=0.3,
-        max_tokens=6000,
+        max_tokens=4500,
     )
 
     result = normalize_counter_draft(raw, agent_label=AGENT_LABEL)

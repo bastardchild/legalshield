@@ -103,6 +103,8 @@ main { padding: 2.5rem 0 5rem; }
 .badge-medium   { background: rgba(245,158,11,.14); color: #fbbf24; border: 1px solid rgba(245,158,11,.22); }
 .badge-low      { background: rgba(16,185,129,.14); color: #34d399; border: 1px solid rgba(16,185,129,.22); }
 .badge-info     { background: rgba(59,130,246,.14); color: #60a5fa; border: 1px solid rgba(59,130,246,.22); }
+.badge-ok       { background: rgba(16,185,129,.12); color: #34d399; border: 1px solid rgba(16,185,129,.18); font-size: 0.62rem; }
+.badge-ok::before { display: none; }
 
 /* ── Finding Cards ───────────────────────────────────────────── */
 .fc { background: var(--bg-elevated); border: 1px solid var(--border-sub); border-radius: var(--r-lg); padding: 0.875rem 1rem 0.875rem 1.125rem; margin-bottom: 0.5rem; position: relative; overflow: hidden; transition: border-color .15s; }
@@ -139,9 +141,9 @@ main { padding: 2.5rem 0 5rem; }
 .fade-up { animation: fadeUp .25s ease; }
 
 /* ── Forms ───────────────────────────────────────────────────── */
-input[type="email"], textarea { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-1); border-radius: var(--r); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 0.875rem; outline: none; width: 100%; transition: border-color .15s, box-shadow .15s; }
-input[type="email"] { padding: 0.5rem 0.8rem; }
-input[type="email"]:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+input[type="email"], input[type="tel"], textarea { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-1); border-radius: var(--r); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 0.875rem; outline: none; width: 100%; transition: border-color .15s, box-shadow .15s; }
+input[type="email"], input[type="tel"] { padding: 0.5rem 0.8rem; }
+input[type="email"]:focus, input[type="tel"]:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
 input::placeholder { color: var(--text-3); }
 textarea { padding: 0.875rem 1rem; min-height: 300px; resize: vertical; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size: 0.73rem; line-height: 1.6; }
 label { font-size: 0.77rem; font-weight: 500; color: var(--text-2); display: block; margin-bottom: 0.3rem; }
@@ -252,4 +254,52 @@ footer a:hover { color: var(--accent); }
 .send-row .field { flex: 1; min-width: 180px; }
 .send-row .btn { flex-shrink: 0; }
 .draft-actions { display: flex; gap: 0.5rem; margin-top: 0.625rem; }
+
+/* ── WhatsApp popup ──────────────────────────────────────────── */
+.wa-trigger { margin-top: 0.625rem; font-size: 0.78rem; }
+.wa-badge { display: inline-flex; align-items: center; margin-left: 0.5rem; font-size: 0.75rem; color: var(--green); font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.wa-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+.wa-popup { max-width: 420px; width: 100%; }
+.wa-popup-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+.wa-popup-hd h3 { font-size: 0.9375rem; font-weight: 600; }
+.wa-close { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+.wa-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-2); cursor: pointer; margin-bottom: 0.75rem; }
+.wa-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); }
+.wa-popup-actions { display: flex; gap: 0.5rem; margin-top: 0.875rem; }
+.wa-banner { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.9rem; border-radius: var(--r); font-size: 0.8rem; border: 1px solid; margin-bottom: 0.875rem; }
+.wa-banner-pending { background: rgba(16,185,129,.07); border-color: rgba(16,185,129,.22); color: #34d399; }
+.wa-banner-sent { background: rgba(16,185,129,.07); border-color: rgba(16,185,129,.22); color: #34d399; }
+
+/* ── Streaming skeleton ──────────────────────────────────────── */
+.card-skeleton { opacity: .85; }
+.skel-badge { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.68rem; color: var(--text-3); margin-left: auto; }
+.skel-badge .spinner { width: 12px; height: 12px; border-width: 2px; }
+.skel-line { height: 10px; border-radius: 9999px; background: linear-gradient(90deg, var(--bg-elevated) 25%, #1a2540 50%, var(--bg-elevated) 75%); background-size: 200% 100%; animation: skelShimmer 1.4s ease infinite; margin-bottom: 0.5rem; }
+.skel-w92 { width: 92%; }
+.skel-w88 { width: 88%; }
+.skel-w85 { width: 85%; }
+.skel-w80 { width: 80%; }
+.skel-w78 { width: 78%; }
+.skel-w75 { width: 75%; }
+.skel-w72 { width: 72%; }
+.skel-w90 { width: 90%; }
+.skel-w82 { width: 82%; }
+@keyframes skelShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ── Risk score banner ───────────────────────────────────────── */
+.risk-banner { display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1.1rem; border-radius: var(--r-lg); border: 1px solid; }
+.risk-banner.score-low  { background: rgba(16,185,129,.07); border-color: rgba(16,185,129,.22); }
+.risk-banner.score-med  { background: rgba(245,158,11,.07); border-color: rgba(245,158,11,.22); }
+.risk-banner.score-high { background: rgba(239,68,68,.07);  border-color: rgba(239,68,68,.22); }
+.risk-score { font-size: 1.75rem; font-weight: 800; line-height: 1; letter-spacing: -.03em; }
+.risk-score span { font-size: 0.85rem; font-weight: 600; opacity: .5; }
+.score-low .risk-score  { color: #34d399; }
+.score-med .risk-score  { color: #fbbf24; }
+.score-high .risk-score { color: #f87171; }
+.risk-label { flex: 1; min-width: 0; }
+.risk-title { font-size: 0.85rem; font-weight: 700; }
+.score-low .risk-title  { color: #34d399; }
+.score-med .risk-title  { color: #fbbf24; }
+.score-high .risk-title { color: #f87171; }
+.risk-plain { font-size: 0.78rem; color: var(--text-2); margin-top: 0.15rem; line-height: 1.5; }
 

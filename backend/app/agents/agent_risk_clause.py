@@ -54,13 +54,20 @@ async def _known_patterns_text(owner_id: str | None) -> str:
     return "\n".join(lines) or "No known patterns yet."
 
 
-async def run_risk_clause_agent(contract_text: str, owner_id: str | None = None) -> AgentRun:
+async def run_risk_clause_agent(
+    contract_text: str,
+    owner_id: str | None = None,
+    *,
+    known_patterns: str | None = None,
+) -> AgentRun:
     """Sub-agent A: Risk Clause Detector. Returns normalised {'findings': [...]}."""
     started_at = datetime.now(UTC)
     logger.info(f"[{AGENT_LABEL}] Starting at {started_at.isoformat()}")
 
     text, truncated = truncate_contract(contract_text)
-    prompt = _load_prompt(wrap_untrusted(text), await _known_patterns_text(owner_id))
+    # Preloaded RAG from orchestrator avoids a DB round-trip inside the gather window.
+    patterns_text = known_patterns if known_patterns is not None else await _known_patterns_text(owner_id)
+    prompt = _load_prompt(wrap_untrusted(text), patterns_text)
     if truncated:
         prompt += "\n\nNote: the contract text above was truncated for length."
 
@@ -78,7 +85,7 @@ async def run_risk_clause_agent(contract_text: str, owner_id: str | None = None)
         ],
         agent_label=AGENT_LABEL,
         temperature=0.1,
-        max_tokens=4096,
+        max_tokens=3000,
     )
 
     result = {

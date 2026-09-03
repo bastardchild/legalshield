@@ -7,9 +7,18 @@ document.addEventListener('alpine:init', () => {
     fileName: '',
     dragOver: false,
     loading: false,
+    phone: '',
+    notifyWhatsapp: false,
+    showWaPopup: false,
     toast: false,
     toastMsg: '',
     toastType: 'ok',
+
+    get maskedPhone() {
+      const p = this.phone.replace(/[\s\-\(\)]/g, '');
+      if (p.length <= 4) return '***';
+      return '***' + p.slice(-4);
+    },
 
     onFileChange(e) {
       const f = e.target.files[0];
@@ -37,7 +46,16 @@ document.addEventListener('alpine:init', () => {
       if (xhr.status === 200) {
         try {
           const data = JSON.parse(xhr.responseText);
-          if (data.id) { window.location.href = `/contracts/${data.id}`; return; }
+          if (data.id) {
+            // Persist WhatsApp opt-in for the result page banner (tab-scoped, server is source of truth)
+            if (this.notifyWhatsapp && this.phone) {
+              try {
+                sessionStorage.setItem(`wa-phone-${data.id}`, this.phone);
+                sessionStorage.setItem(`wa-notify-${data.id}`, '1');
+              } catch {}
+            }
+            window.location.href = `/contracts/${data.id}`; return;
+          }
         } catch {}
       }
       try {
@@ -62,10 +80,22 @@ document.addEventListener('alpine:init', () => {
     toastMsg: '',
     toastType: 'ok',
     _stopped: false,
+    waPhone: '',
+    waNotify: false,
 
     init() {
+      try {
+        this.waPhone = sessionStorage.getItem(`wa-phone-${this.contractId}`) || '';
+        this.waNotify = sessionStorage.getItem(`wa-notify-${this.contractId}`) === '1';
+      } catch {}
       document.body.addEventListener('htmx:afterSwap', () => this.checkTerminal());
       this.checkTerminal();
+    },
+
+    get waMasked() {
+      const p = (this.waPhone || '').replace(/[\s\-\(\)]/g, '');
+      if (p.length <= 4) return '***';
+      return '***' + p.slice(-4);
     },
 
     // Stop polling only when the *result* partial reports a terminal state.

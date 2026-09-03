@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
@@ -63,6 +63,8 @@ def _enforce_upload_limit(request: Request) -> None:
 async def upload_contract(
     request: Request,
     file: UploadFile = File(...),
+    whatsapp_phone: str | None = Form(None),
+    notify_whatsapp: bool = Form(False),
     db: AsyncSession = Depends(get_db),
 ):
     _enforce_upload_limit(request)
@@ -105,6 +107,19 @@ async def upload_contract(
         )
         raise HTTPException(status_code=422, detail=detail)
 
+    # WhatsApp opt-in: phone required only when notify is checked.
+    normalized_phone: str | None = None
+    if notify_whatsapp:
+        raw_phone = (whatsapp_phone or "").strip()
+        if not raw_phone:
+            raise HTTPException(status_code=422, detail="Nomor WhatsApp wajib diisi jika notifikasi diaktifkan.")
+        # Lazy import to avoid circular dependency at module load
+        from app.services.whatsapp import normalize_phone, valid_phone
+
+        if not valid_phone(raw_phone):
+            raise HTTPException(status_code=422, detail="Nomor WhatsApp tidak valid.")
+        normalized_phone = normalize_phone(raw_phone)
+
     contract = Contract(
         id=uuid.uuid4(),
         # Stamped at creation: this is what every later read is filtered by.
@@ -112,6 +127,8 @@ async def upload_contract(
         filename=file.filename,
         raw_text=raw_text,
         status=ContractStatus.uploaded,
+        whatsapp_phone=normalized_phone,
+        notify_whatsapp=bool(normalized_phone),
     )
     db.add(contract)
     await db.commit()

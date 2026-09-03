@@ -2,39 +2,71 @@
 {# Machine-readable polling signal for resultApp() in app.js.
    Do not match on rendered prose: the "Biasanya selesai..." copy below contains "selesai". #}
 <span data-result-status="{{ status }}" hidden></span>
-{% if status != "done" %}
-  {% if status == "processing" or status == "uploaded" %}
+{% set risk = analysis.get('risk_clause') %}
+{% set tax  = analysis.get('tax_compliance') %}
+{% set counter = analysis.get('counter_draft') %}
+{# Per-agent availability: streaming UX shows each card as soon as its row exists,
+   instead of waiting for all three. The contract flips to `done` only when at least
+   one agent succeeded, but individual rows may still be missing/failed. #}
+{% set risk_ready = risk and (risk.result_json or risk.error) %}
+{% set tax_ready = tax and (tax.result_json or tax.error) %}
+{% set counter_ready = counter and (counter.result_json or counter.error) %}
+{% set any_ready = risk_ready or tax_ready or counter_ready %}
+
+{% if status == "failed" %}
+  <div class="pending-failed">
+    <div class="mark">❌</div>
+    <p>Analisis gagal. Silakan upload ulang.</p>
+  </div>
+{% elif status != "done" and not any_ready %}
   <div class="pending">
     <div class="pending-spinner"></div>
     <p class="pending-title">Agen sedang menganalisis kontrak</p>
     <p class="pending-sub">Biasanya selesai 30–90 detik</p>
   </div>
-  {% elif status == "failed" %}
-  <div class="pending-failed">
-    <div class="mark">❌</div>
-    <p>Analisis gagal. Silakan upload ulang.</p>
+{% elif not any_ready %}
+  <div class="pending">
+    <div class="pending-spinner"></div>
+    <p class="pending-title">Menyusun hasil…</p>
+    <p class="pending-sub">Hampir selesai</p>
   </div>
-  {% endif %}
 {% else %}
-  {% set risk = analysis.get('risk_clause') %}
-  {% set tax  = analysis.get('tax_compliance') %}
-  {% set counter = analysis.get('counter_draft') %}
+  {# Overall risk banner from counter-draft (if available) #}
+  {% if counter_ready and counter.result_json and counter.result_json.get('overall_risk_score') is not none %}
+    {% set score = counter.result_json.get('overall_risk_score') %}
+    {% set score_cls = 'score-low' if score <= 30 else 'score-med' if score <= 65 else 'score-high' %}
+    <div class="risk-banner {{ score_cls }} fade-up mb-md">
+      <div class="risk-score">{{ score }}<span>/100</span></div>
+      <div class="risk-label">
+        <div class="risk-title">
+          {% if score <= 30 %}Risiko Rendah{% elif score <= 65 %}Risiko Sedang{% else %}Risiko Tinggi{% endif %}
+        </div>
+        {% if counter.result_json.get('plain_summary') %}
+          <div class="risk-plain">{{ counter.result_json.get('plain_summary') }}</div>
+        {% endif %}
+      </div>
+    </div>
+  {% elif counter_ready and counter.result_json and counter.result_json.get('plain_summary') %}
+    <div class="alert alert-tip mb-md fade-up">{{ counter.result_json.get('plain_summary') }}</div>
+  {% endif %}
 
   {# Only these four severities have badge/stripe styles in app.css. Anything else the
      LLM invents falls back to `info` with no stripe rather than emitting a dead class. #}
   {% set SEV_OK = ['critical', 'high', 'medium', 'low'] %}
   {% set STRIPE = {'critical': 'c', 'high': 'h', 'medium': 'm', 'low': 'l'} %}
 
-  <!-- Risk Clause -->
+  <!-- Risk Clause — renders as soon as its row exists -->
+  {% if risk_ready %}
   <div class="card fade-up mb-md">
     <div class="card-hd">
       <div class="card-hd-icon icon-risk">🔍</div>
       <h2>Klausul Berisiko</h2>
-      {% if risk and risk.result_json %}
+      {% if risk.result_json %}
       <span class="ct ct-risk">{{ risk.result_json.get('findings',[])|length }} temuan</span>
       {% endif %}
+      <span class="badge badge-ok">✓ selesai</span>
     </div>
-    {% if risk and risk.result_json and risk.result_json.get('findings') %}
+    {% if risk.result_json and risk.result_json.get('findings') %}
       {% for f in risk.result_json['findings'] %}
       {# Every field is read via .get() with a fallback: a single malformed finding
          must not 500 the whole partial (KNOWN_ISSUES #14). #}
@@ -52,23 +84,45 @@
         <div class="fc-row"><div class="fc-lbl">Saran</div><div class="fc-txt">{{ f.get('recommendation') or '—' }}</div></div>
       </div>
       {% endfor %}
-    {% elif risk and risk.error %}
+    {% elif risk.error %}
       <div class="alert alert-err">⚠ {{ risk.error }}</div>
     {% else %}
       <p class="hint">Tidak ada klausul berisiko terdeteksi.</p>
     {% endif %}
   </div>
+  {% elif status == "done" %}
+  <div class="card fade-up mb-md">
+    <div class="card-hd">
+      <div class="card-hd-icon icon-risk">🔍</div>
+      <h2>Klausul Berisiko</h2>
+    </div>
+    <p class="hint">Tidak ada klausul berisiko terdeteksi.</p>
+  </div>
+  {% elif status == "processing" or status == "uploaded" %}
+  <div class="card mb-md card-skeleton">
+    <div class="card-hd">
+      <div class="card-hd-icon icon-risk">🔍</div>
+      <h2>Klausul Berisiko</h2>
+      <span class="skel-badge"><span class="spinner"></span> menganalisis…</span>
+    </div>
+    <div class="skel-line skel-w92"></div>
+    <div class="skel-line skel-w78"></div>
+    <div class="skel-line skel-w85"></div>
+  </div>
+  {% endif %}
 
-  <!-- Tax Compliance -->
+  <!-- Tax Compliance — renders as soon as its row exists -->
+  {% if tax_ready %}
   <div class="card fade-up mb-md">
     <div class="card-hd">
       <div class="card-hd-icon icon-tax">📊</div>
       <h2>Kepatuhan Pajak &amp; Regulasi</h2>
-      {% if tax and tax.result_json %}
+      {% if tax.result_json %}
       <span class="ct ct-tax">{{ tax.result_json.get('findings',[])|length }} isu</span>
       {% endif %}
+      <span class="badge badge-ok">✓ selesai</span>
     </div>
-    {% if tax and tax.result_json and tax.result_json.get('findings') %}
+    {% if tax.result_json and tax.result_json.get('findings') %}
       {% for f in tax.result_json['findings'] %}
       {% set sev = f.get('severity') if f.get('severity') in SEV_OK else 'info' %}
       {% set quote = f.get('original_text') or '' %}
@@ -85,20 +139,42 @@
         <div class="fc-row"><div class="fc-lbl">Rekomendasi</div><div class="fc-txt">{{ f.get('recommendation') or '—' }}</div></div>
       </div>
       {% endfor %}
-    {% elif tax and tax.error %}
+    {% elif tax.error %}
       <div class="alert alert-err">⚠ {{ tax.error }}</div>
     {% else %}
       <p class="hint">Tidak ada isu kepatuhan terdeteksi.</p>
     {% endif %}
   </div>
+  {% elif status == "done" %}
+  <div class="card fade-up mb-md">
+    <div class="card-hd">
+      <div class="card-hd-icon icon-tax">📊</div>
+      <h2>Kepatuhan Pajak &amp; Regulasi</h2>
+    </div>
+    <p class="hint">Tidak ada isu kepatuhan terdeteksi.</p>
+  </div>
+  {% elif status == "processing" or status == "uploaded" %}
+  <div class="card mb-md card-skeleton">
+    <div class="card-hd">
+      <div class="card-hd-icon icon-tax">📊</div>
+      <h2>Kepatuhan Pajak &amp; Regulasi</h2>
+      <span class="skel-badge"><span class="spinner"></span> menganalisis…</span>
+    </div>
+    <div class="skel-line skel-w88"></div>
+    <div class="skel-line skel-w72"></div>
+    <div class="skel-line skel-w80"></div>
+  </div>
+  {% endif %}
 
-  <!-- Counter Draft -->
+  <!-- Counter Draft — renders as soon as its row exists -->
+  {% if counter_ready %}
   <div class="card fade-up" x-data="sendApp('{{ contract_id }}')">
     <div class="card-hd">
       <div class="card-hd-icon icon-draft">✍️</div>
       <h2>Draft Kontrak Balasan</h2>
+      <span class="badge badge-ok">✓ selesai</span>
     </div>
-    {% if counter and counter.result_json %}
+    {% if counter.result_json %}
       {% if counter.result_json.get('summary_of_changes') %}
       <div class="mb-sm">
         <div class="section-lbl">Ringkasan Perubahan</div>
@@ -138,10 +214,30 @@
         <span x-show="sentStatus !== 'sent'">✅ Draft dicatat — mode stub (SMTP belum dikonfigurasi)</span>
       </div>
       <div x-show="sendError" x-cloak x-transition:enter="fade-up" class="alert alert-err mt-sm" x-text="sendError"></div>
-    {% elif counter and counter.error %}
+    {% elif counter.error %}
       <div class="alert alert-err">⚠ {{ counter.error }}</div>
     {% else %}
       <p class="hint">Draft belum tersedia.</p>
     {% endif %}
   </div>
+  {% elif status == "done" %}
+  <div class="card fade-up">
+    <div class="card-hd">
+      <div class="card-hd-icon icon-draft">✍️</div>
+      <h2>Draft Kontrak Balasan</h2>
+    </div>
+    <p class="hint">Draft belum tersedia.</p>
+  </div>
+  {% elif status == "processing" or status == "uploaded" %}
+  <div class="card mb-md card-skeleton">
+    <div class="card-hd">
+      <div class="card-hd-icon icon-draft">✍️</div>
+      <h2>Draft Kontrak Balasan</h2>
+      <span class="skel-badge"><span class="spinner"></span> menunggu analisis…</span>
+    </div>
+    <div class="skel-line skel-w90"></div>
+    <div class="skel-line skel-w75"></div>
+    <div class="skel-line skel-w82"></div>
+  </div>
+  {% endif %}
 {% endif %}

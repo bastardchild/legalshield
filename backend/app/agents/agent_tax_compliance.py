@@ -29,13 +29,14 @@ def _legal_references() -> str:
         return "Tidak ada daftar referensi hukum yang dimuat."
 
 
-async def run_tax_compliance_agent(contract_text: str) -> AgentRun:
+async def run_tax_compliance_agent(contract_text: str, *, legal_refs: str | None = None) -> AgentRun:
     """Sub-agent B: Tax / Local Compliance Checker. Returns normalised {'findings': [...]}."""
     started_at = datetime.now(UTC)
     logger.info(f"[{AGENT_LABEL}] Starting at {started_at.isoformat()}")
 
     text, truncated = truncate_contract(contract_text)
-    prompt = _load_prompt(wrap_untrusted(text), _legal_references())
+    refs = legal_refs if legal_refs is not None else _legal_references()
+    prompt = _load_prompt(wrap_untrusted(text), refs)
     if truncated:
         prompt += "\n\nNote: the contract text above was truncated for length."
 
@@ -53,7 +54,7 @@ async def run_tax_compliance_agent(contract_text: str) -> AgentRun:
         ],
         agent_label=AGENT_LABEL,
         temperature=0.1,
-        max_tokens=3000,
+        max_tokens=2500,
     )
 
     result = {

@@ -42,10 +42,16 @@ def get_engine() -> AsyncEngine:
     key = _loop_key()
     eng = _engines.get(key)
     if eng is None:
+        # Small pool: with 30 parallel workers a default pool_size=5 would need
+        # 150+ connections and exhaust postgres max_connections=100. Each job only
+        # holds 1-2 connections at a time (orchestrator + skill_store), so 3 is enough.
         eng = create_async_engine(
             get_settings().database_url,
             echo=False,
             pool_pre_ping=True,
+            pool_size=3,
+            max_overflow=2,
+            pool_timeout=30,
         )
         _engines[key] = eng
     return eng

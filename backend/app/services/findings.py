@@ -135,25 +135,40 @@ def normalize_counter_draft(raw: dict, *, agent_label: str) -> dict:
     notes = raw.get("negotiation_notes")
     notes = _clean_text(notes, MAX_TEXT_CHARS) if notes else ""
 
+    # New fields from the improved prompt (backward compatible — absent = default)
+    plain_summary = _clean_text(raw.get("plain_summary"), 600) if raw.get("plain_summary") else ""
+    try:
+        risk_score = int(raw.get("overall_risk_score")) if raw.get("overall_risk_score") is not None else None
+        if risk_score is not None and not (0 <= risk_score <= 100):
+            risk_score = None
+    except (TypeError, ValueError):
+        risk_score = None
+
     if not draft:
         logger.warning(f"[{agent_label}] Counter-draft text is empty.")
 
-    return {
+    out: dict = {
         "counter_draft": draft,
         "summary_of_changes": summary,
         "negotiation_notes": notes,
     }
+    if plain_summary:
+        out["plain_summary"] = plain_summary
+    if risk_score is not None:
+        out["overall_risk_score"] = risk_score
+    return out
 
 
-def truncate_contract(text: str) -> tuple[str, bool]:
+def truncate_contract(text: str, limit: int | None = None) -> tuple[str, bool]:
     """
-    Cap contract text at `max_contract_chars`.
+    Cap contract text at `max_contract_chars` (or an explicit `limit`).
 
     Returns (text, was_truncated). Without this a large PDF silently blows past the
     model's context window; agent C is worst affected since it also receives both
-    findings sets alongside the original text.
+    findings sets alongside the original text, so it uses a tighter limit.
     """
-    limit = get_settings().max_contract_chars
+    if limit is None:
+        limit = get_settings().max_contract_chars
     if len(text) <= limit:
         return text, False
     logger.warning(f"Contract text truncated from {len(text)} to {limit} chars for LLM input.")

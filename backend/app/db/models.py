@@ -56,11 +56,15 @@ class Contract(Base):
     # RQ job id, so the reaper can tell a genuinely lost job from a slow one.
     job_id = Column(String(64), nullable=True)
     error = Column(Text, nullable=True)
+    # WhatsApp notification (opt-in at upload). Phone is normalized E.164 digits.
+    whatsapp_phone = Column(String(32), nullable=True)
+    notify_whatsapp = Column(Boolean, nullable=False, default=False, server_default="false")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     analysis_results = relationship("AnalysisResult", back_populates="contract", cascade="all, delete-orphan")
     negotiation_sends = relationship("NegotiationSend", back_populates="contract", cascade="all, delete-orphan")
+    whatsapp_sends = relationship("WhatsappSend", back_populates="contract", cascade="all, delete-orphan")
 
 
 class AnalysisResult(Base):
@@ -127,3 +131,19 @@ class NegotiationSend(Base):
     status = Column(String(32), nullable=False, default="stub")  # stub | sent | failed
 
     contract = relationship("Contract", back_populates="negotiation_sends")
+
+
+class WhatsappSend(Base):
+    __tablename__ = "whatsapp_sends"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    contract_id = Column(UUID(as_uuid=True), ForeignKey("contracts.id", ondelete="CASCADE"), nullable=False)
+    recipient_phone = Column(String(32), nullable=False)
+    result_url = Column(Text, nullable=True)
+    status = Column(String(32), nullable=False, default="stub")  # stub | sent | failed
+    provider_message_id = Column(String(128), nullable=True)
+    provider_request_id = Column(String(64), nullable=True)
+    error = Column(Text, nullable=True)
+    sent_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    contract = relationship("Contract", back_populates="whatsapp_sends")

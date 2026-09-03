@@ -59,6 +59,38 @@
         <button type="button" class="btn btn-ghost" x-show="fileName" x-cloak
           @click.stop="clearFile()" title="Hapus file">✕</button>
       </div>
+
+      <!-- WhatsApp opt-in: popup button + modal -->
+      <div x-show="fileName" x-cloak>
+        <button type="button" class="btn btn-ghost wa-trigger" @click="showWaPopup = true">
+          💬 Notifikasi WhatsApp (opsional)
+        </button>
+        <span x-show="phone && notifyWhatsapp" class="wa-badge">✓ <span x-text="maskedPhone"></span></span>
+      </div>
+
+      <!-- Popup overlay -->
+      <div x-show="showWaPopup" x-cloak class="wa-overlay" @click.self="showWaPopup = false">
+        <div class="wa-popup card" @click.stop>
+          <div class="wa-popup-hd">
+            <h3>Notifikasi WhatsApp</h3>
+            <button type="button" class="btn btn-ghost wa-close" @click="showWaPopup = false">✕</button>
+          </div>
+          <p class="hint mb-sm">Kami hanya mengirim 1 pesan berisi link hasil saat analisis selesai. Kosongkan jika ingin menunggu di halaman ini.</p>
+          <div class="field mb-sm">
+            <label for="wa-phone">Nomor WhatsApp</label>
+            <input id="wa-phone" name="whatsapp_phone" type="tel" x-model="phone"
+              placeholder="+62 812-3456-7890" autocomplete="tel" inputmode="numeric" />
+          </div>
+          <label class="wa-check">
+            <input type="checkbox" name="notify_whatsapp" value="true" x-model="notifyWhatsapp" />
+            <span>Kirim link hasil ke WhatsApp saat analisis selesai</span>
+          </label>
+          <div class="wa-popup-actions">
+            <button type="button" class="btn btn-primary" @click="showWaPopup = false">Simpan</button>
+            <button type="button" class="btn btn-ghost" @click="phone=''; notifyWhatsapp=false; showWaPopup=false">Batal</button>
+          </div>
+        </div>
+      </div>
     </form>
     <div id="upload-result" class="mt-sm"></div>
   </div>

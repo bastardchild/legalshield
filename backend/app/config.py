@@ -19,14 +19,18 @@ class Settings(BaseSettings):
 
     # Per-request LLM timeout. Must stay well below the RQ job_timeout (600s) so a
     # hanging provider surfaces as a failed agent rather than a killed worker.
-    llm_timeout_seconds: float = 120.0
+    # 60s is enough for 3-4k token completions; 120s was 2x over-provisioned.
+    llm_timeout_seconds: float = 60.0
     # Transport-level retries handled by the OpenAI SDK (connection errors, 429, 5xx).
     llm_max_retries: int = 2
     # Additional application-level retries when the model returns unparseable JSON.
-    llm_json_retries: int = 2
+    # 1 retry is enough — 2 retries added ~60s worst-case for a malformed response.
+    llm_json_retries: int = 1
     # Hard cap on contract characters sent to the model, to stay inside the context
-    # window. Roughly 4 chars/token, so 60k chars is ~15k tokens.
-    max_contract_chars: int = 60_000
+    # window. Roughly 4 chars/token, so 40k chars is ~10k tokens input + 3k output
+    # fits comfortably in a 16k window. Agent C uses 35k (shorter) since it also
+    # carries both findings sets.
+    max_contract_chars: int = 40_000
     # Cap on skill-store patterns injected as RAG context, newest-most-matched first.
     max_rag_patterns: int = 40
     # Directory holding the shipped seed data, relative to the working directory.
@@ -94,6 +98,17 @@ class Settings(BaseSettings):
     smtp_from_name: str = "LegalShield Agent"
     # Must stay well under the request timeout: this send happens inline in a POST handler.
     smtp_timeout_seconds: float = 15.0
+
+    # --- WhatsApp via Fonnte (automatic link notification) ---------------------------
+    # Empty token keeps services/whatsapp.py in stub mode (log only). Set it to send
+    # for real. See https://docs.fonnte.com/api-send-message/
+    fonnte_token: str = ""
+    fonnte_base_url: str = "https://api.fonnte.com"
+    fonnte_country_code: str = "62"
+    fonnte_timeout_seconds: float = 15.0
+    fonnte_delay: str = "2"
+    # Base URL for the result link sent via WhatsApp. Overridden via .env in production.
+    app_base_url: str = "http://localhost:8000"
 
     # A contract sits in `processing` only while a job holds it. RQ kills jobs at
     # job_timeout (600s), so anything older than this has lost its worker — a crashed

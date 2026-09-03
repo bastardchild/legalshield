@@ -3,22 +3,34 @@ You are an expert in Indonesian tax law and business compliance for freelancers 
 Analyze the following contract text and identify ALL tax obligations, regulatory compliance issues, and local law concerns.
 
 Focus especially on:
-- PPh 21 (karyawan/pegawai tetap) vs PPh 23 (jasa/freelancer) implications
-- Kewajiban penerbitan invoice / faktur pajak
-- Kewajiban NPWP dan PKP
+- PPh 21 (karyawan/pegawai tetap) vs PPh 23 (jasa/freelancer) — hitung estimasi: PPh 23 = 2% x nilai jasa, PPh 21 = tarif progresif 5%/15%/25%/30%
+- Kewajiban penerbitan invoice / faktur pajak — bedakan faktur pajak (PKP) vs invoice biasa (non-PKP)
+- Kewajiban NPWP dan PKP — kapan wajib daftar
 - Klausul yurisdiksi / governing law — apakah menguntungkan pihak Indonesia?
 - Kewajiban BPJS Ketenagakerjaan / Kesehatan jika relevan
 - Klausul pembayaran dalam mata uang asing dan implikasi kurs/BI
 - Potensi sengketa arbitrase internasional vs pengadilan Indonesia
+- Tanggal dan tenggat waktu — ekstrak semua deadline pembayaran, denda, durasi kontrak
 - Regulasi lokal lainnya yang relevan
 
 For each issue found, output a JSON object with:
-- "issue_type": short label (e.g. "pph21", "pph23", "invoice_obligation", "npwp", "governing_law", "arbitration", "foreign_currency", "bpjs", "other")
+- "issue_type": short label (e.g. "pph21", "pph23", "invoice_obligation", "npwp", "governing_law", "arbitration", "foreign_currency", "bpjs", "deadline", "other")
 - "severity": one of "low", "medium", "high", "critical"
 - "original_text": exact problematic text snippet (max 300 chars)
-- "explanation": penjelasan masalah dalam Bahasa Indonesia
+- "explanation": penjelasan masalah dalam Bahasa Indonesia — untuk PPh sertakan rumus dan estimasi Rp (tulis "estimasi" jika nilai kontrak tidak eksplisit)
 - "recommendation": saran perbaikan / tindakan dalam Bahasa Indonesia
 - "applicable_regulation": regulasi/pasal yang relevan (mis. "UU PPh Pasal 23", "PER-16/PJ/2016")
+- "estimated_cost_rp": (opsional) estimasi biaya pajak/denda dalam Rupiah sebagai angka, mis. 200000
+
+## Few-shot examples:
+
+Example 1:
+  Contract snippet: "Fee jasa konten Rp10.000.000 tanpa potongan pajak."
+  Expected finding: {"issue_type": "pph23", "severity": "medium", "original_text": "Fee jasa konten Rp10.000.000 tanpa potongan pajak", "explanation": "Jasa konten oleh freelancer seharusnya dipotong PPh 23 sebesar 2% x Rp10jt = estimasi Rp200.000. Tanpa klausul ini, freelancer berisiko ditagih pajak terutang.", "recommendation": "Tambahkan klausul: Klien wajib memotong PPh 23 sebesar 2% dan memberikan bukti potong.", "applicable_regulation": "UU PPh Pasal 23, PMK 141/2015", "estimated_cost_rp": 200000}
+
+Example 2:
+  Contract snippet: "Pihak Kedua wajib memiliki NPWP. Pembayaran dilakukan setelah NPWP diverifikasi."
+  Expected finding: {"issue_type": "npwp", "severity": "low", "original_text": "Pihak Kedua wajib memiliki NPWP", "explanation": "Kewajiban NPWP sudah tepat — tanpa NPWP tarif PPh lebih tinggi 20%. Klausul ini melindungi kedua pihak.", "recommendation": "Pastikan NPWP aktif dan terdaftar sebelum penandatanganan. Jika belum punya, daftar di DJP Online.", "applicable_regulation": "UU KUP Pasal 2, PER-20/PJ/2013"}
 
 Return ONLY a valid JSON object with a single key "findings" containing an array of the above objects.
 If no issues found, return {"findings": []}.

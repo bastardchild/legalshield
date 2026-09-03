@@ -1,6 +1,6 @@
 # PROJECT MAPPING — LegalShield Agent
 
-Structural map of the repository as it exists at commit `9034cab`.
+Structural map of the repository as it exists at commit `cd18ab3`.
 Line references are approximate anchors, not guarantees.
 
 > Sections 2–13 were written at commit `d8e310b` and describe the architecture, which is
@@ -12,9 +12,10 @@ Line references are approximate anchors, not guarantees.
 ```
 C:\legalshield\
 ├── .env.example                  # env template (git-tracked; .env is ignored)
+├── env.test                      # committed test env template (DOCS_ENABLED=false, llm.invalid)
 ├── .gitignore
 ├── docker-compose.yml            # postgres, redis, migrate, api, worker, test (profile)
-├── docker-compose.prod.yml       # production overlay: no bind mount, no --reload, no DB ports
+├── docker-compose.prod.yml       # production overlay: no bind mount, no --reload, no DB ports, DOCS_ENABLED=false
 ├── README.md                     # user-facing docs (Bahasa Indonesia)
 ├── .memory/                      # ← agent memory (this directory)
 ├── seed/                         # bind-mounted read-only into every service at /app/seed
@@ -40,25 +41,27 @@ C:\legalshield\
     │   ├── e2e_access_check.py    # live-stack access-control check (not in pytest)
     │   ├── smtp_live_check.py     # real socket SMTP check against a throwaway listener
     │   └── build_legal_lexicon.py # deterministic generator for seed/legal_lexicon.json; --check
-    ├── tests/                    # 507 tests (444 unit + 63 integration)
-    │   ├── conftest.py           # env defaults set before any app import; Jinja fixtures
-    │   ├── test_templates.py     # compile + polling-marker regressions (#1, #4, #14, #15)
-    │   ├── test_llm_client.py    # JSON extraction, base-URL normalisation (#7, #10)
-    │   ├── test_findings.py      # severity/confidence coercion, fencing (#6, #8, #14)
-    │   ├── test_skill_store.py   # fingerprint stability (#17)
-    │   ├── test_migrations.py    # static guards on the migration chain (#2, #3, #11)
-    │   ├── test_upload_validation.py  # magic bytes, binary detection, size (#16)
-    │   ├── test_queue_and_reaper.py   # enqueue failure, per-loop engine (#9)
-    │   ├── test_seed_loader.py   # dataset shape and prompt wiring (#18)
-    │   ├── test_static_assets.py # vendored JS, font fallbacks, no inline styles (#20, #27)
-    │   ├── test_mailer.py        # SMTP envelope, stub mode, failure contract, header injection
-    │   ├── test_security.py      # cookie signing, access gate, limiter, ownership (#5)
-    │   ├── test_contract_filter.py # lexicon size/shape, accept contract, reject CV/recipe/invoice
-    │   ├── test_deployment_config.py # compose guards: prod overlay, dev ergonomics (#26)
-    │   └── integration/          # needs live Postgres; skipped under --no-deps
-    │       ├── conftest.py       # creates/migrates/drops legalshield_test
-    │       ├── test_db_schema.py # migration chain, model drift, fingerprint SQL parity
-    │       └── test_app_behaviour.py # upsert, owner scoping, reaper, per-loop engine
+    ├── tests/                    # 511 tests (448 unit + 63 integration)
+│   ├── conftest.py           # env defaults set before any app import; Jinja fixtures
+│   ├── test_templates.py     # compile + polling-marker regressions (#1, #4, #14, #15)
+│   ├── test_llm_client.py    # JSON extraction, base-URL normalisation (#7, #10)
+│   ├── test_findings.py      # severity/confidence coercion, fencing (#6, #8, #14)
+│   ├── test_skill_store.py   # fingerprint stability (#17)
+│   ├── test_migrations.py    # static guards on the migration chain (#2, #3, #11)
+│   ├── test_upload_validation.py  # magic bytes, page count, size (#16)
+│   ├── test_pdf_extractor.py # pdf_page_count + extract_text_from_pdf
+│   ├── test_queue_and_reaper.py   # enqueue failure, per-loop engine (#9)
+│   ├── test_seed_loader.py   # dataset shape and prompt wiring (#18)
+│   ├── test_static_assets.py # vendored JS, font fallbacks, no inline styles (#20, #27)
+│   ├── test_mailer.py        # SMTP envelope, stub mode, failure contract, header injection
+│   ├── test_security.py      # cookie signing, access gate, limiter, ownership (#5)
+│   ├── test_contract_filter.py # lexicon size/shape, accept contract, reject CV/recipe/invoice
+│   ├── test_docs_switch.py   # DOCS_ENABLED → docs_urls() + 200/404 behaviour
+│   ├── test_deployment_config.py # compose guards: prod overlay, dev ergonomics (#26)
+│   └── integration/          # needs live Postgres; skipped under --no-deps
+│       ├── conftest.py       # creates/migrates/drops legalshield_test
+│       ├── test_db_schema.py # migration chain, model drift, fingerprint SQL parity
+│       └── test_app_behaviour.py # upsert, owner scoping, reaper, per-loop engine
     └── app/
         ├── __init__.py
         ├── main.py               # FastAPI app, lifespan, static mount, router wiring
@@ -311,53 +314,81 @@ Severity → CSS coupling: `partials/result.html` builds the stripe class from
 
 ## 9. Configuration
 
-`app/config.py › Settings` (pydantic-settings, `.env`, case-insensitive):
+`app/config.py › Settings` (pydantic-settings, `.env`, `extra="ignore"`, case-insensitive):
 
-| Field | Env var | Default |
-|---|---|---|
-| `database_url` | `DATABASE_URL` | `postgresql+asyncpg://legalshield:legalshield@postgres:5432/legalshield` |
-| `redis_url` | `REDIS_URL` | `redis://redis:6379/0` |
-| `hermes_base_url` | `HERMES_BASE_URL` | `https://hermes-agent.nousresearch.com` |
-| `hermes_api_key` | `HERMES_API_KEY` | `changeme` |
-| `llm_model` | `LLM_MODEL` | `NousResearch/Hermes-3-Llama-3.1-70B` |
-| `default_locale` | `DEFAULT_LOCALE` | `id-ID` |
-| `contract_filter_enabled` | `CONTRACT_FILTER_ENABLED` | `true` (kill switch for the upload gate) |
-| `contract_filter_min_score` | `CONTRACT_FILTER_MIN_SCORE` | `0.35` (below this → rejected as non-contract) |
-| `contract_filter_min_tokens` | `CONTRACT_FILTER_MIN_TOKENS` | `60` (below this → rejected as too short) |
-| `max_upload_mb` | `MAX_UPLOAD_MB` | `5` (PDF byte cap; 0 lifts it) |
-| `max_pdf_pages` | `MAX_PDF_PAGES` | `10` (PDF page cap; 0 lifts it) |
-| `docs_enabled` | `DOCS_ENABLED` | `true` (false → `/docs`, `/redoc`, `/openapi.json` 404) |
+| Field | Env var | Default | Notes |
+|---|---|---|---|
+| `database_url` | `DATABASE_URL` | `postgresql+asyncpg://legalshield:legalshield@postgres:5432/legalshield` | async driver |
+| `redis_url` | `REDIS_URL` | `redis://redis:6379/0` | RQ queue |
+| `hermes_base_url` | `HERMES_BASE_URL` | `https://hermes-agent.nousresearch.com` | strips trailing `/v1` |
+| `hermes_api_key` | `HERMES_API_KEY` | `changeme` |  |
+| `llm_model` | `LLM_MODEL` | `NousResearch/Hermes-3-Llama-3.1-70B` |  |
+| `default_locale` | `DEFAULT_LOCALE` | `id-ID` | not currently read |
+| `llm_timeout_seconds` | `LLM_TIMEOUT_SECONDS` | `120.0` | per-request LLM timeout |
+| `llm_max_retries` | `LLM_MAX_RETRIES` | `2` | transport retries (429/5xx) |
+| `llm_json_retries` | `LLM_JSON_RETRIES` | `2` | JSON parse retries |
+| `max_contract_chars` | `MAX_CONTRACT_CHARS` | `60000` | cap on chars sent to model |
+| `max_rag_patterns` | `MAX_RAG_PATTERNS` | `40` | RAG context cap |
+| `max_legal_references` | `MAX_LEGAL_REFERENCES` | `25` | tax agent citation cap |
+| `seed_dir` | `SEED_DIR` | `seed` | relative to workdir |
+| `max_upload_mb` | `MAX_UPLOAD_MB` | `5` | PDF byte cap; `0` lifts |
+| `max_pdf_pages` | `MAX_PDF_PAGES` | `10` | PDF page cap; `0` lifts |
+| `contract_filter_enabled` | `CONTRACT_FILTER_ENABLED` | `true` | kill switch for upload gate |
+| `contract_filter_min_score` | `CONTRACT_FILTER_MIN_SCORE` | `0.35` | below → rejected as non-contract |
+| `contract_filter_min_tokens` | `CONTRACT_FILTER_MIN_TOKENS` | `60` | below → too short |
+| `secret_key` | `SECRET_KEY` | `""` | HMAC key; empty → ephemeral per-process |
+| `access_token` | `ACCESS_TOKEN` | `""` | shared gate; empty → open |
+| `allowed_origins` | `ALLOWED_ORIGINS` | `""` | CORS allow-list; empty → no CORS |
+| `rate_limit_requests_per_minute` | `RATE_LIMIT_REQUESTS_PER_MINUTE` | `240` | `0` disables |
+| `rate_limit_uploads_per_hour` | `RATE_LIMIT_UPLOADS_PER_HOUR` | `20` | upload-specific window |
+| `owner_cookie_name` | `OWNER_COOKIE_NAME` | `ls_owner` |  |
+| `access_cookie_name` | `ACCESS_COOKIE_NAME` | `ls_access` |  |
+| `cookie_secure` | `COOKIE_SECURE` | `false` | `true` behind TLS |
+| `trust_proxy_headers` | `TRUST_PROXY_HEADERS` | `false` | only behind controlled proxy |
+| `docs_enabled` | `DOCS_ENABLED` | `true` | `false` → `/docs`, `/redoc`, `/openapi.json` 404 |
+| `smtp_host` | `SMTP_HOST` | `""` | empty → stub mode |
+| `smtp_port` | `SMTP_PORT` | `587` |  |
+| `smtp_username` | `SMTP_USERNAME` | `""` |  |
+| `smtp_password` | `SMTP_PASSWORD` | `""` |  |
+| `smtp_use_tls` | `SMTP_USE_TLS` | `true` | STARTTLS on 587 |
+| `smtp_use_ssl` | `SMTP_USE_SSL` | `false` | implicit TLS (465) |
+| `smtp_from` | `SMTP_FROM` | `""` | falls back to username |
+| `smtp_from_name` | `SMTP_FROM_NAME` | `LegalShield Agent` |  |
+| `smtp_timeout_seconds` | `SMTP_TIMEOUT_SECONDS` | `15.0` | inline POST, keep low |
+| `stuck_contract_timeout_seconds` | `STUCK_CONTRACT_TIMEOUT_SECONDS` | `900` | > RQ job_timeout (600s) |
+| `reaper_interval_seconds` | `REAPER_INTERVAL_SECONDS` | `300` | `0` disables reaper |
 
-`llm_client.get_llm_client()` appends `/v1` to `hermes_base_url`, so the env value must **not**
-already include `/v1` (contradicts the README's Ollama tip — see `KNOWN_ISSUES.md` #6).
-`default_locale` is never read anywhere.
+`llm_client.get_llm_client()` normalises `hermes_base_url` (strips trailing `/v1` then appends it),
+so either `http://host:11434` or `http://host:11434/v1` works.
 
 `docker-compose.yml`: both `api` and `worker` build from `./backend`, bind-mount `./backend:/app`
 (so `pip install .` inside the image is shadowed by the mount), and require `.env` via `env_file`.
 `api` runs uvicorn with `--reload`; `postgres` publishes 5432 and `redis` 6379 to the host.
+`docker-compose.prod.yml` overrides: drops `./backend:/app`, drops `--reload`, clears DB/Redis ports,
+and forces `DOCS_ENABLED=false`.
 
 ## 10. Migrations
 
 - `alembic/env.py` swaps `postgresql+asyncpg` → `postgresql+psycopg2` and injects the URL from
   `Settings`, so `alembic upgrade head` works with the same `.env`.
 - `0001_initial_schema.py` creates the four tables plus `ix_analysis_results_contract_id` and
-  `ix_contracts_status`.
-- **Migrations are not run by Compose.** `main.py`'s lifespan calls `Base.metadata.create_all`,
-  which creates tables (without the two indexes) on first API boot. See `KNOWN_ISSUES.md` #2.
+  `ix_contracts_status` (enums guarded by `DO … EXCEPTION WHEN duplicate_object`).
+- `0002_fingerprint_and_constraints.py` adds `clause_patterns.fingerprint` + backfill + dedupe, and both unique constraints.
+- `0003_contract_job_tracking.py` adds `contracts.job_id`, `contracts.error`, `ix_contracts_status_updated_at`.
+- `0004_contract_ownership.py` adds `contracts.owner_id` (NOT NULL, indexed, backfilled to `legacy`).
+- `0005_per_tenant_clause_patterns.py` adds `clause_patterns.owner_id` + per-owner unique constraint.
+- Schema is owned by Alembic via the one-shot `migrate` service (`alembic upgrade head && python -m app.seed`); `main.py` no longer calls `Base.metadata.create_all`. See the deltas section.
 
 ## 11. Dependencies (`backend/pyproject.toml`)
 
 Runtime: `fastapi==0.111.1`, `uvicorn[standard]==0.30.1`, `sqlalchemy[asyncio]==2.0.31`,
-`asyncpg==0.29.0`, `psycopg2-binary==2.9.9`, `alembic==1.13.2`, `langchain==0.2.11`,
-`langchain-openai==0.1.19`, `openai==1.35.13`, `pypdf==4.3.1`, `redis==5.0.8`, `rq==1.16.2`,
-`pydantic-settings==2.3.4`, `jinja2==3.1.4`, `python-multipart==0.0.9`, `httpx==0.27.0`,
-`python-dotenv==1.0.1`.
+`asyncpg==0.29.0`, `psycopg2-binary==2.9.9`, `alembic==1.13.2`, `openai==1.35.13`,
+`pypdf==4.3.1`, `redis==5.0.8`, `rq==1.16.2`, `pydantic-settings==2.3.4`, `jinja2==3.1.4`,
+`python-multipart==0.0.9`, `httpx==0.27.0`, `python-dotenv==1.0.1`.
 
 Dev extra: `pytest==8.2.2`, `pytest-asyncio==0.23.8`, `httpx==0.27.0`, `ruff==0.5.5`.
 
-All pins are exact. `langchain` / `langchain-openai` are declared but **never imported** —
-the agents call the `openai` SDK directly. `pytest` config points at `testpaths = ["tests"]`,
-which does not exist.
+All pins are exact. `pytest` config: `testpaths = ["tests"]`, `asyncio_mode = "auto"`.
 
 ## 12. Seed data
 
@@ -654,3 +685,12 @@ unauthenticated deployment leaked the full API surface. `Settings.docs_urls()` n
 `env_file`), so production is fail-closed even if `.env` leaves it unset; `ACCESS_TOKEN` stays
 the second layer for everything else. `tests/test_docs_switch.py` pins the mapping and the
 200/404 behaviour; `test_deployment_config.py` guards the prod overlay.
+
+**Committed test env template (phase 17).**
+
+`env.test` is a committed, versioned template for the test environment — unlike `.env`
+(git-ignored, may hold secrets) it is safe to track. It mirrors the inline environment the
+`test` service already sets in `docker-compose.yml` (`DATABASE_URL`, `REDIS_URL`,
+`HERMES_BASE_URL=http://llm.invalid`, `HERMES_API_KEY=test-key`, `LLM_MODEL=test-model`) and
+adds `DOCS_ENABLED=false` to exercise the docs-disabled path. Keep the two in sync when the
+test configuration changes.

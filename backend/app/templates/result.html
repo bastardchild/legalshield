@@ -16,6 +16,12 @@
     </div>
   </div>
 
+  <!-- WhatsApp banner (sessionStorage, tab-scoped) -->
+  <div x-show="waNotify && waPhone" x-cloak class="wa-banner wa-banner-pending">
+    <span>💬</span>
+    <span>Link hasil akan dikirim ke WhatsApp <span class="mono" x-text="waMasked"></span> saat analisis selesai. Anda boleh menutup halaman.</span>
+  </div>
+
   <!-- Status area (polls every 2s). Polling lives here only; the partials must not
        re-declare hx-trigger or two timers race. -->
   <div id="status-area"

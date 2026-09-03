@@ -81,6 +81,8 @@ services:
       - ./seed:/app/seed:ro
     env_file:
       - .env
+    deploy:
+      replicas: 3
     depends_on:
       postgres:
         condition: service_healthy
@@ -114,6 +116,9 @@ services:
       HERMES_BASE_URL: http://llm.invalid
       HERMES_API_KEY: test-key
       LLM_MODEL: test-model
+      FONNTE_TOKEN: test-token
+      FONNTE_BASE_URL: http://fonnte.invalid
+      APP_BASE_URL: http://localhost:8000
     profiles:
       - test
     depends_on:

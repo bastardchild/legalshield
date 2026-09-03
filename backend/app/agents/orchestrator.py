@@ -9,7 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.agents.agent_counter_draft import run_counter_draft_agent
 from app.agents.agent_risk_clause import AgentRun, run_risk_clause_agent
 from app.agents.agent_tax_compliance import run_tax_compliance_agent
-from app.db.models import AgentType, AnalysisResult, Contract, ContractStatus
+from app.config import get_settings
+from app.db.models import AgentType, AnalysisResult, Contract, ContractStatus, WhatsappSend
 from app.db.session import AsyncSessionLocal
 from app.services.skill_store import save_new_patterns
 
@@ -136,12 +137,30 @@ async def run_analysis(contract_id: str) -> None:
             await _set_status(contract_id, ContractStatus.failed)
             return
 
+        # Preload RAG + legal refs before the parallel window so A/B don't
+        # each hit the DB/seed cache inside the gather — saves ~100-300ms.
+        from app.agents.agent_risk_clause import _known_patterns_text as _risk_rag
+        from app.agents.agent_tax_compliance import _legal_references as _tax_refs
+
+        try:
+            preloaded_rag = await _risk_rag(owner_id)
+        except Exception as e:
+            logger.warning(f"[Orchestrator] Could not preload RAG: {e}")
+            preloaded_rag = None
+        try:
+            preloaded_refs = _tax_refs()
+        except Exception as e:
+            logger.warning(f"[Orchestrator] Could not preload legal refs: {e}")
+            preloaded_refs = None
+
         # Phase 1 — A and B in parallel.
         t0 = datetime.now(UTC)
         logger.info("[Orchestrator] Agents A & B starting in parallel")
+        risk_coro = run_risk_clause_agent(raw_text, owner_id=owner_id, known_patterns=preloaded_rag) if preloaded_rag is not None else run_risk_clause_agent(raw_text, owner_id=owner_id)
+        tax_coro = run_tax_compliance_agent(raw_text, legal_refs=preloaded_refs) if preloaded_refs is not None else run_tax_compliance_agent(raw_text)
         risk_outcome, tax_outcome = await asyncio.gather(
-            run_risk_clause_agent(raw_text, owner_id=owner_id),
-            run_tax_compliance_agent(raw_text),
+            risk_coro,
+            tax_coro,
             return_exceptions=True,
         )
         elapsed = (datetime.now(UTC) - t0).total_seconds()
@@ -173,6 +192,14 @@ async def run_analysis(contract_id: str) -> None:
         produced_anything = any(r is not None for r in (risk_result, tax_result, counter_result))
         final = ContractStatus.done if produced_anything else ContractStatus.failed
         await _set_status(contract_id, final)
+
+        # Automatic WhatsApp link notification (only on done, only if opted in).
+        if final == ContractStatus.done:
+            try:
+                await _maybe_send_whatsapp(contract_id)
+            except Exception:
+                logger.exception(f"[Whatsapp] notify failed for {contract_id} (non-fatal)")
+
         logger.info(f"[Orchestrator] Analysis finished for {contract_id} with status={final.value}")
 
     except Exception as e:
@@ -182,3 +209,55 @@ async def run_analysis(contract_id: str) -> None:
         except Exception:
             # Nothing more we can do; the reaper will pick this contract up.
             logger.exception(f"[Orchestrator] Could not mark {contract_id} as failed.")
+
+
+async def _maybe_send_whatsapp(contract_id: str) -> None:
+    """
+    Automatic link notification via Fonnte. Only sends if the contract opted in
+    and has a valid phone. Idempotent: skips if a 'sent' row already exists.
+    Never raises — failures are logged and stored as a 'failed' row.
+    """
+    async with AsyncSessionLocal() as db:
+        contract = (
+            await db.execute(select(Contract).where(Contract.id == contract_id))
+        ).scalar_one_or_none()
+        if contract is None or not contract.notify_whatsapp or not contract.whatsapp_phone:
+            return
+
+        # Idempotency: don't send twice for the same contract
+        existing = (
+            await db.execute(
+                select(WhatsappSend).where(
+                    WhatsappSend.contract_id == contract.id,
+                    WhatsappSend.status == "sent",
+                )
+            )
+        ).scalar_one_or_none()
+        if existing is not None:
+            logger.info(f"[Whatsapp] Already sent for {contract_id}, skipping.")
+            return
+
+        phone = contract.whatsapp_phone
+        filename = contract.filename or ""
+        base_url = get_settings().app_base_url.rstrip("/")
+        result_url = f"{base_url}/contracts/{contract_id}"
+
+    # Send outside the DB session (network I/O)
+    from app.services.whatsapp import send_link_notification
+
+    outcome = await send_link_notification(contract_id, phone, result_url, filename)
+
+    # Persist audit row in a fresh session
+    async with AsyncSessionLocal() as db:
+        row = WhatsappSend(
+            contract_id=contract_id,
+            recipient_phone=phone,
+            result_url=result_url,
+            status=outcome["status"],
+            provider_message_id=outcome.get("provider_message_id"),
+            provider_request_id=outcome.get("provider_request_id"),
+            error=outcome.get("error"),
+        )
+        db.add(row)
+        await db.commit()
+        logger.info(f"[Whatsapp] Audit row for {contract_id}: status={outcome['status']}")
