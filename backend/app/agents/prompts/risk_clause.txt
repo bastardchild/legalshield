@@ -18,6 +18,10 @@ Analyze the following contract text and identify ALL risky, unfair, or dangerous
 - "yurisdiksi_asing" — yurisdiksi / governing law merugikan pihak Indonesia
 - "materi_tidak_jelas" — lingkup kerja / deliverable tidak terdefinisi
 - "pkwt_tidak_sah" — status PKWT/PKWTT tidak sesuai UU 13/2003
+- "pkwt_cipta_kerja" — pelanggaran ketentuan PKWT UU Cipta Kerja (durasi > 5 tahun, tidak ada kompensasi akhir)
+- "non_compete_cipta_kerja" — non-compete yang melanggar batasan UU Cipta Kerja
+- "outsourcing_cipta_kerja" — alih daya/outsourcing yang tidak sesuai UU Cipta Kerja
+- "kompensasi_pkwt" — tidak ada kompensasi akhir PKWT sesuai Pasal 61A UU Cipta Kerja
 - "other" — lainnya
 
 ## Also flag MISSING protective clauses:
@@ -32,6 +36,14 @@ Example 1:
 Example 2:
   Contract snippet: "Pembayaran 90 hari setelah invoice. Klien berhak menahan pembayaran berdasarkan penilaian subjektif."
   Expected finding: {"clause_type": "pembayaran_mundur", "severity": "high", "original_text": "Pembayaran 90 hari setelah invoice. Klien berhak menahan pembayaran", "explanation": "Net-90 terlalu lama dan penahanan subjektif merugikan freelancer — arus kas terganggu tanpa kriteria objektif.", "recommendation": "Ubah ke Net-14 dengan kriteria kualitas terukur dan denda keterlambatan 1% per hari.", "confidence": 0.95}
+
+Example 3:
+  Contract snippet: "Perjanjian ini berlaku selama 7 tahun tanpa batasan."
+  Expected finding: {"clause_type": "pkwt_cipta_kerja", "severity": "high", "original_text": "Perjanjian ini berlaku selama 7 tahun tanpa batasan", "explanation": "PKWT tidak boleh melebihi 5 tahun berdasarkan Pasal 8 PP 35/2021. Durasi 7 tahun melanggar ketentuan UU Cipta Kerja.", "recommendation": "Batasi durasi PKWT maksimal 5 tahun sesuai PP 35/2021.", "confidence": 0.95}
+
+Example 4:
+  Contract snippet: "Pihak Kedua tidak berhak atas kompensasi apapun setelah berakhirnya perjanjian kerja ini."
+  Expected finding: {"clause_type": "kompensasi_pkwt", "severity": "high", "original_text": "Pihak Kedua tidak berhak atas kompensasi apapun setelah berakhirnya perjanjian kerja ini", "explanation": "Pasal 61A UU Cipta Kerja mewajibkan pengusaha membayar kompensasi saat PKWT berakhir. Klausul ini melanggar ketentuan tersebut.", "recommendation": "Hapus klausul ini dan tambahkan ketentuan kompensasi akhir PKWT sesuai PP 35/2021.", "confidence": 0.96}
 
 ## Confidence calibration:
 - 0.9+ only if the problematic text is verbatim in the contract

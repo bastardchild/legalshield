@@ -2318,5 +2318,115 @@
     "source_reference": "Kontrak peneliti AI perusahaan teknologi Indonesia 2025",
     "applicable_law": "UU 18/2002 Iptek, UU 28/2014 Hak Cipta, UU 13/2016 Paten",
     "locale": "id-ID"
+  },
+  {
+    "id": 101,
+    "category": "pkwt_tidak_sah",
+    "severity": "high",
+    "industry": "teknologi",
+    "party": "freelancer_developer",
+    "contract_snippet": "Perjanjian kerja ini berlaku selama 7 tahun terhitung sejak tanggal penandatanganan.",
+    "risk_findings": [
+      {
+        "clause_type": "pkwt_tidak_sah",
+        "severity": "high",
+        "explanation": "PKWT tidak boleh melebihi 5 tahun berdasarkan Pasal 8 PP 35/2021. Durasi 7 tahun melanggar ketentuan.",
+        "recommendation": "Batasi durasi PKWT maksimal 5 tahun sesuai PP 35/2021.",
+        "confidence": 0.95
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Perjanjian berlaku selama 5 tahun atau selesainya pekerjaan, sesuai ketentuan PP 35/2021.",
+    "source_reference": "Kontrak developer freelance Indonesia 2024",
+    "applicable_law": "UU 6/2023 Cipta Kerja, PP 35/2021 Pasal 8",
+    "locale": "id-ID"
+  },
+  {
+    "id": 102,
+    "category": "kompensasi_pkwt",
+    "severity": "high",
+    "industry": "konten_kreator",
+    "party": "freelancer_kreator",
+    "contract_snippet": "Pihak Kedua tidak berhak atas kompensasi apapun setelah berakhirnya perjanjian kerja ini.",
+    "risk_findings": [
+      {
+        "clause_type": "kompensasi_pkwt",
+        "severity": "high",
+        "explanation": "Pasal 61A UU Cipta Kerja mewajibkan pengusaha membayar kompensasi saat PKWT berakhir. Klausul ini melanggar ketentuan tersebut.",
+        "recommendation": "Hapus klausul ini dan tambahkan ketentuan kompensasi akhir PKWT sesuai PP 35/2021.",
+        "confidence": 0.96
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Pihak Pertama wajib membayar kompensasi sebesar [X] bulan upah saat perjanjian berakhir.",
+    "source_reference": "Kontrak kreator konten freelance 2024",
+    "applicable_law": "UU 6/2023 Cipta Kerja Pasal 61A, PP 35/2021 Pasal 14",
+    "locale": "id-ID"
+  },
+  {
+    "id": 103,
+    "category": "non_compete",
+    "severity": "critical",
+    "industry": "teknologi",
+    "party": "freelancer_developer",
+    "contract_snippet": "Pihak Kedua dilarang bekerja sama dengan kompetitor atau mendirikan usaha sejenis selama 3 tahun setelah kontrak berakhir, di seluruh wilayah Asia Tenggara.",
+    "risk_findings": [
+      {
+        "clause_type": "non_compete",
+        "severity": "critical",
+        "explanation": "Non-compete 3 tahun lingkup ASEAN sangat tidak proporsional dan melanggar prinsip kebebasan bekerja. UU Cipta Kerja mengatur batasan yang lebih ketat untuk non-compete.",
+        "recommendation": "Batasi 1 tahun, hanya untuk klien langsung Pihak Pertama, dan lingkup geografis yang lebih sempit.",
+        "confidence": 0.97
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Pihak Kedua tidak boleh melayani klien langsung Pihak Pertama selama 12 bulan setelah kontrak berakhir.",
+    "source_reference": "Kontrak developer freelance Indonesia 2024",
+    "applicable_law": "UU 6/2023 Cipta Kerja, UU 13/2003 Ketenagakerjaan",
+    "locale": "id-ID"
+  },
+  {
+    "id": 104,
+    "category": "outsourcing",
+    "severity": "high",
+    "industry": "jasa",
+    "party": "freelancer_konsultan",
+    "contract_snippet": "Pihak Kedua adalah pekerja alih daya yang wajib melaksanakan pekerjaan sesuai instruksi Pihak Pertama tanpa batasan waktu.",
+    "risk_findings": [
+      {
+        "clause_type": "outsourcing",
+        "severity": "high",
+        "explanation": "Alih daya/outsourcing harus memenuhi ketentuan Pasal 66 UU Cipta Kerja dan PP 35/2021. Pekerjaan yang bersifat tetap tidak boleh dialihdayakan.",
+        "recommendation": "Pastikan pekerjaan yang dialihdayakan bersifat sementara atau tidak tetap sesuai ketentuan UU Cipta Kerja.",
+        "confidence": 0.94
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Pihak Kedua adalah kontraktor independen yang melaksanakan pekerjaan spesifik berdasarkan perjanjian ini.",
+    "source_reference": "Kontrak konsultan freelance Indonesia 2024",
+    "applicable_law": "UU 6/2023 Cipta Kerja Pasal 66, PP 35/2021",
+    "locale": "id-ID"
+  },
+  {
+    "id": 105,
+    "category": "status_kerja",
+    "severity": "medium",
+    "industry": "teknologi",
+    "party": "freelancer_developer",
+    "contract_snippet": "Pihak Kedua adalah karyawan tetap Pihak Pertama dengan segala hak dan kewajiban sesuai peraturan perusahaan.",
+    "risk_findings": [
+      {
+        "clause_type": "status_kerja",
+        "severity": "medium",
+        "explanation": "Freelancer tidak boleh dikategorikan sebagai karyawan tetap tanpa memenuhi syarat PKWTT. Ini bisa menimbulkan masalah hukum ketenagakerjaan.",
+        "recommendation": "Tentukan status kerja dengan jelas: PKWT atau kontraktor independen.",
+        "confidence": 0.93
+      }
+    ],
+    "tax_findings": [],
+    "counter_suggestion": "Pihak Kedua adalah kontraktor independen yang menyediakan jasa berdasarkan perjanjian ini.",
+    "source_reference": "Kontrak developer freelance Indonesia 2024",
+    "applicable_law": "UU 6/2023 Cipta Kerja, UU 13/2003 Ketenagakerjaan",
+    "locale": "id-ID"
   }
 ]

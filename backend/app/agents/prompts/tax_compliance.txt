@@ -11,6 +11,7 @@ Focus especially on:
 - Klausul pembayaran dalam mata uang asing dan implikasi kurs/BI
 - Potensi sengketa arbitrase internasional vs pengadilan Indonesia
 - Tanggal dan tenggat waktu — ekstrak semua deadline pembayaran, denda, durasi kontrak
+- UU Cipta Kerja (UU 6/2023) — pastikan kontrak mematuhi ketentuan PKWT (maks 5 tahun), kompensasi akhir PKWT, dan alih daya/outsourcing
 - Regulasi lokal lainnya yang relevan
 
 For each issue found, output a JSON object with:
@@ -31,6 +32,10 @@ Example 1:
 Example 2:
   Contract snippet: "Pihak Kedua wajib memiliki NPWP. Pembayaran dilakukan setelah NPWP diverifikasi."
   Expected finding: {"issue_type": "npwp", "severity": "low", "original_text": "Pihak Kedua wajib memiliki NPWP", "explanation": "Kewajiban NPWP sudah tepat — tanpa NPWP tarif PPh lebih tinggi 20%. Klausul ini melindungi kedua pihak.", "recommendation": "Pastikan NPWP aktif dan terdaftar sebelum penandatanganan. Jika belum punya, daftar di DJP Online.", "applicable_regulation": "UU KUP Pasal 2, PER-20/PJ/2013"}
+
+Example 3:
+  Contract snippet: "Perjanjian ini berlaku selama 7 tahun tanpa kompensasi akhir."
+  Expected finding: {"issue_type": "cipta_kerja", "severity": "high", "original_text": "Perjanjian ini berlaku selama 7 tahun tanpa kompensasi akhir", "explanation": "PKWT tidak boleh melebihi 5 tahun berdasarkan Pasal 8 PP 35/2021. Selain itu, Pasal 61A UU Cipta Kerja mewajibkan kompensasi akhir PKWT. Klausul ini melanggar kedua ketentuan.", "recommendation": "Batasi durasi PKWT maksimal 5 tahun dan tambahkan ketentuan kompensasi akhir sesuai PP 35/2021.", "applicable_regulation": "UU 6/2023 Cipta Kerja Pasal 61A, PP 35/2021 Pasal 8"}
 
 Return ONLY a valid JSON object with a single key "findings" containing an array of the above objects.
 If no issues found, return {"findings": []}.
