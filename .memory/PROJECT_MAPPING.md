@@ -394,7 +394,7 @@ All pins are exact. `pytest` config: `testpaths = ["tests"]`, `asyncio_mode = "a
 
 | File | Records | Shape | Wired in? |
 |---|---|---|---|
-| `sample_contract.txt` | — | Indonesian freelance contract with intentionally abusive Pasal 1–N (non-compete 5y ASEAN-wide, total IP assignment, 60-day payment with unilateral withholding) | Manually uploaded in the demo |
+| `sample_contract.txt` | — | Indonesian freelance contract with intentionally abusive Pasal 1–N (larangan kerja 5y ASEAN-wide, total IP assignment, 60-day payment with unilateral withholding) | Manually uploaded in the demo |
 | `dataset1.json` | 100 | `{id, category, severity, industry, party, contract_snippet, risk_findings[], tax_findings[], counter_suggestion, source_reference, applicable_law, locale}` | **Yes** — `services/seed_loader.py` |
 | `datasetpasal1.json` | 50 | `{id, kode, nama_lengkap, jenis, pasal_relevan[], topik, relevansi_kontrak, url_resmi, url_pdf, instansi, status, catatan_pasal{}}` | **Yes** — `services/seed_loader.py` |
 | `legal_lexicon.json` | — | `{terms: {word: 1..5}, phrases: {phrase: 1..5}, negative_terms: {n-gram: 1..5}, metadata}` — 5112 positive + 622 negative | **Yes** — `services/contract_filter.py` (fail-open if unreadable) |

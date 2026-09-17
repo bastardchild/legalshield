@@ -12,11 +12,11 @@
 ### Shot 1 — Montage of Horror (0:00–0:20)
 - **Visual:** Cepat, agak shaky/gelap. Screenshot-screenshot artikel berita dari web
   tentang freelancer dirugikan. Tampilan potongan dokumen kontrak asli (dari `sample_contract.txt`),
-  tapi blur/zoom in ke pasal tertentu — misalnya teks "NON-COMPETE 5 TAHUN" atau
+  tapi blur/zoom in ke pasal tertentu — misalnya teks "LARANGAN KERJA 5 TAHUN" atau
   "SELURUH HASIL KARYA MENJADI MILIK KLIEN".
 - **Teks di layar (kapital):** TUNGGU DULU. KONTRAK INI NGERI.
 - **Audio (naratif dramatis):**
-  > "Coba lihat ini. Non-compete lima tahun. Seluruh hak cipta hilang.
+  > "Coba lihat ini. Larangan kerja lima tahun. Seluruh hak cipta hilang.
   > Kalau kamu tanda tangan, kamu kehilangan masa depan."
 - **Durasi:** 20 detik.
 
@@ -73,7 +73,7 @@
   3. Kartu besar "DRAFT KONTRAK TANDINGAN" — teks counter-draft yang sudah disiapkan.
  - **Audio:**
   > "Dan inilah yang kamu dapat. Klausul berisiko langsung ditandai. Lihat ini —
-  > non-compete lima tahun terdeteksi sebagai CRITICAL. Di bawahnya, catatan pajak
+  > larangan kerja lima tahun terdeteksi sebagai CRITICAL. Di bawahnya, catatan pajak
   > lengkap dengan dasar hukumnya. Dan ini yang paling penting: draft kontrak
   > tandingan yang lebih adil sudah siap pakai."
 - **Durasi:** 35 detik.
