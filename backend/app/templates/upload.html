@@ -38,12 +38,12 @@
         role="button" aria-label="Upload file kontrak">
 
         <div x-show="!fileName">
-          <div class="dz-icon">📄</div>
+          <div class="dz-icon"><i class="fa-solid fa-file-pdf"></i></div>
           <p class="dz-title">Klik atau drag &amp; drop</p>
           <p class="dz-sub">PDF &mdash; maks. 5 MB, 10 halaman</p>
         </div>
         <div x-show="fileName" x-cloak>
-          <div class="dz-icon dz-icon-ok">✅</div>
+          <div class="dz-icon dz-icon-ok"><i class="fa-solid fa-circle-check"></i></div>
           <p class="dz-title-ok" x-text="fileName"></p>
           <p class="dz-sub">Klik untuk ganti file</p>
         </div>
@@ -54,18 +54,18 @@
       <div class="upload-actions">
         <button type="submit" class="btn btn-primary" :disabled="!fileName || loading">
           <span id="upload-spinner" class="htmx-indicator"><span class="spinner"></span></span>
-          <span>🔍 Analisis Kontrak</span>
+          <span><i class="fa-solid fa-magnifying-glass"></i> Analisis Kontrak</span>
         </button>
         <button type="button" class="btn btn-ghost" x-show="fileName" x-cloak
-          @click.stop="clearFile()" title="Hapus file">✕</button>
+          @click.stop="clearFile()" title="Hapus file"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <!-- WhatsApp opt-in: popup button + modal -->
       <div x-show="fileName" x-cloak>
         <button type="button" class="btn btn-ghost wa-trigger" @click="showWaPopup = true">
-          💬 Notifikasi WhatsApp (opsional)
+          <i class="fa-brands fa-whatsapp"></i> Notifikasi WhatsApp (opsional)
         </button>
-        <span x-show="phone && notifyWhatsapp" class="wa-badge">✓ <span x-text="maskedPhone"></span></span>
+        <span x-show="phone && notifyWhatsapp" class="wa-badge"><i class="fa-solid fa-check"></i> <span x-text="maskedPhone"></span></span>
       </div>
 
       <!-- Popup overlay -->
@@ -73,7 +73,7 @@
         <div class="wa-popup card" @click.stop>
           <div class="wa-popup-hd">
             <h3>Notifikasi WhatsApp</h3>
-            <button type="button" class="btn btn-ghost wa-close" @click="showWaPopup = false">✕</button>
+            <button type="button" class="btn btn-ghost wa-close" @click="showWaPopup = false"><i class="fa-solid fa-xmark"></i></button>
           </div>
           <p class="hint mb-sm">Kami hanya mengirim 1 pesan berisi link hasil saat analisis selesai. Kosongkan jika ingin menunggu di halaman ini.</p>
           <div class="field mb-sm">
@@ -98,17 +98,17 @@
   <!-- Feature pills -->
   <div class="feature-grid">
     <div class="card feature">
-      <div class="feature-icon">🔍</div>
+      <div class="feature-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
       <div class="feature-name">Klausul Berbahaya</div>
       <div class="feature-desc">Non-compete, IP assignment, indemnity</div>
     </div>
     <div class="card feature">
-      <div class="feature-icon">📊</div>
+      <div class="feature-icon"><i class="fa-solid fa-chart-column"></i></div>
       <div class="feature-name">Pajak &amp; Regulasi</div>
       <div class="feature-desc">PPh 21/23, NPWP, yurisdiksi</div>
     </div>
     <div class="card feature">
-      <div class="feature-icon">✍️</div>
+      <div class="feature-icon"><i class="fa-solid fa-pen-to-square"></i></div>
       <div class="feature-name">Counter-Draft</div>
       <div class="feature-desc">Draft balasan profesional</div>
     </div>
@@ -116,7 +116,8 @@
 
   <div x-show="toast" x-cloak x-transition:enter="fade-up"
     class="toast" :class="toastType==='ok'?'toast-ok':'toast-err'">
-    <span x-text="toastType==='ok'?'✅':'❌'"></span>
+    <span x-show="toastType==='ok'"><i class="fa-solid fa-circle-check"></i></span>
+    <span x-show="toastType!=='ok'"><i class="fa-solid fa-circle-xmark"></i></span>
     <span x-text="toastMsg"></span>
   </div>
 </div>

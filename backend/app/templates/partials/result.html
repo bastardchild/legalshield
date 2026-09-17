@@ -15,7 +15,7 @@
 
 {% if status == "failed" %}
   <div class="pending-failed">
-    <div class="mark">❌</div>
+    <div class="mark"><i class="fa-solid fa-circle-xmark"></i></div>
     <p>Analisis gagal. Silakan upload ulang.</p>
   </div>
 {% elif status != "done" and not any_ready %}
@@ -59,12 +59,12 @@
   {% if risk_ready %}
   <div class="card fade-up mb-md">
     <div class="card-hd">
-      <div class="card-hd-icon icon-risk">🔍</div>
+      <div class="card-hd-icon icon-risk"><i class="fa-solid fa-magnifying-glass"></i></div>
       <h2>Klausul Berisiko</h2>
       {% if risk.result_json %}
       <span class="ct ct-risk">{{ risk.result_json.get('findings',[])|length }} temuan</span>
       {% endif %}
-      <span class="badge badge-ok">✓ selesai</span>
+      <span class="badge badge-ok"><i class="fa-solid fa-check"></i> selesai</span>
     </div>
     {% if risk.result_json and risk.result_json.get('findings') %}
       {% for f in risk.result_json['findings'] %}
@@ -85,7 +85,7 @@
       </div>
       {% endfor %}
     {% elif risk.error %}
-      <div class="alert alert-err">⚠ {{ risk.error }}</div>
+      <div class="alert alert-err"><i class="fa-solid fa-triangle-exclamation"></i> {{ risk.error }}</div>
     {% else %}
       <p class="hint">Tidak ada klausul berisiko terdeteksi.</p>
     {% endif %}
@@ -93,7 +93,7 @@
   {% elif status == "done" %}
   <div class="card fade-up mb-md">
     <div class="card-hd">
-      <div class="card-hd-icon icon-risk">🔍</div>
+      <div class="card-hd-icon icon-risk"><i class="fa-solid fa-magnifying-glass"></i></div>
       <h2>Klausul Berisiko</h2>
     </div>
     <p class="hint">Tidak ada klausul berisiko terdeteksi.</p>
@@ -101,7 +101,7 @@
   {% elif status == "processing" or status == "uploaded" %}
   <div class="card mb-md card-skeleton">
     <div class="card-hd">
-      <div class="card-hd-icon icon-risk">🔍</div>
+      <div class="card-hd-icon icon-risk"><i class="fa-solid fa-magnifying-glass"></i></div>
       <h2>Klausul Berisiko</h2>
       <span class="skel-badge"><span class="spinner"></span> menganalisis…</span>
     </div>
@@ -115,12 +115,12 @@
   {% if tax_ready %}
   <div class="card fade-up mb-md">
     <div class="card-hd">
-      <div class="card-hd-icon icon-tax">📊</div>
+      <div class="card-hd-icon icon-tax"><i class="fa-solid fa-chart-column"></i></div>
       <h2>Kepatuhan Pajak &amp; Regulasi</h2>
       {% if tax.result_json %}
       <span class="ct ct-tax">{{ tax.result_json.get('findings',[])|length }} isu</span>
       {% endif %}
-      <span class="badge badge-ok">✓ selesai</span>
+      <span class="badge badge-ok"><i class="fa-solid fa-check"></i> selesai</span>
     </div>
     {% if tax.result_json and tax.result_json.get('findings') %}
       {% for f in tax.result_json['findings'] %}
@@ -140,7 +140,7 @@
       </div>
       {% endfor %}
     {% elif tax.error %}
-      <div class="alert alert-err">⚠ {{ tax.error }}</div>
+      <div class="alert alert-err"><i class="fa-solid fa-triangle-exclamation"></i> {{ tax.error }}</div>
     {% else %}
       <p class="hint">Tidak ada isu kepatuhan terdeteksi.</p>
     {% endif %}
@@ -148,7 +148,7 @@
   {% elif status == "done" %}
   <div class="card fade-up mb-md">
     <div class="card-hd">
-      <div class="card-hd-icon icon-tax">📊</div>
+      <div class="card-hd-icon icon-tax"><i class="fa-solid fa-chart-column"></i></div>
       <h2>Kepatuhan Pajak &amp; Regulasi</h2>
     </div>
     <p class="hint">Tidak ada isu kepatuhan terdeteksi.</p>
@@ -156,7 +156,7 @@
   {% elif status == "processing" or status == "uploaded" %}
   <div class="card mb-md card-skeleton">
     <div class="card-hd">
-      <div class="card-hd-icon icon-tax">📊</div>
+      <div class="card-hd-icon icon-tax"><i class="fa-solid fa-chart-column"></i></div>
       <h2>Kepatuhan Pajak &amp; Regulasi</h2>
       <span class="skel-badge"><span class="spinner"></span> menganalisis…</span>
     </div>
@@ -170,9 +170,9 @@
   {% if counter_ready %}
   <div class="card fade-up" x-data="sendApp('{{ contract_id }}')">
     <div class="card-hd">
-      <div class="card-hd-icon icon-draft">✍️</div>
+      <div class="card-hd-icon icon-draft"><i class="fa-solid fa-pen-to-square"></i></div>
       <h2>Draft Kontrak Balasan</h2>
-      <span class="badge badge-ok">✓ selesai</span>
+      <span class="badge badge-ok"><i class="fa-solid fa-check"></i> selesai</span>
     </div>
     {% if counter.result_json %}
       {% if counter.result_json.get('summary_of_changes') %}
@@ -187,14 +187,14 @@
       {% endif %}
       {% if counter.result_json.get('negotiation_notes') %}
       <div class="alert alert-tip mb-sm">
-        <span>💡</span><span>{{ counter.result_json['negotiation_notes'] }}</span>
+        <span><i class="fa-solid fa-lightbulb"></i></span><span>{{ counter.result_json.get('negotiation_notes') }}</span>
       </div>
       {% endif %}
       <textarea id="counter-draft-text" spellcheck="false">{{ counter.result_json.get('counter_draft','') }}</textarea>
       <div class="draft-actions">
         <button class="btn btn-ghost"
-          onclick="navigator.clipboard.writeText(document.getElementById('counter-draft-text').value);this.innerHTML='✅ Tersalin!';setTimeout(()=>this.innerHTML='📋 Salin Draft',2000)">
-          📋 Salin Draft
+          onclick="navigator.clipboard.writeText(document.getElementById('counter-draft-text').value);const o=this.innerHTML;this.innerHTML='<i class=&quot;fa-solid fa-check&quot;></i> Tersalin!';setTimeout(()=>this.innerHTML=o,2000)">
+          <i class="fa-solid fa-copy"></i> Salin Draft
         </button>
       </div>
       <hr class="div">
@@ -206,16 +206,16 @@
         </div>
         <button class="btn btn-success" @click="sendDraft()" :disabled="sending">
           <span x-show="sending"><span class="spinner"></span></span>
-          <span x-show="!sending">🚀 Kirim Draft</span>
+          <span x-show="!sending"><i class="fa-solid fa-paper-plane"></i> Kirim Draft</span>
         </button>
       </div>
       <div x-show="sent" x-cloak x-transition:enter="fade-up" class="alert alert-ok mt-sm">
-        <span x-show="sentStatus === 'sent'">✅ Draft terkirim ke email klien</span>
-        <span x-show="sentStatus !== 'sent'">✅ Draft dicatat — mode stub (SMTP belum dikonfigurasi)</span>
+        <span x-show="sentStatus === 'sent'"><i class="fa-solid fa-circle-check"></i> Draft terkirim ke email klien</span>
+        <span x-show="sentStatus !== 'sent'"><i class="fa-solid fa-circle-check"></i> Draft dicatat — mode stub (SMTP belum dikonfigurasi)</span>
       </div>
       <div x-show="sendError" x-cloak x-transition:enter="fade-up" class="alert alert-err mt-sm" x-text="sendError"></div>
     {% elif counter.error %}
-      <div class="alert alert-err">⚠ {{ counter.error }}</div>
+      <div class="alert alert-err"><i class="fa-solid fa-triangle-exclamation"></i> {{ counter.error }}</div>
     {% else %}
       <p class="hint">Draft belum tersedia.</p>
     {% endif %}
@@ -223,7 +223,7 @@
   {% elif status == "done" %}
   <div class="card fade-up">
     <div class="card-hd">
-      <div class="card-hd-icon icon-draft">✍️</div>
+      <div class="card-hd-icon icon-draft"><i class="fa-solid fa-pen-to-square"></i></div>
       <h2>Draft Kontrak Balasan</h2>
     </div>
     <p class="hint">Draft belum tersedia.</p>
@@ -231,7 +231,7 @@
   {% elif status == "processing" or status == "uploaded" %}
   <div class="card mb-md card-skeleton">
     <div class="card-hd">
-      <div class="card-hd-icon icon-draft">✍️</div>
+      <div class="card-hd-icon icon-draft"><i class="fa-solid fa-pen-to-square"></i></div>
       <h2>Draft Kontrak Balasan</h2>
       <span class="skel-badge"><span class="spinner"></span> menunggu analisis…</span>
     </div>

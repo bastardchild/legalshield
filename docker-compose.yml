@@ -54,7 +54,10 @@ services:
       - ./backend:/app
       - ./seed:/app/seed:ro
     ports:
-      - "8000:8000"
+      # Host 8080, not 8000: Windows Hyper-V/WSL reserves 7921-8020
+      # (netsh ... show excludedportrange), so binding 8000 fails with
+      # "forbidden by its access permissions". Container side stays 8000.
+      - "8080:8000"
     env_file:
       - .env
     healthcheck:
@@ -118,7 +121,7 @@ services:
       LLM_MODEL: test-model
       FONNTE_TOKEN: test-token
       FONNTE_BASE_URL: http://fonnte.invalid
-      APP_BASE_URL: http://localhost:8000
+      APP_BASE_URL: http://localhost:8080
     profiles:
       - test
     depends_on:

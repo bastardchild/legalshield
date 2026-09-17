@@ -16,6 +16,10 @@ VENDOR_DIR = STATIC_DIR / "vendor"
 
 VENDORED = ["htmx-1.9.12.min.js", "alpine-3.14.1.min.js"]
 
+# Font Awesome Free, vendored so icons render offline (same rule as the JS above).
+FA_CSS = "fontawesome/css/all.min.css"
+FA_WEBFONTS = ["fontawesome/webfonts/fa-solid-900.woff2", "fontawesome/webfonts/fa-brands-400.woff2"]
+
 
 def _base_html() -> str:
     return (TEMPLATE_DIR / "base.html").read_text(encoding="utf-8")
@@ -31,6 +35,31 @@ class TestVendoredAssets:
     @pytest.mark.parametrize("name", VENDORED)
     def test_referenced_from_base_template(self, name):
         assert f"/static/vendor/{name}" in _base_html()
+
+    def test_font_awesome_css_is_vendored(self):
+        path = VENDOR_DIR / FA_CSS
+        assert path.exists(), f"{path} missing"
+        assert path.stat().st_size > 10_000, f"{path} looks truncated"
+        assert f"/static/vendor/{FA_CSS}" in _base_html()
+
+    @pytest.mark.parametrize("name", FA_WEBFONTS)
+    def test_font_awesome_webfonts_are_vendored(self, name):
+        path = VENDOR_DIR / name
+        assert path.exists(), f"{path} missing"
+        assert path.stat().st_size > 10_000, f"{path} looks truncated"
+
+    def test_no_icon_loaded_from_a_cdn(self):
+        """Same offline rule as scripts: a blocked CDN must not unstyle the icons.
+
+        Google Fonts stays remote (with CSS fallback stacks), so this only targets
+        icon stylesheets: any font-awesome link must resolve under /static/.
+        """
+        html = _base_html()
+        for line in html.splitlines():
+            if "<link" in line and "fontawesome" in line.lower():
+                assert "/static/" in line, (
+                    f"icon stylesheet still loaded remotely: {line.strip()}"
+                )
 
     def test_no_script_loaded_from_a_cdn(self):
         """A CDN outage must not stop the page from polling."""
@@ -144,6 +173,9 @@ class TestTemplateClassesExist:
     # Provided by htmx rather than by app.css.
     EXTERNAL = {"htmx-indicator"}
 
+    # Font Awesome utility classes come from the vendored all.min.css, not app.css.
+    FA_PREFIXES = ("fa-",)
+
     def _declared(self) -> set[str]:
         css = (STATIC_DIR / "app.css").read_text(encoding="utf-8")
         return set(re.findall(r"\.([a-zA-Z][\w-]*)", css))
@@ -160,5 +192,25 @@ class TestTemplateClassesExist:
 
     @pytest.mark.parametrize("name", TestInlineStyles.TEMPLATES)
     def test_all_classes_are_defined(self, name):
-        undefined = self._used(name) - self._declared() - self.EXTERNAL
+        used = self._used(name)
+        fa_provided = {t for t in used if t.startswith(self.FA_PREFIXES)}
+        undefined = used - self._declared() - self.EXTERNAL - fa_provided
         assert not undefined, f"{name} uses undefined classes: {sorted(undefined)}"
+
+
+class TestNoEmojiIcons:
+    """All glyphs must be Font Awesome; emoji render inconsistently and break the theme."""
+
+    EMOJI = ["📄", "✅", "❌", "🔍", "📊", "✍", "💬", "⚠", "💡", "📋", "🚀", "⚖"]
+
+    @pytest.mark.parametrize("name", TestInlineStyles.TEMPLATES)
+    def test_no_emoji_icons_in_templates(self, name):
+        html = (TEMPLATE_DIR / name).read_text(encoding="utf-8")
+        found = [e for e in self.EMOJI if e in html]
+        assert not found, f"{name} still uses emoji icons: {found}; use Font Awesome"
+
+    def test_no_inline_svg_icons_in_partials(self):
+        """Hand-written SVGs were replaced by FA; status/result partials must not grow new ones."""
+        for name in ("partials/status.html", "partials/result.html"):
+            html = (TEMPLATE_DIR / name).read_text(encoding="utf-8")
+            assert "<svg" not in html, f"{name} still carries inline SVG; use Font Awesome"

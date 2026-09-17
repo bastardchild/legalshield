@@ -7,7 +7,7 @@
   <!-- Page header -->
   <div class="page-hd">
     <a href="/" class="btn btn-ghost">
-      <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
+      <i class="fa-solid fa-arrow-left"></i>
       Upload Baru
     </a>
     <div class="page-hd-text">
@@ -18,7 +18,7 @@
 
   <!-- WhatsApp banner (sessionStorage, tab-scoped) -->
   <div x-show="waNotify && waPhone" x-cloak class="wa-banner wa-banner-pending">
-    <span>💬</span>
+    <span><i class="fa-brands fa-whatsapp"></i></span>
     <span>Link hasil akan dikirim ke WhatsApp <span class="mono" x-text="waMasked"></span> saat analisis selesai. Anda boleh menutup halaman.</span>
   </div>
 
@@ -43,7 +43,8 @@
   <!-- Toast -->
   <div x-show="toast" x-cloak x-transition:enter="fade-up"
     class="toast" :class="toastType==='ok'?'toast-ok':'toast-err'">
-    <span x-text="toastType==='ok'?'✅':'❌'"></span>
+    <span x-show="toastType==='ok'"><i class="fa-solid fa-circle-check"></i></span>
+    <span x-show="toastType!=='ok'"><i class="fa-solid fa-circle-xmark"></i></span>
     <span x-text="toastMsg"></span>
   </div>
 </div>

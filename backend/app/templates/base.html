@@ -11,6 +11,9 @@
   <script defer src="/static/vendor/alpine-3.14.1.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  {# Font Awesome Free, vendored like htmx/Alpine so icons render offline.
+     Only all.min.css + solid/brands woff2 are shipped (see vendor/fontawesome). #}
+  <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="/static/app.css" />
   {% block head %}{% endblock %}
 </head>
@@ -19,7 +22,7 @@
     <div class="container">
       <div class="nav-inner">
         <a href="/" class="logo">
-          <div class="logo-icon">&#x2696;&#xFE0F;</div>
+          <div class="logo-icon"><i class="fa-solid fa-scale-balanced"></i></div>
           Legal<em>Shield</em>
         </a>
         <span class="nav-pill">MVP Beta</span>

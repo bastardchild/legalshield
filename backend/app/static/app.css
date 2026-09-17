@@ -303,3 +303,37 @@ footer a:hover { color: var(--accent); }
 .score-high .risk-title { color: #f87171; }
 .risk-plain { font-size: 0.78rem; color: var(--text-2); margin-top: 0.15rem; line-height: 1.5; }
 
+/* ── Font Awesome icons ────────────────────────────────────────
+   Icons inherit size from their containers (dz-icon, feature-icon, etc.)
+   which were previously sized for emoji glyphs. Colors restore the visual
+   distinction the colored emoji used to provide. */
+.logo-icon .fa-solid { font-size: 0.9rem; color: #fff; }
+.dz-icon .fa-solid { font-size: 1.375rem; color: var(--accent); }
+.dz-icon-ok .fa-solid { color: var(--green); }
+.feature-icon .fa-solid { font-size: 1.25rem; }
+.feature-icon .fa-magnifying-glass { color: #f87171; }
+.feature-icon .fa-chart-column { color: #fbbf24; }
+.feature-icon .fa-pen-to-square { color: #a78bfa; }
+.card-hd-icon .fa-solid { font-size: 0.95rem; }
+.icon-risk .fa-solid { color: #f87171; }
+.icon-tax .fa-solid { color: #fbbf24; }
+.icon-draft .fa-solid { color: #a78bfa; }
+.sb .fa-solid { font-size: 1rem; flex-shrink: 0; }
+.sb-done .fa-solid { color: #34d399; }
+.sb-failed .fa-solid { color: #f87171; }
+.sb-wait .fa-solid { color: var(--text-2); }
+.alert .fa-solid { flex-shrink: 0; margin-top: 0.15rem; }
+.alert-err .fa-solid { color: #f87171; }
+.alert-tip .fa-solid { color: #fbbf24; }
+.alert-ok .fa-solid { color: #34d399; }
+.toast .fa-solid { font-size: 0.95rem; flex-shrink: 0; }
+.toast-ok .fa-solid { color: var(--green); }
+.toast-err .fa-solid { color: var(--red); }
+.pending-failed .mark .fa-solid { font-size: 2.5rem; color: #f87171; }
+.btn .fa-solid, .btn .fa-brands { font-size: 0.8rem; }
+.wa-trigger .fa-brands { color: var(--green); }
+.wa-badge .fa-solid { font-size: 0.7rem; }
+.wa-banner .fa-brands { color: #34d399; flex-shrink: 0; }
+.badge-ok .fa-solid { font-size: 0.6rem; }
+.draft-actions .fa-solid { font-size: 0.8rem; }
+

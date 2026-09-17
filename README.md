@@ -45,7 +45,7 @@ Tunggu sampai `docker compose ps` melaporkan `api` sebagai `healthy`.
 ### 3. Buka browser
 
 ```
-http://localhost:8000
+http://localhost:8080
 ```
 
 ### 4. Upload kontrak

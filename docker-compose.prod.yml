@@ -46,6 +46,10 @@ services:
       # Overrides env_file (environment wins over .env), so production stays fail-closed.
       DOCS_ENABLED: "false"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    # Servers run Linux (no Hyper-V exclusion), so production keeps the
+    # documented 8000:8000 mapping instead of inheriting the dev 8001 remap.
+    ports: !override
+      - "8000:8000"
     volumes: !override
       - ./seed:/app/seed:ro
     restart: unless-stopped
